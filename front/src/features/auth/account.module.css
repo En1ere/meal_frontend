@@ -1,0 +1,106 @@
+.stack {
+    display: grid;
+    gap: 1.25rem;
+    min-width: 0;
+}
+
+.stack label {
+    margin: 0;
+}
+
+.stack input {
+    margin-top: 0.45rem;
+}
+
+.stack fieldset {
+    display: grid;
+    gap: 1rem;
+    border: 0;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+}
+
+.stack legend {
+    padding: 0 0 1rem;
+    font-weight: bold;
+}
+
+.layout {
+    max-width: 78rem;
+    margin: auto;
+    padding: clamp(1.25rem, 4vw, 3rem);
+    display: grid;
+    gap: 2rem;
+}
+
+.columns {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    gap: 1.5rem;
+    align-items: start;
+}
+
+.card {
+    display: grid;
+    gap: 1.25rem;
+    min-width: 0;
+    padding: clamp(1.25rem, 3vw, 2rem);
+    border: 1px solid var(--line);
+    border-radius: 1rem;
+    background: var(--surface);
+    overflow-wrap: anywhere;
+}
+
+.card summary {
+    cursor: pointer;
+    color: var(--accent);
+    font-weight: bold;
+    padding-block: 0.5rem;
+}
+
+.card details[open] summary {
+    margin-bottom: 1rem;
+}
+
+.card select {
+    width: 100%;
+    min-height: 3rem;
+    padding: 0.65rem;
+    background: var(--surface);
+    color: var(--ink);
+    border: 1px solid var(--line);
+    border-radius: 0.5rem;
+}
+
+.secret {
+    display: block;
+    user-select: all;
+    padding: 1rem;
+    background: var(--soft);
+    overflow-wrap: anywhere;
+}
+
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+}
+
+.muted {
+    color: var(--muted);
+}
+
+.mail-list {
+    list-style: none;
+    display: grid;
+    gap: 1rem;
+    padding: 0;
+}
+
+@media (width <= 48rem) {
+    .columns {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}

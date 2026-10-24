@@ -1,0 +1,356 @@
+/* stylelint-disable no-descending-specificity -- public shell and content groups intentionally share link/text rules. */
+.actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.main {
+    display: grid;
+    gap: 1.25rem;
+    width: min(1180px, calc(100% - 2rem));
+    margin: 0 auto;
+    padding: clamp(2.5rem, 6vw, 5rem) 0;
+}
+
+.hero {
+    display: grid;
+    justify-items: center;
+    gap: 0.85rem;
+    text-align: center;
+}
+
+.hero h1 {
+    max-width: 960px;
+    font-size: clamp(3rem, 7vw, 5.5rem);
+    line-height: 0.95;
+}
+
+.hero > p:not(.eyebrow) {
+    max-width: 760px;
+    color: var(--muted);
+    font-size: clamp(1rem, 2vw, 1.25rem);
+}
+
+.eyebrow {
+    color: var(--accent);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+.search {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.6rem;
+    width: min(760px, 100%);
+    margin-top: 1rem;
+    padding: 0.5rem;
+    border: 1px solid color-mix(in srgb, var(--accent) 55%, var(--line));
+    border-radius: 0.9rem;
+    background: var(--surface);
+}
+
+.search label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+}
+
+.search input {
+    min-width: 0;
+    padding: 0.75rem 1rem;
+    border: 0;
+    outline: 0;
+    color: var(--ink);
+    background: transparent;
+    font: inherit;
+}
+
+.search:focus-within {
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 24%, transparent);
+}
+
+.category-filter {
+    display: flex;
+    justify-content: center;
+    gap: 0.55rem;
+    overflow-x: auto;
+    padding: 0.35rem 0 0.65rem;
+}
+
+.category-filter button {
+    flex: 0 0 auto;
+    padding: 0.65rem 0.9rem;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    color: var(--ink);
+    background: var(--surface);
+    font: inherit;
+}
+
+.category-filter button[aria-pressed='true'] {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--soft);
+}
+
+.help-grid,
+.pricing-grid {
+    display: grid;
+    gap: 1rem;
+}
+
+.help-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.pricing-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.help-card,
+.price-card,
+.popular,
+.support,
+.ai-pack,
+.notice,
+.empty {
+    padding: clamp(1.2rem, 2.5vw, 2rem);
+    border: 1px solid var(--line);
+    border-radius: 1rem;
+    background: rgb(255 255 255 / 88%);
+}
+
+.help-card {
+    display: grid;
+    gap: 0.65rem;
+}
+
+.help-card > p,
+.support p,
+.ai-pack p,
+.notice p,
+.empty p,
+.price-card li {
+    color: var(--muted);
+}
+
+.help-card details {
+    padding: 0.8rem 0;
+    border-top: 1px solid var(--line);
+}
+
+.help-card summary {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    color: var(--link);
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.help-card details p {
+    padding-top: 0.65rem;
+    line-height: 1.55;
+}
+
+.popular,
+.support,
+.ai-pack,
+.trial,
+.notice {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+}
+
+.popular ul {
+    display: grid;
+    gap: 0.55rem;
+    margin: 0;
+}
+
+.support,
+.ai-pack,
+.trial {
+    border-color: color-mix(in srgb, var(--accent) 42%, var(--line));
+    background: color-mix(in srgb, var(--soft) 45%, var(--surface));
+}
+
+.period {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(8rem, 1fr));
+    width: min(25rem, 100%);
+    margin-top: 1rem;
+    padding: 0.25rem;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--surface);
+}
+
+.period legend {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+}
+
+.period label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 44px;
+    border-radius: 999px;
+    cursor: pointer;
+}
+
+.period label:has(input:checked) {
+    color: var(--accent);
+    background: var(--soft);
+    font-weight: 700;
+}
+
+.period input {
+    width: 1rem;
+    min-height: 1rem;
+    accent-color: var(--accent);
+}
+
+.price-card {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    min-height: 28rem;
+}
+
+.price-card h2 {
+    margin-top: 0.25rem;
+    font-size: clamp(2rem, 4vw, 3rem);
+}
+
+.price {
+    color: var(--ink);
+    font-size: clamp(1.6rem, 3vw, 2.3rem);
+    font-weight: 700;
+}
+
+.price small {
+    color: var(--muted);
+    font-size: 1rem;
+    font-weight: 400;
+}
+
+.price-card ul {
+    display: grid;
+    gap: 0.75rem;
+    margin: 0;
+    padding-inline-start: 1.25rem;
+}
+
+.price-card > a {
+    width: 100%;
+    margin-top: auto;
+}
+
+.featured {
+    border-color: var(--accent);
+    box-shadow: 0 1rem 2.5rem rgb(91 45 22 / 10%);
+}
+
+.pro {
+    border-color: color-mix(in srgb, var(--accent) 72%, var(--line));
+    background: color-mix(in srgb, var(--soft) 30%, var(--surface));
+}
+
+.badge {
+    display: inline-flex;
+    width: max-content;
+    padding: 0.35rem 0.65rem;
+    border-radius: 999px;
+    color: var(--accent);
+    background: var(--soft);
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.saving {
+    margin-top: 0.35rem;
+    color: var(--accent);
+}
+
+.notice {
+    align-items: flex-start;
+}
+
+.trial h2 {
+    margin-block: 0.2rem 0.35rem;
+}
+
+@media (width <= 1040px) {
+    .pricing-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .price-card:last-child {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (width <= 760px) {
+    .main {
+        width: min(100% - 1.5rem, 42rem);
+        padding: 2rem 0;
+    }
+
+    .hero {
+        justify-items: start;
+        text-align: left;
+    }
+
+    .hero h1 {
+        font-size: clamp(3rem, 14vw, 4.4rem);
+    }
+
+    .search,
+    .help-grid,
+    .pricing-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .price-card:last-child {
+        grid-column: auto;
+    }
+
+    .search button {
+        width: 100%;
+    }
+
+    .category-filter {
+        justify-content: flex-start;
+    }
+
+    .popular,
+    .support,
+    .ai-pack,
+    .trial,
+    .notice {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .actions {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .price-card {
+        min-height: 0;
+    }
+}

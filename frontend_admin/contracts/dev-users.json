@@ -1,0 +1,69 @@
+{
+  "password": "1",
+  "users": [
+    {
+      "id": "10000000-0000-4000-8000-000000000001",
+      "login": "admin",
+      "name": "Администратор",
+      "role": "admin",
+      "plan": "pro",
+      "email": "admin@meal-planner.test"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000000002",
+      "login": "moderator",
+      "name": "Модератор",
+      "role": "moderator",
+      "plan": "free",
+      "email": "moderator@meal-planner.test"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000000003",
+      "login": "pro1",
+      "name": "Юзер-про 1",
+      "role": null,
+      "plan": "pro",
+      "email": "pro1@meal-planner.test"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000000004",
+      "login": "pro2",
+      "name": "Юзер-про 2",
+      "role": null,
+      "plan": "pro",
+      "email": "pro2@meal-planner.test"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000000005",
+      "login": "plus1",
+      "name": "Юзер-плюс 1",
+      "role": null,
+      "plan": "plus",
+      "email": "plus1@meal-planner.test"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000000006",
+      "login": "plus2",
+      "name": "Юзер-плюс 2",
+      "role": null,
+      "plan": "plus",
+      "email": "plus2@meal-planner.test"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000000007",
+      "login": "user1",
+      "name": "Юзер 1",
+      "role": null,
+      "plan": "free",
+      "email": "user1@meal-planner.test"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000000008",
+      "login": "user2",
+      "name": "Юзер 2",
+      "role": null,
+      "plan": "free",
+      "email": "user2@meal-planner.test"
+    }
+  ]
+}

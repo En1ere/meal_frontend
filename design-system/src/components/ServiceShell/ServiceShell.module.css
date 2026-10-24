@@ -1,0 +1,163 @@
+.shell {
+    min-height: 100dvh;
+    display: grid;
+    grid-template-columns: 292px minmax(0, 1fr);
+    color: var(--ink);
+    background: var(--background);
+    color-scheme: dark;
+}
+
+.sidebar {
+    min-height: 100dvh;
+    padding: 28px 22px;
+    border-right: 1px solid var(--line);
+    background: var(--sidebar, var(--surface));
+}
+
+.brand {
+    padding: 0 8px;
+}
+
+.context {
+    margin: 14px 8px 18px;
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.theme {
+    margin: 0 8px 12px;
+}
+
+.group {
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+}
+
+.group h2 {
+    margin: 0 8px 8px;
+    color: var(--muted);
+    font:
+        600 14px Arial,
+        sans-serif;
+}
+
+.link {
+    display: block;
+    min-height: 36px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    color: var(--ink);
+    text-decoration: none;
+    transition:
+        background-color 0.2s,
+        color 0.2s;
+}
+
+.link:hover {
+    background: var(--surface);
+}
+
+.link[aria-current="page"] {
+    color: var(--accent);
+    background: var(--soft);
+}
+
+.nested {
+    padding-left: 28px;
+    font-size: 14px;
+}
+
+.main {
+    width: 100%;
+    max-width: 1500px;
+    min-width: 0;
+    padding: 58px 36px;
+}
+
+.mobileHeader,
+.scrim {
+    display: none;
+}
+
+@media (width <= 800px) {
+    .shell {
+        display: block;
+    }
+
+    .sidebar {
+        display: none;
+    }
+
+    .mobileHeader {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 20px;
+        border-bottom: 1px solid var(--line);
+    }
+
+    .mobileHeader button,
+    .drawer button {
+        min-height: 44px;
+        padding: 8px 14px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        color: var(--ink);
+        background: var(--surface);
+    }
+
+    .main {
+        padding: 28px 20px 40px;
+    }
+
+    .scrim {
+        position: fixed;
+        inset: 0;
+        z-index: 80;
+        width: 100%;
+        max-width: none;
+        height: 100dvh;
+        max-height: none;
+        display: flex;
+        justify-content: flex-end;
+        margin: 0;
+        padding: 0;
+        border: 0;
+        background: transparent;
+    }
+
+    .scrim:not([open]) {
+        display: none;
+    }
+
+    .scrim::backdrop {
+        background: #000b;
+    }
+
+    .drawer {
+        width: min(92vw, 420px);
+        height: 100dvh;
+        padding: 20px;
+        overflow-y: auto;
+        color: var(--ink);
+        background: var(--background);
+    }
+
+    .drawer > header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+    }
+
+    .drawerTheme {
+        margin: 18px 0 8px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .link {
+        transition: none;
+    }
+}

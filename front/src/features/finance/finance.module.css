@@ -1,0 +1,527 @@
+.page {
+    display: grid;
+    gap: 1.5rem;
+    max-width: 76rem;
+    margin: 0 auto;
+}
+
+.breadcrumbs {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.65rem;
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+.breadcrumbs a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+}
+
+.breadcrumbs a:hover {
+    color: var(--accent);
+}
+
+.header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1.5rem;
+}
+
+.header > div {
+    max-width: 50rem;
+}
+
+.header h1 {
+    margin: 0.2rem 0 0.45rem;
+    font-size: clamp(2.5rem, 6vw, 4.7rem);
+    line-height: 0.95;
+}
+
+.header p,
+.active p,
+.read-only p,
+.note p,
+.budget-copy,
+.empty p {
+    color: var(--muted);
+}
+
+.eyebrow {
+    color: var(--accent);
+    font-size: 0.78rem;
+    font-weight: 750;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.active,
+.read-only {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.1rem 1.25rem;
+    border: 1px solid #bdcda8;
+    border-radius: 1rem;
+    background: #eef4e6;
+}
+
+.read-only {
+    border-color: #dfc08f;
+    background: #fff4df;
+}
+
+.period,
+.filters {
+    display: flex;
+    align-items: end;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding: 1rem;
+    border: 1px solid var(--line);
+    border-radius: 1rem;
+    background: var(--surface);
+}
+
+.period label,
+.filters label,
+.form label,
+.create-form label,
+.price-form label,
+.detail label {
+    display: grid;
+    gap: 0.35rem;
+    color: var(--muted);
+    font-size: 0.84rem;
+    font-weight: 650;
+}
+
+.period input,
+.filters input,
+.filters select,
+.form input,
+.create-form input,
+.create-form select,
+.price-form input,
+.price-form select,
+.detail input,
+.detail select {
+    min-height: 2.75rem;
+    padding: 0.65rem 0.75rem;
+    border: 1px solid var(--line);
+    border-radius: 0.7rem;
+    background: var(--surface);
+    color: inherit;
+    font: inherit;
+}
+
+.filters strong {
+    margin-inline-start: auto;
+    padding: 0.75rem 1rem;
+}
+
+.metrics {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.8rem;
+}
+
+.metrics article {
+    display: grid;
+    gap: 0.35rem;
+    padding: 1.2rem;
+    border: 1px solid var(--line);
+    border-radius: 1rem;
+    background: var(--surface);
+}
+
+.metrics span,
+.metrics small {
+    color: var(--muted);
+}
+
+.metrics strong {
+    font:
+        700 1.45rem Georgia,
+        serif;
+}
+
+.columns {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(18rem, 0.65fr);
+    gap: 1rem;
+}
+
+.panel,
+.table-panel,
+.create-form,
+.detail {
+    padding: 1.3rem;
+    border: 1px solid var(--line);
+    border-radius: 1.1rem;
+    background: var(--surface);
+}
+
+.panel-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    gap: 1rem;
+}
+
+.panel-heading h2 {
+    margin-top: 0.25rem;
+}
+
+.total {
+    display: grid;
+    place-items: center;
+    min-height: 15rem;
+    margin-top: 1rem;
+    border-radius: 1rem;
+    background: var(--soft);
+}
+
+.total strong {
+    font:
+        700 clamp(2rem, 5vw, 4rem) Georgia,
+        serif;
+}
+
+.total span {
+    color: var(--muted);
+}
+
+.empty {
+    display: grid;
+    justify-items: center;
+    align-content: center;
+    gap: 0.8rem;
+    min-height: 19rem;
+    padding: 2rem;
+    text-align: center;
+}
+
+.empty > span {
+    display: grid;
+    place-items: center;
+    width: 4.5rem;
+    height: 4.5rem;
+    border-radius: 50%;
+    background: var(--soft);
+    color: var(--accent);
+    font:
+        700 2rem Georgia,
+        serif;
+}
+
+.form,
+.budget-copy {
+    display: grid;
+    gap: 0.9rem;
+    margin-top: 1rem;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.7rem;
+}
+
+.note {
+    padding: 1rem 1.2rem;
+    border-inline-start: 0.25rem solid var(--accent);
+    background: var(--surface);
+}
+
+.create-form {
+    display: grid;
+    grid-template-columns: minmax(12rem, 1fr) repeat(3, minmax(10rem, 0.7fr));
+    align-items: end;
+    gap: 0.9rem;
+}
+
+.price-form {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(8rem, 1fr));
+    align-items: end;
+    gap: 0.9rem;
+    padding: 1.3rem;
+    border: 1px solid var(--line);
+    border-radius: 1.1rem;
+    background: var(--surface);
+}
+
+.price-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.8rem;
+}
+
+.price-grid article,
+.cost-badge {
+    display: grid;
+    gap: 0.35rem;
+    padding: 1.1rem;
+    border: 1px solid var(--line);
+    border-radius: 1rem;
+    background: var(--surface);
+}
+
+.price-grid :where(span, small),
+.cost-badge :where(span, small, p) {
+    color: var(--muted);
+}
+
+.price-grid :where(strong),
+.cost-badge :where(strong) {
+    font:
+        700 1.35rem Georgia,
+        serif;
+}
+
+.price-table-header,
+.price-row {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr 1fr 1fr;
+    gap: 1rem;
+    align-items: center;
+    padding: 1rem 1.2rem;
+}
+
+.price-table-header {
+    background: var(--soft);
+    color: var(--muted);
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.price-row {
+    border-top: 1px solid var(--line);
+}
+
+.price-row strong {
+    text-align: right;
+}
+
+.cost-badge {
+    max-width: 32rem;
+    margin-block: 1rem;
+    border-color: #bdcda8;
+    background: #f6f7ef;
+}
+
+.cost-badge p {
+    margin: 0.25rem 0 0;
+    font-size: 0.78rem;
+}
+
+.consent {
+    grid-column: 1 / -1;
+    grid-template-columns: auto 1fr !important;
+    align-items: center;
+    justify-content: start;
+}
+
+.consent input {
+    min-height: auto;
+}
+
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.7rem;
+}
+
+.form-error {
+    grid-column: 1 / -1;
+    color: #a33b2c;
+}
+
+.table-panel {
+    padding: 0;
+    overflow: hidden;
+}
+
+.table-header,
+.row {
+    display: grid;
+    grid-template-columns: 1fr 1.4fr 1fr 1fr;
+    gap: 1rem;
+    align-items: center;
+    padding: 1rem 1.2rem;
+}
+
+.table-header {
+    border-bottom: 1px solid var(--line);
+    background: var(--soft);
+    color: var(--muted);
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.row {
+    position: relative;
+    border-bottom: 1px solid var(--line);
+    color: inherit;
+}
+
+.row:last-child {
+    border-bottom: 0;
+}
+
+.row:hover {
+    background: var(--soft);
+}
+
+.row strong {
+    text-align: right;
+}
+
+.detail {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.detail dl {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.7rem;
+    margin: 0;
+}
+
+.detail dl div {
+    padding: 0.9rem;
+    border-radius: 0.8rem;
+    background: var(--soft);
+}
+
+.detail dt {
+    color: var(--muted);
+    font-size: 0.8rem;
+}
+
+.detail dd {
+    margin: 0.25rem 0 0;
+    font-weight: 650;
+}
+
+.loading,
+.error {
+    max-width: 52rem;
+    margin: 8vh auto;
+    padding: 2rem;
+}
+
+.error {
+    display: grid;
+    justify-items: start;
+    gap: 1rem;
+}
+
+@media (width <= 900px) {
+    .header,
+    .active,
+    .read-only,
+    .panel-heading {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .metrics,
+    .price-grid,
+    .columns {
+        grid-template-columns: 1fr;
+    }
+
+    .create-form,
+    .price-form,
+    .detail {
+        grid-template-columns: 1fr;
+    }
+
+    .detail dl {
+        grid-column: 1;
+        grid-template-columns: 1fr;
+    }
+
+    .table-header {
+        display: none;
+    }
+
+    .row {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .price-table-header {
+        display: none;
+    }
+
+    .price-row {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .price-row span,
+    .price-row strong {
+        display: grid;
+        gap: 0.15rem;
+        text-align: left;
+    }
+
+    .price-row span::before,
+    .price-row strong::before {
+        content: attr(data-label);
+        color: var(--muted);
+        font-size: 0.72rem;
+        font-weight: 500;
+    }
+
+    .row span,
+    .row strong {
+        display: grid;
+        gap: 0.15rem;
+        text-align: left;
+    }
+
+    .row span::before,
+    .row strong::before {
+        content: attr(data-label);
+        color: var(--muted);
+        font-size: 0.72rem;
+        font-weight: 500;
+    }
+}
+
+@media (width <= 560px) {
+    .page {
+        gap: 1rem;
+    }
+
+    .period,
+    .filters {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .filters label:last-of-type,
+    .filters strong {
+        grid-column: 1 / -1;
+        margin: 0;
+    }
+
+    .metrics {
+        grid-template-columns: 1fr;
+    }
+
+    .form-row,
+    .price-row,
+    .row {
+        grid-template-columns: 1fr;
+    }
+}

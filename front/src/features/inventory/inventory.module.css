@@ -1,0 +1,276 @@
+.history-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+    align-items: start;
+}
+
+.history-compact {
+    grid-template-columns: 1fr;
+}
+
+.history-event {
+    text-align: left;
+    padding: 1rem;
+    background: var(--surface);
+    color: var(--ink);
+    border: 1px solid var(--line);
+    border-radius: 0.7rem;
+}
+
+.history-event[aria-pressed='true'] {
+    background: var(--soft);
+    border-color: var(--accent);
+}
+
+.mobile-back {
+    display: none;
+}
+
+.lockable,
+.form .lockable {
+    display: block;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.actions,
+.filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.main {
+    min-width: 0;
+    display: grid;
+    gap: 1.5rem;
+    align-content: start;
+}
+
+.heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.muted {
+    color: var(--muted);
+}
+
+.card {
+    padding: 1.25rem;
+    border: 1px solid var(--line);
+    border-radius: 1rem;
+    background: var(--surface);
+    display: grid;
+    gap: 1rem;
+    min-width: 0;
+}
+
+.columns {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    align-items: start;
+}
+
+.form {
+    display: grid;
+    gap: 1rem;
+}
+
+.form label,
+.filters label {
+    display: grid;
+    gap: 0.4rem;
+}
+
+.form fieldset {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    border: 1px solid var(--line);
+    border-radius: 0.5rem;
+}
+
+.form fieldset label {
+    display: flex;
+    align-items: center;
+}
+
+.form input[type='radio'],
+.form input[type='checkbox'] {
+    width: auto;
+}
+
+.form select,
+.card select,
+.filters select,
+.form textarea {
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    padding: 0.7rem;
+    border: 1px solid var(--line);
+    border-radius: 0.5rem;
+    background: var(--surface);
+    color: var(--ink);
+    font: inherit;
+}
+
+.filters > label:first-child {
+    flex: 1 1 220px;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--surface);
+}
+
+.table th,
+.table td {
+    text-align: left;
+    padding: 0.9rem;
+    border-bottom: 1px solid var(--line);
+}
+
+.table th {
+    color: var(--muted);
+    font-weight: normal;
+    background: var(--soft);
+}
+
+.mobile {
+    display: none;
+}
+
+.badge {
+    display: inline-block;
+    padding: 0.2rem 0.65rem;
+    border-radius: 1rem;
+    background: var(--soft);
+    font-size: 0.85rem;
+}
+
+.notice {
+    padding: 0.8rem 1rem;
+    background: var(--soft);
+    border-radius: 0.7rem;
+    border: 1px solid var(--line);
+}
+
+.danger {
+    color: var(--danger);
+}
+
+.details {
+    display: grid;
+    grid-template-columns: minmax(110px, 1fr) 1fr;
+    gap: 0.75rem;
+    margin: 0;
+}
+
+.details dt {
+    color: var(--muted);
+}
+
+.details dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.history {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.history summary {
+    cursor: pointer;
+    padding: 0.5rem;
+}
+
+.history details {
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 0.5rem;
+}
+
+.selection {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    padding: 0.8rem;
+    border: 1px solid var(--line);
+    border-radius: 0.6rem;
+}
+
+.selection input {
+    width: auto;
+}
+
+@media (width <= 760px) {
+    .main a {
+        min-width: 44px;
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .filters {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        align-items: start;
+    }
+
+    .filters > label:first-child {
+        grid-column: 1 / -1;
+    }
+
+    .history-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .history-detail {
+        display: none;
+    }
+
+    .history-selected {
+        display: grid;
+    }
+
+    .mobile-back {
+        display: inline-block;
+    }
+
+    .mobile-hidden {
+        display: none;
+    }
+
+    .columns {
+        grid-template-columns: 1fr;
+    }
+
+    .table {
+        display: none;
+    }
+
+    .mobile {
+        display: grid;
+        gap: 0.75rem;
+    }
+
+    .mobile article {
+        padding: 1rem;
+        border: 1px solid var(--line);
+        border-radius: 0.8rem;
+        background: var(--surface);
+        display: grid;
+        gap: 0.5rem;
+    }
+}

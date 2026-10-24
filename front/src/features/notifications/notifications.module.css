@@ -1,0 +1,191 @@
+.heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.heading p {
+    color: var(--muted);
+}
+
+.actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.tabs {
+    display: flex;
+    gap: 0.5rem;
+    overflow: auto;
+    padding-bottom: 0.4rem;
+}
+
+.tabs a {
+    white-space: nowrap;
+    padding: 0.55rem 0.8rem;
+    border: 1px solid var(--line);
+    border-radius: 2rem;
+    text-decoration: none;
+}
+
+.tabs a[aria-current='page'] {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+}
+
+.unread {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-height: 44px;
+    width: fit-content;
+}
+
+.unread input,
+.table input {
+    width: 1.125rem;
+    height: 1.125rem;
+    min-height: 1.125rem;
+    flex: 0 0 auto;
+    accent-color: var(--accent);
+}
+
+.list {
+    display: grid;
+    gap: 0.8rem;
+}
+
+.item,
+.panel,
+.notice {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.25rem;
+    border: 1px solid var(--line);
+    border-radius: 1rem;
+    background: var(--surface);
+}
+
+.item > * + * {
+    margin-top: 0;
+}
+
+.item.read {
+    opacity: 0.72;
+}
+
+.item h2 {
+    font-size: 1.25rem;
+}
+
+.item small {
+    color: var(--muted);
+}
+
+.priority {
+    display: inline-block;
+    margin-bottom: 0.5rem;
+    padding: 0.2rem 0.55rem;
+    border-radius: 1rem;
+    background: var(--soft);
+    font-size: 0.85rem;
+}
+
+.item-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 0.6rem;
+}
+
+.notice {
+    display: block;
+    background: var(--soft);
+}
+
+.form {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.table {
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 1rem;
+    background: var(--surface);
+}
+
+.table-head,
+.table-row {
+    display: grid;
+    grid-template-columns: minmax(12rem, 1fr) 7rem 7rem;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.85rem 1rem;
+}
+
+.table-head {
+    background: var(--soft);
+}
+
+.table-row + .table-row {
+    border-top: 1px solid var(--line);
+}
+
+.table-head strong:not(:first-child),
+.check-cell {
+    justify-self: center;
+}
+
+.check-cell {
+    display: grid;
+    width: 44px;
+    min-height: 44px;
+    place-items: center;
+    margin: 0;
+}
+
+.check-cell input {
+    margin: 0;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+@media (width<=700px) {
+    .heading,
+    .item {
+        flex-direction: column;
+    }
+
+    .actions {
+        flex-wrap: wrap;
+    }
+
+    .item-actions {
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-start;
+    }
+
+    .table {
+        overflow-x: auto;
+    }
+
+    .table-head,
+    .table-row {
+        min-width: 32rem;
+    }
+
+    .grid {
+        grid-template-columns: 1fr;
+    }
+}

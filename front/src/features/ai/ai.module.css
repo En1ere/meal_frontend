@@ -1,0 +1,166 @@
+.heading,
+.actions,
+.card header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.actions {
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.heading p,
+.card small,
+.result small {
+    color: var(--muted);
+}
+
+.notice,
+.preview,
+.result,
+.card,
+.balance,
+.form {
+    padding: 1.25rem;
+    border: 1px solid var(--line);
+    border-radius: 1rem;
+    background: var(--surface);
+}
+
+.notice {
+    background: var(--soft);
+}
+
+.form,
+.list,
+.grid,
+.conversation,
+.reply {
+    display: grid;
+    gap: 1rem;
+}
+
+.form label {
+    display: grid;
+    gap: 0.45rem;
+}
+
+.form textarea {
+    resize: vertical;
+}
+
+.form :where(select, textarea) {
+    width: 100%;
+    min-width: 0;
+}
+
+.check {
+    display: flex !important;
+    min-height: 44px;
+    align-items: flex-start;
+}
+
+.check input {
+    width: auto;
+    min-height: 0;
+    margin-top: 0.25rem;
+}
+
+.preview dl {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.preview dl div {
+    padding: 0.8rem;
+    border-radius: 0.75rem;
+    background: var(--soft);
+}
+
+.preview dt {
+    color: var(--muted);
+}
+
+.preview dd {
+    margin: 0.25rem 0 0;
+    font-weight: 700;
+}
+
+.result p,
+.card p,
+.conversation p {
+    white-space: pre-wrap;
+}
+
+.conversation {
+    margin-block: 1rem;
+}
+
+.assistant-message,
+.user-message {
+    max-width: min(46rem, 90%);
+    padding: 1rem;
+    border: 1px solid var(--line);
+    border-radius: 1rem;
+}
+
+.assistant-message {
+    background: var(--surface);
+}
+
+.user-message {
+    justify-self: end;
+    background: var(--soft);
+}
+
+.assistant-message small,
+.user-message small {
+    color: var(--muted);
+}
+
+.reply label {
+    display: grid;
+    gap: 0.45rem;
+}
+
+.reply textarea {
+    resize: vertical;
+}
+
+.balance {
+    display: grid;
+    width: max-content;
+    min-width: 13rem;
+}
+
+.balance strong {
+    font-size: 3rem;
+    line-height: 1;
+}
+
+.balance span {
+    font-size: 1.1rem;
+}
+
+.grid {
+    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+}
+
+@media (width<=700px) {
+    .heading,
+    .card header {
+        flex-direction: column;
+    }
+
+    .preview dl {
+        grid-template-columns: 1fr;
+    }
+
+    .balance {
+        width: 100%;
+    }
+}

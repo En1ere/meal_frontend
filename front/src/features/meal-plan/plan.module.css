@@ -1,0 +1,329 @@
+.main {
+    min-width: 0;
+    display: grid;
+    align-content: start;
+    gap: 1.2rem;
+}
+
+.heading,
+.toolbar,
+.navigator,
+.range-options,
+.tabs,
+.row-actions,
+.day-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+}
+
+.heading h1,
+.heading h2,
+.panel h2 {
+    margin: 0;
+    font-family: Georgia, serif;
+}
+
+.toolbar {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 1rem;
+    padding: 0.8rem;
+}
+
+.tabs,
+.navigator,
+.range-options,
+.row-actions {
+    justify-content: flex-start;
+}
+
+.main button,
+.tabs a,
+.navigator a,
+.range-options a,
+.link-button {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    font: inherit;
+    padding: 0.65rem 1rem;
+    background: var(--soft);
+    color: var(--ink);
+    border: 1px solid var(--line);
+    border-radius: 0.6rem;
+    cursor: pointer;
+    text-decoration: none;
+    transition:
+        background 0.2s,
+        border-color 0.2s,
+        color 0.2s,
+        opacity 0.2s,
+        transform 0.2s;
+}
+
+.main button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.tabs a[aria-current='page'] {
+    background: var(--accent);
+    color: var(--surface);
+}
+
+.days {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1rem;
+    align-items: start;
+}
+
+.day,
+.panel {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 1rem;
+    padding: 1rem;
+    display: grid;
+    gap: 1rem;
+    min-width: 0;
+}
+
+.day-heading > div {
+    display: grid;
+    gap: 0.35rem;
+}
+
+.calendar {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.calendar .day {
+    padding: 0.75rem;
+}
+
+.calendar .day-heading {
+    align-items: flex-start;
+}
+
+.calendar .day-heading button {
+    min-height: 44px;
+    padding: 0.4rem 0.55rem;
+}
+
+.entry {
+    display: grid;
+    gap: 0.7rem;
+    border-top: 1px solid var(--line);
+    padding-top: 0.9rem;
+}
+
+.entry > div:first-child {
+    display: grid;
+    gap: 0.25rem;
+}
+
+.entry small,
+.muted {
+    color: var(--muted);
+}
+
+.badge {
+    display: inline-block;
+    width: max-content;
+    margin-left: 0.4rem;
+    padding: 0.15rem 0.45rem;
+    border-radius: 999px;
+    background: var(--soft);
+    color: var(--accent);
+    font-size: 0.8rem;
+}
+
+.fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.fields label,
+.panel > label {
+    display: grid;
+    gap: 0.4rem;
+}
+
+.wide {
+    grid-column: 1 / -1;
+}
+
+.assignments {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.optimization-fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.8rem;
+    margin-top: 0.8rem;
+}
+
+.candidate-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+    gap: 0.55rem;
+    margin-top: 0.5rem;
+}
+
+.candidate-list label {
+    min-height: 44px;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.45rem;
+    padding-block: 0.55rem;
+}
+
+.candidate-list input {
+    width: 1rem !important;
+    min-width: 1rem !important;
+    height: 1rem;
+    min-height: 1rem !important;
+    flex: 0 0 1rem;
+    padding: 0;
+    margin-top: 0.2rem;
+    accent-color: var(--accent);
+}
+
+.weekdays {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.weekdays label {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding-block: 0.55rem;
+}
+
+.weekdays input {
+    width: 1rem !important;
+    min-width: 1rem !important;
+    height: 1rem;
+    min-height: 1rem !important;
+    flex: 0 0 1rem;
+    padding: 0;
+    accent-color: var(--accent);
+}
+
+.automation-preview {
+    display: grid;
+    gap: 0.75rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--line);
+}
+
+.checkbox {
+    min-height: 44px;
+    display: flex !important;
+    align-items: center;
+    align-self: end;
+    padding-block: 0.55rem;
+}
+
+.checkbox input {
+    width: 1rem !important;
+    min-width: 1rem !important;
+    height: 1rem;
+    min-height: 1rem !important;
+    flex: 0 0 1rem;
+    padding: 0;
+    accent-color: var(--accent);
+}
+
+.main input,
+.main select,
+.main textarea {
+    width: 100%;
+    min-width: 0;
+    padding: 0.7rem;
+    border: 1px solid var(--line);
+    border-radius: 0.6rem;
+    background: var(--surface);
+    color: var(--ink);
+    font: inherit;
+    transition:
+        border-color 0.2s,
+        background 0.2s;
+}
+
+.main textarea {
+    min-height: 5rem;
+    resize: vertical;
+}
+
+.impact {
+    margin: 0;
+    padding-left: 1.3rem;
+    display: grid;
+    gap: 0.6rem;
+}
+
+.error {
+    padding: 0.8rem;
+    border-left: 4px solid #b43232;
+    background: var(--surface);
+}
+
+@media (hover: hover) {
+    .main button:hover:not(:disabled),
+    .tabs a:hover,
+    .navigator a:hover,
+    .range-options a:hover,
+    .link-button:hover {
+        border-color: var(--accent);
+        background: var(--soft);
+        transform: translateY(-1px);
+    }
+
+    .main input:hover,
+    .main select:hover,
+    .main textarea:hover {
+        border-color: var(--accent);
+    }
+}
+
+@media (width <= 760px) {
+    .calendar {
+        grid-template-columns: 1fr;
+    }
+
+    .fields {
+        grid-template-columns: 1fr;
+    }
+
+    .optimization-fields {
+        grid-template-columns: 1fr;
+    }
+
+    .wide {
+        grid-column: auto;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .main button,
+    .tabs a,
+    .navigator a,
+    .range-options a,
+    .link-button {
+        transition: none;
+    }
+}

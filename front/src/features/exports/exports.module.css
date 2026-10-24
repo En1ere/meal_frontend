@@ -1,0 +1,348 @@
+.page {
+    display: grid;
+    gap: 1.25rem;
+    max-width: 84rem;
+    margin: 0 auto;
+}
+
+.heading h1,
+.heading p,
+.composer h2,
+.composer h3,
+.composer p,
+.history h2,
+.job h3,
+.job p,
+.note span,
+.note strong {
+    margin: 0;
+}
+
+.heading > div,
+.composer,
+.history,
+.preview,
+.job,
+.note,
+.state {
+    display: grid;
+    gap: 0.85rem;
+}
+
+.eyebrow {
+    color: var(--accent);
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.heading > div > p:last-child,
+.muted,
+.fixed span,
+.note span {
+    color: var(--muted);
+}
+
+.layout {
+    display: grid;
+    grid-template-columns: minmax(18rem, 0.8fr) minmax(0, 1.35fr);
+    gap: 1rem;
+    align-items: start;
+}
+
+.composer,
+.history,
+.note {
+    padding: 1.2rem;
+    border: 1px solid var(--line);
+    border-radius: 1rem;
+    background: var(--surface);
+}
+
+.composer form {
+    display: grid;
+    gap: 1rem;
+}
+
+.composer fieldset {
+    display: grid;
+    gap: 0.55rem;
+    padding: 0;
+    border: 0;
+}
+
+.composer legend {
+    margin-bottom: 0.45rem;
+    font-weight: 700;
+}
+
+.composer label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.composer input[type='radio'] {
+    accent-color: var(--accent);
+}
+
+.choices {
+    display: grid;
+    gap: 0.55rem;
+}
+
+.choice {
+    padding: 0.75rem;
+    border: 1px solid var(--line);
+    border-radius: 0.75rem;
+    background: var(--background);
+    cursor: pointer;
+    transition:
+        border-color var(--interaction-duration),
+        background-color var(--interaction-duration);
+}
+
+.choice:has(input:checked) {
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 7%, var(--background));
+}
+
+.choice > span,
+.choice > span > strong {
+    display: flex;
+    gap: 0.35rem;
+}
+
+.choice > span {
+    min-width: 0;
+    flex-direction: column;
+}
+
+.preview li span,
+.preview .section-heading span {
+    color: var(--muted);
+}
+
+.choice small {
+    color: var(--muted);
+}
+
+.choice .pro {
+    align-self: center;
+    padding: 0.1rem 0.35rem;
+    border-radius: 999px;
+    background: var(--soft);
+    color: var(--accent);
+    font-size: 0.66rem;
+    text-transform: uppercase;
+}
+
+.formats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.formats legend {
+    grid-column: 1 / -1;
+}
+
+.formats label {
+    justify-content: center;
+    padding: 0.65rem;
+    border: 1px solid var(--line);
+    border-radius: 0.65rem;
+    background: var(--background);
+    cursor: pointer;
+    transition:
+        border-color var(--interaction-duration),
+        background-color var(--interaction-duration),
+        color var(--interaction-duration);
+}
+
+.period label {
+    display: grid;
+    gap: 0.35rem;
+}
+
+.formats label:has(input:checked) {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: var(--accent-contrast, white);
+}
+
+.formats label:has(input:disabled) {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+@media (hover: hover) {
+    .choice:hover,
+    .formats label:not(:has(input:disabled)):hover {
+        border-color: var(--accent);
+    }
+}
+
+.fixed {
+    display: grid;
+    gap: 0.25rem;
+    padding: 0.8rem;
+    border: 1px solid var(--line);
+    border-radius: 0.75rem;
+}
+
+.period {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.period legend {
+    grid-column: 1 / -1;
+}
+
+.period input {
+    min-width: 0;
+    padding: 0.65rem;
+    border: 1px solid var(--line);
+    border-radius: 0.65rem;
+    background: var(--background);
+    color: inherit;
+    font: inherit;
+}
+
+.preview {
+    padding-top: 1rem;
+    border-top: 1px solid var(--line);
+}
+
+.preview ul {
+    display: grid;
+    gap: 0.5rem;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+.preview li {
+    display: grid;
+    gap: 0.2rem;
+    padding: 0.7rem;
+    border: 1px solid var(--line);
+    border-radius: 0.7rem;
+}
+
+.section-heading,
+.job-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.blocker {
+    display: grid;
+    gap: 0.3rem;
+    padding: 0.75rem;
+    border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--line));
+    border-radius: 0.7rem;
+    background: color-mix(in srgb, var(--accent) 8%, var(--surface));
+}
+
+.jobs {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.job {
+    padding: 1rem;
+    border: 1px solid var(--line);
+    border-radius: 0.8rem;
+    background: var(--background);
+}
+
+.job-heading > div {
+    display: grid;
+    gap: 0.25rem;
+}
+
+.job dl {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin: 0;
+}
+
+.job dl > div {
+    display: grid;
+    gap: 0.2rem;
+}
+
+.job dt {
+    color: var(--muted);
+    font-size: 0.82rem;
+}
+
+.job dd {
+    margin: 0;
+}
+
+.status {
+    flex: 0 0 auto;
+    padding: 0.3rem 0.55rem;
+    border-radius: 999px;
+    background: var(--soft);
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.ready {
+    color: #176b3a;
+}
+
+.failed,
+.expired {
+    color: var(--accent);
+}
+
+.note {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (width <= 900px) {
+    .layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (width <= 620px) {
+    .composer,
+    .history,
+    .note {
+        padding: 1rem;
+    }
+
+    .period,
+    .job dl,
+    .note {
+        grid-template-columns: 1fr;
+    }
+
+    .section-heading,
+    .job-heading {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .status {
+        width: fit-content;
+    }
+
+    .formats {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .choice,
+    .formats label {
+        transition: none;
+    }
+}

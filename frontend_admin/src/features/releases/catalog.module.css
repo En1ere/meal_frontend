@@ -1,0 +1,381 @@
+.heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.heading > div {
+    display: grid;
+    gap: 0.6rem;
+}
+
+.heading p {
+    color: var(--link);
+}
+
+.heading span {
+    color: var(--muted);
+}
+
+.heading > strong {
+    padding: 0.5rem 0.8rem;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+}
+
+.layout {
+    display: grid;
+    grid-template-columns: 330px minmax(0, 1fr);
+    gap: 1.5rem;
+    align-items: start;
+}
+
+.list-panel,
+.editor,
+.rank-editor,
+.rank-preview {
+    padding: 1rem;
+    border: 1px solid var(--line);
+    border-radius: 1rem;
+    background: var(--surface);
+}
+
+.list-panel {
+    display: grid;
+    gap: 0.7rem;
+    position: sticky;
+    top: 1rem;
+}
+
+.list-panel select,
+.editor select,
+.rank-preview select {
+    min-height: 3rem;
+    border: 1px solid var(--line);
+    border-radius: 0.5rem;
+    background: var(--background);
+    color: var(--ink);
+    padding: 0.7rem;
+}
+
+.achievement-list {
+    display: grid;
+    gap: 0.3rem;
+    max-height: 65vh;
+    overflow: auto;
+}
+
+.achievement-list button {
+    min-height: 44px;
+    display: flex;
+    gap: 0.7rem;
+    align-items: center;
+    padding: 0.65rem;
+    border: 1px solid transparent;
+    border-radius: 0.6rem;
+    background: transparent;
+    color: var(--ink);
+    text-align: left;
+}
+
+.achievement-list button:hover,
+.achievement-list button[aria-current='true'] {
+    border-color: var(--line);
+    background: var(--soft);
+}
+
+.achievement-list button span:last-child {
+    display: grid;
+}
+
+.achievement-list small {
+    color: var(--muted);
+}
+
+.mini-icon,
+.big-icon {
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    border: 1px solid var(--line);
+    border-radius: 0.6rem;
+    overflow: hidden;
+}
+
+.mini-icon {
+    width: 2.7rem;
+    height: 2.7rem;
+    font-size: 1.5rem;
+}
+
+.big-icon {
+    width: 5rem;
+    height: 5rem;
+    font-size: 2.8rem;
+}
+
+.mini-icon img,
+.big-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.editor {
+    display: grid;
+    gap: 1.25rem;
+    min-width: 0;
+}
+
+.preview {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    padding: 1rem;
+    border-radius: 0.8rem;
+    background: var(--background);
+}
+
+.preview > div {
+    display: grid;
+    gap: 0.35rem;
+}
+
+.preview p,
+.preview small,
+.actions p,
+.rank-preview p {
+    color: var(--muted);
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.form-grid label {
+    display: grid;
+    gap: 0.4rem;
+    min-width: 0;
+}
+
+.form-grid input,
+.form-grid select,
+.form-grid textarea,
+.actions select {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.form-grid textarea {
+    min-height: 6rem;
+    resize: vertical;
+    border: 1px solid var(--line);
+    border-radius: 0.5rem;
+    background: var(--background);
+    color: var(--ink);
+    padding: 0.8rem;
+    font: inherit;
+}
+
+.full {
+    grid-column: 1/-1;
+}
+
+.condition-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1.6fr) minmax(9rem, 0.7fr) minmax(7rem, 0.5fr);
+    gap: 0.8rem;
+}
+
+.condition-row label {
+    display: grid;
+    gap: 0.4rem;
+}
+
+.condition-heading {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 0.6rem;
+}
+
+.condition-heading label {
+    display: flex;
+    grid-auto-flow: column;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--muted);
+}
+
+.condition-all,
+.condition-blocker {
+    display: grid;
+    gap: 0.8rem;
+    margin-top: 0.4rem;
+    padding: 1rem;
+    border: 1px solid var(--line);
+    border-radius: 0.7rem;
+    background: var(--background);
+}
+
+.condition-all p,
+.condition-blocker p {
+    color: var(--muted);
+}
+
+.condition-blocker {
+    border-color: #9a5b55;
+}
+
+.condition-blocker pre {
+    max-height: 14rem;
+    overflow: auto;
+    padding: 0.8rem;
+    border-radius: 0.5rem;
+    background: var(--surface);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.file {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+}
+
+.actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.actions > div {
+    display: grid;
+    gap: 0.7rem;
+    min-width: 0;
+    padding: 1rem;
+    border: 1px solid var(--line);
+    border-radius: 0.7rem;
+}
+
+.message {
+    padding: 0.7rem;
+    border-left: 3px solid var(--accent);
+    background: var(--soft);
+}
+
+.rank-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 1.5rem;
+    align-items: start;
+}
+
+.rank-editor {
+    display: grid;
+    gap: 0.7rem;
+}
+
+.rank-row {
+    display: grid;
+    grid-template-columns: 2rem minmax(100px, 0.45fr) 1fr;
+    gap: 0.8rem;
+    align-items: end;
+    padding-bottom: 0.7rem;
+    border-bottom: 1px solid #34564c;
+}
+
+.rank-row > b {
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+}
+
+.rank-row label {
+    margin: 0;
+}
+
+.rank-preview {
+    display: grid;
+    gap: 1rem;
+    position: sticky;
+    top: 1rem;
+}
+
+.score {
+    display: grid;
+    gap: 0.2rem;
+    padding: 1.5rem;
+    border: 1px solid var(--line);
+    border-radius: 0.8rem;
+    text-align: center;
+    background: var(--background);
+}
+
+.score strong {
+    font:
+        700 4rem Georgia,
+        serif;
+    color: var(--accent);
+}
+
+.score-title {
+    font:
+        700 1.4rem Georgia,
+        serif;
+}
+
+@media (width <= 900px) {
+    .layout,
+    .rank-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .list-panel,
+    .rank-preview {
+        position: static;
+    }
+
+    .achievement-list {
+        max-height: 24rem;
+    }
+}
+
+@media (width <= 600px) {
+    .heading,
+    .preview,
+    .condition-heading {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .form-grid,
+    .actions,
+    .condition-row {
+        grid-template-columns: 1fr;
+    }
+
+    .full {
+        grid-column: auto;
+    }
+
+    .rank-row {
+        grid-template-columns: 2rem 1fr;
+    }
+
+    .rank-row label:last-child {
+        grid-column: 2;
+    }
+}

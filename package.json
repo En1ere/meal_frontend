@@ -1,0 +1,32 @@
+{
+    "name": "meal-frontend",
+    "version": "0.0.1",
+    "private": true,
+    "type": "module",
+    "workspaces": [
+        "front",
+        "frontend_admin",
+        "design-system"
+    ],
+    "engines": {
+        "node": ">=24.19.0 <25",
+        "npm": ">=11 <12"
+    },
+    "packageManager": "npm@11.12.1",
+    "scripts": {
+        "dev": "node scripts/dev.mjs",
+        "dev:client": "npm --prefix front run dev",
+        "dev:admin": "npm --prefix frontend_admin run dev",
+        "check": "npm --workspace design-system run check && npm --workspace front run check && npm --workspace frontend_admin run check",
+        "build": "npm --prefix front run build && npm --prefix frontend_admin run build",
+        "test": "npm --prefix design-system test && npm --prefix front test && npm --prefix frontend_admin test",
+        "test:e2e:front": "playwright test --config playwright.front.config.ts",
+        "test:e2e:admin": "playwright test --config playwright.admin.config.ts",
+        "test:integration": "node scripts/check-integration.mjs"
+    },
+    "devDependencies": {
+        "@playwright/test": "1.63.0",
+        "react": "19.3.0",
+        "react-dom": "19.3.0"
+    }
+}

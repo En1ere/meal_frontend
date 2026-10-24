@@ -1,0 +1,14 @@
+{
+    "version": 1,
+    "status": "blocked",
+    "blockers": ["production_origins", "cdn_provider", "route_review"],
+    "classes": {
+        "security_sensitive": "no-store",
+        "private": "private, no-store",
+        "public_dynamic": "no-store",
+        "static_fingerprinted": "public, max-age=31536000, immutable",
+        "service_worker": "no-cache, no-store, must-revalidate"
+    },
+    "publicRouteAllowlist": [],
+    "purgeProvider": null
+}

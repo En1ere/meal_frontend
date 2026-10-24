@@ -1,0 +1,352 @@
+.breadcrumbs,
+.breadcrumbs a,
+.steps,
+.checklist,
+.consequences,
+.dialog-actions,
+.request-state {
+    display: flex;
+}
+
+.breadcrumbs {
+    align-items: center;
+    gap: 0.65rem;
+    color: var(--muted);
+}
+
+.breadcrumbs a {
+    align-items: center;
+    min-height: 44px;
+}
+
+.header h1 {
+    margin: 0;
+    font-size: clamp(2.3rem, 5vw, 4rem);
+}
+
+.header p,
+.intro {
+    color: var(--muted);
+}
+
+.steps {
+    padding: 0;
+    list-style: none;
+    align-items: center;
+    gap: 1rem;
+}
+
+.steps li {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex: 1;
+}
+
+.steps li:not(:last-child)::after {
+    content: '';
+    height: 1px;
+    background: var(--line);
+    flex: 1;
+}
+
+.steps strong {
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border: 1px solid var(--accent);
+    border-radius: 50%;
+}
+
+.steps .active strong {
+    color: #fff;
+    background: var(--accent);
+}
+
+.columns {
+    display: grid;
+    grid-template-columns: minmax(0, 1.55fr) minmax(19rem, 1fr);
+    gap: 1rem;
+}
+
+.panel,
+.request-state {
+    padding: 1.5rem;
+    border: 1px solid var(--line);
+    border-radius: 1rem;
+    background: var(--surface);
+}
+
+.panel > h2 {
+    margin-top: 0;
+    font-size: 2rem;
+}
+
+.checklist,
+.consequences {
+    padding: 0;
+    list-style: none;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.checklist li {
+    display: grid;
+    grid-template-columns: 4rem minmax(0, 1fr) minmax(9rem, auto);
+    gap: 1rem;
+    align-items: center;
+    padding: 1rem;
+    border: 1px solid var(--line);
+    border-radius: 0.75rem;
+}
+
+.checklist img,
+.consequences img {
+    width: 3.5rem;
+    height: 3.5rem;
+    object-fit: contain;
+    border-radius: 50%;
+    background: var(--soft);
+}
+
+.checklist h3,
+.checklist p,
+.consequences h3,
+.consequences p {
+    margin: 0;
+}
+
+.checklist p,
+.consequences p,
+.hint {
+    color: var(--muted);
+}
+
+.checklist li > div:last-child {
+    display: grid;
+    justify-items: stretch;
+    gap: 0.55rem;
+}
+
+.status {
+    display: inline-flex;
+    justify-content: center;
+    padding: 0.3rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.875rem;
+}
+
+.ready {
+    color: #23663b;
+    background: #e4f6e9;
+}
+
+.warning {
+    color: #8a4b00;
+    background: #fff0d7;
+}
+
+.muted {
+    color: var(--muted);
+    background: var(--soft);
+}
+
+.destructive,
+.archive {
+    width: 100%;
+    min-height: 3rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.55rem;
+    font: inherit;
+    cursor: pointer;
+}
+
+.destructive {
+    border: 0;
+    color: #fff;
+    background: #b63827;
+}
+
+.destructive:disabled {
+    cursor: not-allowed;
+    color: var(--muted);
+    background: #ddd;
+}
+
+.archive {
+    border: 1px solid #b63827;
+    color: #9e2d20;
+    background: var(--surface);
+}
+
+.hint {
+    text-align: center;
+}
+
+.divider {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 1.25rem 0;
+    color: var(--muted);
+}
+
+.divider::before,
+.divider::after {
+    content: '';
+    height: 1px;
+    flex: 1;
+    background: var(--line);
+}
+
+.consequences li {
+    display: grid;
+    grid-template-columns: 3.5rem 1fr;
+    gap: 1rem;
+    align-items: start;
+    padding: 0.75rem;
+}
+
+.policy,
+.error {
+    padding: 1rem;
+    border: 1px solid var(--line);
+    border-radius: 0.75rem;
+    background: var(--soft);
+}
+
+.error {
+    margin: 1rem 0;
+    border-color: #b63827;
+}
+
+.loading {
+    padding: 3rem;
+}
+
+.request-state {
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.request-state h2,
+.request-state p {
+    margin: 0.25rem 0;
+}
+
+.dialog {
+    width: min(34rem, calc(100% - 2rem));
+    max-height: calc(100dvh - 2rem);
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: 1rem;
+    color: var(--ink);
+    background: var(--surface);
+}
+
+.dialog::backdrop {
+    background: rgb(20 12 8/55%);
+}
+
+.dialog form {
+    margin: 0;
+}
+
+.dialog-body {
+    padding: 1.5rem;
+    overflow: auto;
+}
+
+.dialog-body label {
+    display: grid;
+    gap: 0.4rem;
+    margin-top: 1rem;
+}
+
+.dialog-body input,
+.dialog-body select {
+    min-height: 44px;
+    padding: 0.65rem;
+    border: 1px solid var(--line);
+    border-radius: 0.5rem;
+    background: var(--surface);
+    color: var(--ink);
+}
+
+.dialog-actions {
+    position: sticky;
+    bottom: 0;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--line);
+    background: var(--surface);
+}
+
+.eyebrow {
+    color: var(--accent);
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+}
+
+@media (hover: hover) {
+    .archive:hover {
+        background: var(--soft);
+    }
+}
+
+@media (width<=960px) {
+    .columns {
+        grid-template-columns: 1fr;
+    }
+
+    .steps {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .steps li::after {
+        display: none;
+    }
+
+    .checklist li {
+        grid-template-columns: 3.5rem 1fr;
+    }
+
+    .checklist li > div:last-child {
+        grid-column: 2;
+    }
+
+    .request-state {
+        align-items: stretch;
+        flex-direction: column;
+    }
+}
+
+@media (width<=620px) {
+    .checklist li {
+        grid-template-columns: 1fr;
+    }
+
+    .checklist li > div:last-child {
+        grid-column: auto;
+    }
+
+    .dialog-actions {
+        flex-direction: column-reverse;
+    }
+
+    .dialog-actions > * {
+        width: 100%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .destructive,
+    .archive {
+        transition: none;
+    }
+}

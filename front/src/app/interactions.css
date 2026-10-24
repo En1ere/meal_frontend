@@ -1,0 +1,66 @@
+/* Shared interaction states; keep this file local when splitting repositories. */
+:root {
+    --interaction-duration: 0.2s;
+}
+
+:where(
+    a[href],
+    button,
+    input,
+    select,
+    textarea,
+    summary,
+    [role='button'],
+    [role='tab'],
+    [role='switch'],
+    [tabindex='0']
+) {
+    transition:
+        color var(--interaction-duration) ease,
+        background-color var(--interaction-duration) ease,
+        border-color var(--interaction-duration) ease,
+        box-shadow var(--interaction-duration) ease,
+        opacity var(--interaction-duration) ease,
+        filter var(--interaction-duration) ease;
+}
+
+:where(button, summary, [role='button'], [role='tab'], [role='switch'], input[type='checkbox'], input[type='radio']) {
+    cursor: pointer;
+}
+
+@media (hover: hover) {
+    :where(a[href], button, summary, [role='button'], [role='tab'], [role='switch']):not(
+            :disabled,
+            [aria-disabled='true']
+        ):hover {
+        filter: brightness(1.15);
+        box-shadow: 0 0 0 1px var(--accent);
+    }
+
+    :where(input, select, textarea):not(:disabled, [aria-disabled='true']):hover {
+        border-color: var(--accent);
+    }
+}
+
+:where(a[href], button, summary, [role='button'], [role='tab'], [role='switch']):not(
+        :disabled,
+        [aria-disabled='true']
+    ):active {
+    filter: brightness(0.9);
+    box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+:where(input, select, textarea):focus-visible {
+    border-color: var(--accent);
+}
+
+:where([aria-disabled='true']) {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    :root {
+        --interaction-duration: 0s;
+    }
+}

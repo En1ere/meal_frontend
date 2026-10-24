@@ -1,0 +1,63 @@
+:root {
+    --background: var(--mp-color-page);
+    --surface: var(--mp-color-surface);
+    --ink: var(--mp-color-text);
+    --muted: var(--mp-color-text-muted);
+    --accent: var(--mp-color-primary);
+    --accent-hover: var(--mp-color-primary-hover);
+    --line: var(--mp-color-border);
+    --soft: var(--mp-color-soft);
+    --danger: var(--mp-color-danger-text);
+    --danger-surface: var(--mp-color-danger-surface);
+    --link: var(--mp-color-link);
+    --on-accent: var(--mp-color-on-primary);
+    --sidebar: var(--mp-color-page);
+    --canvas: var(--mp-color-page);
+    --text: var(--mp-color-text);
+    --text-secondary: var(--mp-color-text-muted);
+    --border: var(--mp-color-border);
+    --warning: var(--mp-color-warning-text);
+}
+
+* {
+    scrollbar-color: var(--mp-color-scrollbar-thumb) var(--mp-color-scrollbar-track);
+    scrollbar-width: thin;
+}
+
+*::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+    background: var(--mp-color-scrollbar-track);
+}
+
+*::-webkit-scrollbar-thumb {
+    min-height: 36px;
+    border: 2px solid var(--mp-color-scrollbar-track);
+    border-radius: 999px;
+    background: var(--mp-color-scrollbar-thumb);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+    background: var(--mp-color-scrollbar-thumb-hover);
+}
+
+*::-webkit-scrollbar-button,
+*::-webkit-scrollbar-button:single-button {
+    display: none;
+    width: 0;
+    height: 0;
+}
+
+body {
+    background: var(--mp-color-page);
+    color: var(--mp-color-text);
+    font-family: var(--mp-font-sans);
+}
+
+:focus-visible {
+    outline: 3px solid var(--mp-color-focus);
+    outline-offset: 3px;
+}

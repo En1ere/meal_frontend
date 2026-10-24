@@ -1,0 +1,11 @@
+{
+    "version": 1,
+    "status": "blocked",
+    "strategy": "blue_green",
+    "blockers": ["deployment_platform", "artifact_registry", "ingress_provider", "production_origins"],
+    "slots": ["blue", "green"],
+    "readinessPaths": ["/health/live", "/health/ready"],
+    "trafficSwitchProvider": null,
+    "rollback": "manual_verified",
+    "databaseCompatibilityGate": "expand_contract_review_required"
+}

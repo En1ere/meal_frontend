@@ -1,0 +1,365 @@
+/* stylelint-disable no-descending-specificity -- component groups intentionally repeat child selectors. */
+.page {
+    display: grid;
+    gap: 1.25rem;
+}
+
+.heading {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.heading p,
+.label,
+.summary small,
+.plan li,
+.links span,
+.bucket-list small,
+.preview-expiry {
+    color: var(--muted);
+}
+
+.breadcrumbs {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.9rem;
+}
+
+.breadcrumbs a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+}
+
+.simulation,
+.badge,
+.eyebrow {
+    display: inline-flex;
+    width: max-content;
+    padding: 0.35rem 0.7rem;
+    border-radius: 999px;
+    background: var(--soft);
+    color: var(--accent);
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.summary {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    border: 1px solid var(--line);
+    border-radius: 1rem;
+    background: var(--surface);
+}
+
+.summary > div {
+    display: grid;
+    gap: 0.25rem;
+    padding: 1.25rem;
+}
+
+.summary > div + div {
+    border-inline-start: 1px solid var(--line);
+}
+
+.summary strong {
+    font:
+        700 1.55rem Georgia,
+        serif;
+}
+
+.trial,
+.notice,
+.quota {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: 1.25rem;
+    border: 1px solid var(--line);
+    border-radius: 1rem;
+    background: var(--surface);
+}
+
+.trial {
+    border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
+    background: color-mix(in srgb, var(--soft) 65%, var(--surface));
+}
+
+.trial > div,
+.notice > div,
+.quota > div:first-child,
+.ineligible {
+    display: grid;
+    gap: 0.45rem;
+}
+
+.ineligible {
+    max-width: 27rem;
+}
+
+.period {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(8rem, 1fr));
+    width: min(32rem, 100%);
+    margin-inline: auto;
+    padding: 0.25rem;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--surface);
+}
+
+.period legend {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+.period label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 48px;
+    margin: 0;
+    border-radius: 999px;
+    cursor: pointer;
+}
+
+.period label:has(input:checked) {
+    background: var(--soft);
+    color: var(--accent);
+}
+
+.period input {
+    width: 1rem;
+    min-height: 1rem;
+    accent-color: var(--accent);
+}
+
+.plans {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.plan {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-height: 24rem;
+    padding: 1.5rem;
+    border: 1px solid var(--line);
+    border-radius: 1rem;
+    background: var(--surface);
+}
+
+.plus,
+.current {
+    border-color: var(--accent);
+}
+
+.plan-title {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.plan-title > div {
+    display: grid;
+    gap: 0.35rem;
+}
+
+.plan-title strong {
+    font-size: 1.2rem;
+}
+
+.plan ul {
+    display: grid;
+    gap: 0.8rem;
+    margin: 0;
+    padding-inline-start: 1.35rem;
+}
+
+.plan .button,
+.plan > button {
+    width: 100%;
+    margin-top: auto;
+}
+
+.scheduled {
+    margin-top: auto;
+    padding: 0.75rem;
+    border-radius: 0.7rem;
+    background: var(--soft);
+}
+
+.notice strong {
+    color: var(--accent);
+}
+
+.quota {
+    align-items: flex-start;
+}
+
+.bucket-list {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(8rem, 1fr));
+    gap: 0.75rem;
+    flex: 1;
+}
+
+.bucket-list > div {
+    display: grid;
+    gap: 0.15rem;
+    padding: 0.75rem;
+    border: 1px solid var(--line);
+    border-radius: 0.75rem;
+}
+
+.bucket-list strong {
+    font-size: 1.4rem;
+}
+
+.links {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.links > * {
+    display: grid;
+    gap: 0.2rem;
+    min-height: 74px;
+    padding: 1rem;
+    border: 1px solid var(--line);
+    border-radius: 0.85rem;
+    background: var(--surface);
+    text-decoration: none;
+}
+
+.action-error,
+.success,
+.error,
+.loading {
+    padding: 1.25rem;
+    border-radius: 1rem;
+    background: var(--surface);
+}
+
+.action-error,
+.error {
+    border-inline-start: 4px solid var(--danger);
+}
+
+.success {
+    border-inline-start: 4px solid var(--accent);
+}
+
+.error,
+.loading {
+    display: grid;
+    gap: 1rem;
+}
+
+.dialog {
+    width: min(36rem, calc(100% - 2rem));
+    max-height: calc(100dvh - 2rem);
+    overflow: auto;
+    padding: 1.5rem;
+    border: 1px solid var(--line);
+    border-radius: 1rem;
+    background: var(--surface);
+    color: var(--ink);
+}
+
+.dialog::backdrop {
+    background: rgb(35 20 12 / 55%);
+}
+
+.dialog > * + * {
+    margin-top: 1rem;
+}
+
+.dialog dl {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin: 0;
+}
+
+.dialog dl div {
+    padding: 0.75rem;
+    border-radius: 0.7rem;
+    background: var(--soft);
+}
+
+.dialog dd {
+    margin: 0.25rem 0 0;
+    font-weight: 700;
+}
+
+.dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+}
+
+@media (width <= 900px) {
+    .heading,
+    .trial,
+    .notice,
+    .quota {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .summary,
+    .plans,
+    .links {
+        grid-template-columns: 1fr;
+    }
+
+    .summary > div + div {
+        border-inline-start: 0;
+        border-top: 1px solid var(--line);
+    }
+
+    .bucket-list {
+        width: 100%;
+    }
+}
+
+@media (width <= 560px) {
+    .period,
+    .bucket-list,
+    .dialog dl {
+        grid-template-columns: 1fr;
+        border-radius: 1rem;
+    }
+
+    .plan,
+    .trial,
+    .notice,
+    .quota {
+        padding: 1rem;
+    }
+
+    .plan-title,
+    .dialog-actions {
+        flex-direction: column;
+    }
+
+    .dialog-actions button,
+    .trial button {
+        width: 100%;
+    }
+}

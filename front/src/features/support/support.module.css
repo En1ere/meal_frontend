@@ -1,0 +1,114 @@
+.heading,
+.ticket,
+.message header,
+.actions {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.heading p,
+.ticket p,
+.ticket small,
+.message small,
+.form small {
+    color: var(--muted);
+}
+
+.filters,
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.filters {
+    gap: 0.5rem;
+}
+
+.filters a {
+    padding: 0.55rem 0.8rem;
+    border: 1px solid var(--line);
+    border-radius: 2rem;
+    text-decoration: none;
+}
+
+.filters a[aria-current='page'] {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+}
+
+.list,
+.conversation,
+.form {
+    display: grid;
+    gap: 1rem;
+}
+
+.ticket,
+.panel,
+.message,
+.form {
+    padding: 1.25rem;
+    border: 1px solid var(--line);
+    border-radius: 1rem;
+    background: var(--surface);
+}
+
+.ticket {
+    text-decoration: none;
+}
+
+.ticket h2 {
+    font-size: 1.2rem;
+}
+
+.form label {
+    display: grid;
+    gap: 0.45rem;
+}
+
+.form textarea {
+    resize: vertical;
+}
+
+.conversation {
+    max-width: 54rem;
+}
+
+.message {
+    max-width: 46rem;
+}
+
+.message.own {
+    margin-left: auto;
+    background: var(--soft);
+}
+
+.message p {
+    white-space: pre-wrap;
+}
+
+.attachment {
+    margin-top: 0.6rem;
+    padding: 0.65rem;
+    border-radius: 0.6rem;
+    background: var(--soft);
+}
+
+@media (width<=700px) {
+    .heading,
+    .ticket {
+        flex-direction: column;
+    }
+
+    .message {
+        max-width: 100%;
+    }
+
+    .message.own {
+        margin-left: 0;
+    }
+}

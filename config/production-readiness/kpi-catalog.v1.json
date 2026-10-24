@@ -1,0 +1,7 @@
+{
+    "version": 1,
+    "status": "blocked",
+    "blockers": ["approved_definitions", "privacy_thresholds", "retention_policy", "source_validation"],
+    "allowedGroups": ["user_cycle", "funnel", "action_error", "performance"],
+    "definitions": []
+}

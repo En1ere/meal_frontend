@@ -1,0 +1,539 @@
+.page {
+    display: grid;
+    gap: 1.5rem;
+    color: var(--text, #24221f);
+}
+
+.header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 2rem;
+}
+
+.header-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.header h1,
+.locked h1,
+.error h1 {
+    margin: 0.25rem 0;
+    font-size: clamp(2rem, 4vw, 3.25rem);
+    line-height: 1;
+}
+
+.header p,
+.locked p,
+.error p {
+    max-width: 48rem;
+    margin: 0.75rem 0 0;
+    color: #68635c;
+}
+
+.eyebrow {
+    color: #6f7651;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.readonly {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    border: 1px solid #e3c87e;
+    border-radius: 1rem;
+    padding: 1rem 1.25rem;
+    background: #fff8df;
+}
+
+.datebar {
+    display: grid;
+    grid-template-columns: 3rem minmax(13rem, 22rem) 3rem;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.datebar button {
+    min-height: 44px;
+    border: 1px solid #dedbd3;
+    border-radius: 0.8rem;
+    padding: 0.7rem;
+    background: #fff;
+    color: inherit;
+    cursor: pointer;
+}
+
+.datebar .current {
+    font-weight: 750;
+    text-transform: capitalize;
+}
+
+.layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(18rem, 23rem);
+    gap: 1.5rem;
+    align-items: start;
+}
+
+.timeline {
+    display: grid;
+    gap: 1rem;
+}
+
+.meal,
+.summary,
+.composer,
+.proposals {
+    border: 1px solid #e3e0d9;
+    border-radius: 1.25rem;
+    background: #fff;
+    box-shadow: 0 12px 30px rgb(43 39 31 / 5%);
+}
+
+.proposals {
+    display: grid;
+    gap: 1rem;
+    padding: 1.25rem;
+}
+
+.proposal-heading {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.proposal-heading h2,
+.proposal-heading p,
+.proposal p {
+    margin: 0;
+}
+
+.proposal-heading p {
+    max-width: 32rem;
+    color: #777169;
+    font-size: 0.85rem;
+}
+
+.proposal-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+    gap: 0.75rem;
+}
+
+.proposal {
+    display: grid;
+    gap: 0.75rem;
+    border: 1px solid #e1ddcf;
+    border-radius: 1rem;
+    padding: 1rem;
+    background: #faf9f5;
+}
+
+.proposal-title {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.proposal p,
+.proposal span {
+    color: #777169;
+    font-size: 0.84rem;
+    line-height: 1.4;
+}
+
+.proposal-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.auto-confirmed,
+.auto-badge {
+    color: #62703f !important;
+}
+
+.auto-badge {
+    width: fit-content;
+    border-radius: 99px;
+    padding: 0.22rem 0.5rem;
+    background: #eef0df;
+    font-size: 0.72rem;
+    font-style: normal;
+    font-weight: 750;
+}
+
+.meal {
+    padding: 1.25rem;
+}
+
+.meal-title {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+}
+
+.meal-title > span {
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background: #eef0df;
+    color: #626a42;
+}
+
+.meal-title h2 {
+    margin: 0;
+    font-size: 1.05rem;
+}
+
+.meal-title small {
+    margin-left: auto;
+    color: #8b867e;
+}
+
+.empty {
+    margin: 1rem 0 0 2.65rem;
+    color: #9a958c;
+}
+
+.entries {
+    display: grid;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.entry {
+    border-top: 1px solid #ece9e2;
+    padding-top: 0.9rem;
+}
+
+.archived {
+    opacity: 0.55;
+}
+
+.entry-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.entry-top div {
+    display: grid;
+    gap: 0.2rem;
+}
+
+.entry-top span,
+.entry li {
+    color: #777169;
+    font-size: 0.86rem;
+}
+
+.entry ul {
+    margin: 0.55rem 0;
+    padding-left: 1.2rem;
+}
+
+.actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.actions button,
+.plate button {
+    min-height: 44px;
+    border: 0;
+    padding: 0;
+    background: transparent;
+    color: #667044;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.side {
+    display: grid;
+    gap: 1rem;
+    position: sticky;
+    top: 1rem;
+}
+
+.summary,
+.composer {
+    padding: 1.25rem;
+}
+
+.summary > strong {
+    display: block;
+    margin: 0.35rem 0 1rem;
+    font-size: 1.35rem;
+}
+
+.summary > p {
+    margin: 1rem 0 0;
+    color: #777169;
+    font-size: 0.82rem;
+    line-height: 1.45;
+}
+
+.media {
+    display: flex;
+    gap: 0.65rem;
+    border: 1px solid #dfd8c8;
+    border-radius: 0.8rem;
+    padding: 0.75rem;
+    background: #f7f5ef;
+    color: #777169;
+}
+
+.media > span {
+    font-size: 1.2rem;
+}
+
+.media strong,
+.media p {
+    display: block;
+    margin: 0;
+    font-size: 0.78rem;
+    line-height: 1.4;
+}
+
+.nutrition {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.6rem;
+    margin: 0;
+}
+
+.nutrition div {
+    border-radius: 0.8rem;
+    padding: 0.65rem;
+    background: #f6f5f0;
+}
+
+.nutrition dt {
+    color: #777169;
+    font-size: 0.72rem;
+}
+
+.nutrition dd {
+    margin: 0.2rem 0 0;
+    font-weight: 750;
+}
+
+.composer {
+    display: grid;
+    gap: 0.9rem;
+}
+
+.composer h2 {
+    margin: 0;
+}
+
+.composer label {
+    display: grid;
+    gap: 0.35rem;
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.composer input,
+.composer select,
+.composer textarea,
+.modal input,
+.modal select,
+.modal textarea {
+    width: 100%;
+    border: 1px solid #d8d4cb;
+    border-radius: 0.7rem;
+    padding: 0.7rem 0.75rem;
+    background: #fff;
+    color: inherit;
+    font: inherit;
+}
+
+.composer textarea,
+.modal textarea {
+    min-height: 5rem;
+    resize: vertical;
+}
+
+.composer fieldset {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+    border: 0;
+    margin: 0;
+    padding: 0;
+}
+
+.composer legend {
+    margin-bottom: 0.45rem;
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.composer .radio {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    border: 1px solid #ddd9cf;
+    border-radius: 99px;
+    padding: 0.4rem 0.65rem;
+    font-weight: 600;
+}
+
+.radio input {
+    width: auto;
+}
+
+.amount {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6rem;
+}
+
+.sources {
+    display: grid;
+    max-height: 11rem;
+    overflow: auto;
+    border: 1px solid #e3e0d9;
+    border-radius: 0.75rem;
+}
+
+.sources button {
+    min-height: 44px;
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+    border: 0;
+    border-bottom: 1px solid #eeeae2;
+    padding: 0.65rem;
+    background: #fff;
+    text-align: left;
+    cursor: pointer;
+}
+
+.sources button:last-child {
+    border-bottom: 0;
+}
+
+.sources .selected {
+    background: #eef0df;
+}
+
+.sources small {
+    color: #777169;
+}
+
+.plate {
+    display: grid;
+    gap: 0.45rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.plate li {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+    border-radius: 0.65rem;
+    padding: 0.55rem 0.65rem;
+    background: #f6f5f0;
+    font-size: 0.82rem;
+}
+
+.form-error {
+    color: #a23d35;
+    font-size: 0.85rem;
+}
+
+.modal {
+    width: min(30rem, calc(100% - 2rem));
+    max-height: calc(100dvh - 2rem);
+    padding: 0;
+    border: 0;
+    border-radius: 1.2rem;
+    color: var(--ink);
+    background: #fff;
+    box-shadow: 0 24px 70px rgb(0 0 0 / 20%);
+}
+
+.modal::backdrop {
+    background: rgb(30 28 23 / 48%);
+}
+
+.modal form {
+    display: grid;
+    gap: 1rem;
+    max-height: calc(100dvh - 2rem);
+    overflow: auto;
+    padding: 1.4rem;
+}
+
+.modal h2,
+.modal p {
+    margin: 0;
+}
+
+.modal label {
+    display: grid;
+    gap: 0.35rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.modal-actions {
+    position: sticky;
+    bottom: -1.4rem;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.6rem;
+    margin-inline: -1.4rem;
+    padding: 0.8rem 1.4rem 1.4rem;
+    background: #fff;
+}
+
+.loading,
+.locked,
+.error {
+    min-height: 28rem;
+    border-radius: 1.25rem;
+    padding: 2rem;
+    background: #f7f5ef;
+}
+
+@media (width <= 980px) {
+    .layout {
+        grid-template-columns: 1fr;
+    }
+
+    .side {
+        position: static;
+    }
+}
+
+@media (width <= 640px) {
+    .header,
+    .readonly,
+    .entry-top,
+    .proposal-heading {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .datebar {
+        grid-template-columns: 2.8rem minmax(0, 1fr) 2.8rem;
+    }
+
+    .nutrition {
+        grid-template-columns: 1fr;
+    }
+}

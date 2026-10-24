@@ -1,0 +1,26 @@
+{
+    "version": 1,
+    "status": "blocked",
+    "blockers": [
+        "payment_provider",
+        "provider_capability_verification",
+        "user_api_contract",
+        "user_experience_approval"
+    ],
+    "provider": null,
+    "capabilities": ["list", "revoke"],
+    "storage": "opaque_provider_reference_only",
+    "sensitiveCardDataAllowed": false,
+    "listSemantics": {
+        "source": "provider_or_synchronized_projection",
+        "displayFields": ["id", "brand", "last4", "expiryMonth", "expiryYear", "status"],
+        "authoritativeForCharges": false
+    },
+    "revokeSemantics": {
+        "operation": "detach_or_disable_future_use",
+        "idempotent": true,
+        "preservePaymentHistory": true,
+        "networkOutsideDatabaseTransaction": true,
+        "unknownOutcomeRequiresReconciliation": true
+    }
+}

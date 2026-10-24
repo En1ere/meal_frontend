@@ -1,0 +1,177 @@
+.stack {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+    min-width: 0;
+}
+
+.heading,
+.toolbar,
+.composer-actions,
+.message-meta,
+.actions,
+.reactions,
+.members {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.heading {
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.toolbar {
+    width: 100%;
+    max-width: 100%;
+}
+
+.muted {
+    color: var(--text-secondary);
+}
+
+.notice,
+.pinned,
+.message,
+.composer {
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    background: var(--surface);
+    padding: 1rem;
+}
+
+.notice {
+    background: color-mix(in srgb, var(--accent) 8%, var(--surface));
+}
+
+.feed {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    min-height: 18rem;
+}
+
+.message {
+    width: min(78%, 42rem);
+    display: grid;
+    gap: 0.5rem;
+}
+
+.mine {
+    align-self: flex-end;
+    background: color-mix(in srgb, var(--accent) 16%, var(--surface));
+}
+
+.other {
+    align-self: flex-start;
+}
+
+.tombstone {
+    font-style: italic;
+    color: var(--text-secondary);
+}
+
+.reply {
+    border-left: 3px solid var(--accent);
+    padding-left: 0.75rem;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.message-meta {
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.actions button,
+.reactions button,
+.member,
+.toolbar button,
+.composer button {
+    transition: all 0.2s ease;
+}
+
+.actions button,
+.reactions button,
+.member {
+    min-width: 44px;
+    min-height: 44px;
+    border: 0;
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 0.25rem 0.4rem;
+    border-radius: 0.5rem;
+}
+
+.actions button:hover,
+.reactions button:hover,
+.member:hover {
+    color: var(--text);
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+.active {
+    color: var(--accent) !important;
+    font-weight: 700;
+}
+
+.composer textarea,
+.toolbar input {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    padding: 0.75rem;
+    background: var(--surface);
+    color: var(--text);
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.composer textarea {
+    min-height: 7rem;
+    resize: vertical;
+}
+
+.toolbar form {
+    display: flex;
+    gap: 0.5rem;
+    flex: 1 1 18rem;
+    min-width: 0;
+    max-width: 100%;
+}
+
+.toolbar input {
+    flex: 1 1 0;
+    min-width: 0;
+    width: auto;
+}
+
+.composer textarea:focus,
+.toolbar input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+    outline: none;
+}
+
+.error {
+    color: var(--danger, #a33);
+}
+
+@media (width <= 640px) {
+    .message {
+        width: 92%;
+    }
+
+    .heading {
+        display: grid;
+    }
+
+    .toolbar form {
+        width: 100%;
+    }
+}

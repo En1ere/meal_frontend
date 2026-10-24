@@ -1,0 +1,71 @@
+.skeleton {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.skeletonLabel,
+.loaderLabel {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+}
+
+.skeletonSurface {
+    display: block;
+    border-radius: var(--mp-radius-sm);
+    background: linear-gradient(
+        90deg,
+        var(--mp-color-soft) 0%,
+        var(--mp-color-surface-raised) 48%,
+        var(--mp-color-soft) 100%
+    );
+    background-size: 220% 100%;
+    animation: shimmer 1.4s ease-in-out infinite;
+}
+
+.inlineLoader {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--mp-space-2);
+}
+
+.spinner {
+    display: inline-block;
+    flex: none;
+    border: 0.12em solid currentcolor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.75s linear infinite;
+}
+
+.pageLoader {
+    min-height: 100dvh;
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: var(--mp-space-3);
+    background: var(--mp-color-page);
+    color: var(--mp-color-primary);
+}
+
+@keyframes shimmer {
+    to {
+        background-position-x: -220%;
+    }
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .skeletonSurface,
+    .spinner {
+        animation: none;
+    }
+}

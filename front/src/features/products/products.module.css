@@ -1,0 +1,35 @@
+.tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.nutrients {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin: 0;
+}
+
+.nutrients div {
+    padding: 1rem;
+    background: var(--soft);
+    border-radius: 0.75rem;
+}
+
+.nutrients dd {
+    margin: 0.5rem 0 0;
+    font-weight: bold;
+}
+
+.allergens {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+@media (width <= 760px) {
+    .allergens {
+        grid-template-columns: 1fr;
+    }
+}

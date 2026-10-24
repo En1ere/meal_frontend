@@ -1,0 +1,10 @@
+{
+    "version": 1,
+    "status": "blocked",
+    "blockers": ["release_browser_versions", "physical_device_acceptance", "assistive_technology_acceptance"],
+    "policy": "current_and_previous_stable_at_release",
+    "desktopEngines": ["chromium", "firefox", "webkit"],
+    "mobileTargets": ["ios_safari", "android_chrome"],
+    "automatedProjects": ["desktop-chromium", "desktop-firefox", "desktop-webkit", "mobile-chromium"],
+    "evidence": []
+}

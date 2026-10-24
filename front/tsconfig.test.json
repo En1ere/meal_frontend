@@ -1,0 +1,20 @@
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
+        "noEmit": false,
+        "outDir": "dist",
+        "rootDir": ".",
+        "plugins": []
+    },
+    "include": [
+        "test/**/*.ts",
+        "src/mocks/**/*.ts",
+        "src/shared/api/**/*.ts",
+        "src/shared/auth/**/*.ts",
+        "src/shared/legal/**/*.ts",
+        "src/shared/telemetry/**/*.ts"
+    ],
+    "exclude": ["node_modules", "dist", "legacy-mocks"]
+}

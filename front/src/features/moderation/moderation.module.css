@@ -1,0 +1,380 @@
+.main {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 28px;
+}
+
+.eyebrow {
+    margin: 0 0 4px;
+    color: #6377a0;
+}
+
+.title {
+    margin: 0;
+    color: #111;
+    font-family: Georgia, serif;
+    font-size: clamp(2.4rem, 5vw, 4rem);
+    line-height: 1;
+}
+
+.subtitle {
+    margin: 8px 0 18px;
+    color: #6377a0;
+    font-size: 1.15rem;
+}
+
+.tabs {
+    display: flex;
+    gap: 26px;
+    border-bottom: 1px solid #e3d6cf;
+    margin-bottom: 20px;
+}
+
+.tabs > * {
+    padding: 10px 30px;
+    color: #101a3d;
+    text-decoration: none;
+}
+
+.tabs [aria-current='page'] {
+    border-radius: 999px;
+    background: #ad542f;
+    color: #fff;
+}
+
+.panel {
+    margin-bottom: 16px;
+    padding: 20px;
+    border: 1px solid #e3d6cf;
+    border-radius: 10px;
+    background: rgb(255 255 255 / 78%);
+    box-shadow: 0 10px 30px rgb(87 45 28 / 4%);
+}
+
+.panel h2,
+.decision h2 {
+    margin: 0 0 14px;
+    color: #111;
+    font-family: Georgia, serif;
+    font-size: 1.8rem;
+}
+
+.queue-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.queue-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 102px;
+    padding: 18px;
+    border: 1px solid #e7dbd5;
+    border-radius: 8px;
+}
+
+.queue-card h3 {
+    margin: 0;
+    color: #111;
+    font-family: Georgia, serif;
+    font-size: 1.35rem;
+}
+
+.queue-card p {
+    margin: 6px 0 0;
+    color: #687da9;
+}
+
+.queue-card a {
+    color: #9b3115;
+}
+
+.table {
+    display: grid;
+}
+
+.table-row {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr 1.2fr auto;
+    gap: 14px;
+    align-items: center;
+    padding: 13px;
+    border-top: 1px solid #eee4df;
+}
+
+.table-row:first-child {
+    border-top: 0;
+}
+
+.table-row a,
+.back,
+.related {
+    color: #1d55a4;
+}
+
+.sla {
+    display: grid;
+    gap: 3px;
+    padding: 14px 18px;
+    border-radius: 8px;
+    background: #f8f2ee;
+}
+
+.sla span,
+.hint {
+    color: #687da9;
+}
+
+.attention {
+    border-left: 4px solid #a74823;
+}
+
+.filters {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin: 20px 0;
+}
+
+.filters label,
+.decision label,
+.panel label {
+    display: grid;
+    gap: 6px;
+    color: #526c9c;
+}
+
+.filters select,
+.decision select,
+.decision textarea,
+.panel textarea {
+    width: 100%;
+    border: 1px solid #e3d6cf;
+    border-radius: 8px;
+    background: #fff;
+    padding: 12px;
+    color: #101a3d;
+    font: inherit;
+}
+
+.decision textarea,
+.panel textarea {
+    min-height: 130px;
+    resize: vertical;
+}
+
+.queue-list {
+    display: grid;
+    gap: 16px;
+}
+
+.task-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 300px;
+    gap: 26px;
+    padding: 22px;
+    border: 1px solid #e3d6cf;
+    border-radius: 10px;
+    background: #fff;
+}
+
+.task-card h2 {
+    margin: 0 0 22px;
+    color: #111;
+    font-family: Georgia, serif;
+    font-size: 2rem;
+}
+
+.task-card dl {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin: 0;
+}
+
+.task-card dt {
+    color: #687da9;
+}
+
+.task-card dd {
+    margin: 6px 0 0;
+}
+
+.task-actions {
+    display: grid;
+    align-content: center;
+    gap: 10px;
+    padding-left: 26px;
+    border-left: 1px solid #eaded8;
+}
+
+.empty,
+.state {
+    padding: 30px;
+    border: 1px dashed #cba99a;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.notice {
+    padding: 10px 14px;
+    border-radius: 8px;
+    background: #eef4ff;
+    color: #274f8b;
+}
+
+.review-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.7fr) minmax(320px, 0.9fr);
+    gap: 16px;
+    margin-top: 20px;
+}
+
+.decision {
+    align-self: start;
+    position: sticky;
+    top: 88px;
+    display: grid;
+    gap: 16px;
+    padding: 22px;
+    border: 1px solid #e3d6cf;
+    border-radius: 10px;
+    background: #fff;
+}
+
+.compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+.compare article {
+    padding: 16px;
+    border: 1px solid #e3d6cf;
+    border-radius: 8px;
+}
+
+.compare h3 {
+    margin-top: 0;
+    color: #526c9c;
+    font-weight: 500;
+}
+
+.badge {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 8px;
+    background: #f6ece7;
+    color: #8e3218;
+}
+
+.warning {
+    border-left: 3px solid #a74823;
+    padding-left: 10px;
+}
+
+.related {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px;
+    border: 1px solid #eaded8;
+    border-radius: 8px;
+    text-decoration: none;
+}
+
+.confirm {
+    padding: 14px;
+    border: 1px solid #cba99a;
+    border-radius: 8px;
+    background: #fffaf7;
+}
+
+.support-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.8fr) minmax(280px, 0.9fr);
+    gap: 16px;
+    margin-top: 20px;
+}
+
+.meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    color: #526c9c;
+}
+
+.messages {
+    display: grid;
+    gap: 12px;
+}
+
+.messages article {
+    padding: 14px 18px;
+    border: 1px solid #dbe2ee;
+    border-radius: 8px;
+    background: #f7f9fd;
+}
+
+.messages article.staff-message {
+    border-color: #eaded8;
+    background: #fff8f3;
+}
+
+.messages time {
+    margin-left: 14px;
+    color: #687da9;
+    font-size: 0.9rem;
+}
+
+@media (width <= 900px) {
+    .main {
+        padding: var(--mp-space-5) var(--mp-space-4) 6.5rem;
+    }
+
+    .queue-grid,
+    .filters,
+    .compare,
+    .review-grid,
+    .support-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .tabs {
+        gap: var(--mp-space-1);
+    }
+
+    .tabs > * {
+        flex: 1 1 0;
+        min-width: 0;
+        padding-inline: var(--mp-space-2);
+        text-align: center;
+    }
+
+    .queue-card a {
+        white-space: nowrap;
+    }
+
+    .task-card {
+        grid-template-columns: 1fr;
+    }
+
+    .task-actions {
+        padding: 16px 0 0;
+        border-left: 0;
+        border-top: 1px solid #eaded8;
+    }
+
+    .task-card dl {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .table-row {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .decision {
+        position: static;
+    }
+}

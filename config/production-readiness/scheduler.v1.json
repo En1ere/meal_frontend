@@ -1,0 +1,21 @@
+{
+    "version": 1,
+    "status": "blocked",
+    "blockers": ["scheduler_provider", "shared_lease_acceptance", "telemetry_and_alert_sink", "production_schedules"],
+    "topologyVersion": 1,
+    "defaultEnabled": false,
+    "tasks": [
+        "scheduled-news",
+        "incident-ignore-expiry",
+        "retention-inspection",
+        "scheduled-sanctions",
+        "diary-portions",
+        "email-changes",
+        "exports",
+        "account-retention",
+        "ai-reconciliation",
+        "cooking-lifecycle"
+    ],
+    "provider": null,
+    "schedules": []
+}

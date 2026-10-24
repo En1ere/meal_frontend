@@ -1,0 +1,15 @@
+{
+    "version": 1,
+    "status": "blocked",
+    "blockers": ["production_origins", "ingress_header_ownership", "csp_report_endpoint", "production_header_probe"],
+    "owner": "ingress_and_application",
+    "required": {
+        "strictTransportSecurity": "max-age=31536000; includeSubDomains",
+        "contentTypeOptions": "nosniff",
+        "frameAncestors": "'none'",
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "permissionsPolicy": "camera=(), microphone=(), geolocation=()"
+    },
+    "contentSecurityPolicyMode": "report_only_then_enforce",
+    "productionProbeEvidence": null
+}

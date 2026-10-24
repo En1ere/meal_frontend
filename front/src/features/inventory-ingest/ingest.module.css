@@ -1,0 +1,113 @@
+.page {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.card {
+    display: grid;
+    gap: 1rem;
+    padding: 1.5rem;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    border-radius: 1rem;
+    min-width: 0;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+    gap: 1rem;
+}
+
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.page label {
+    display: grid;
+    gap: 0.4rem;
+}
+
+.page select,
+.page textarea {
+    min-width: 0;
+    width: 100%;
+    padding: 0.7rem;
+    border: 1px solid var(--line);
+    border-radius: 0.6rem;
+    background: var(--surface);
+    color: var(--ink);
+    font: inherit;
+}
+
+.check {
+    display: flex !important;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.check input {
+    width: auto;
+}
+
+.notice {
+    border-left: 3px solid var(--accent);
+    padding: 0.8rem;
+    background: var(--soft);
+    border-radius: 0.4rem;
+}
+
+.error {
+    color: var(--danger);
+}
+
+.muted {
+    color: var(--muted);
+}
+
+.preview {
+    max-width: 100%;
+    max-height: 280px;
+    border-radius: 0.7rem;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table td,
+.table th {
+    padding: 0.5rem;
+    text-align: left;
+    border-bottom: 1px solid var(--line);
+    overflow-wrap: anywhere;
+    max-width: 150px;
+}
+
+.scroll {
+    overflow-x: auto;
+}
+
+.step {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    padding: 0;
+    list-style: none;
+    color: var(--muted);
+}
+
+.step [aria-current] {
+    color: var(--accent);
+    font-weight: 700;
+}
+
+@media (width <= 760px) {
+    .card {
+        padding: 1rem;
+    }
+}

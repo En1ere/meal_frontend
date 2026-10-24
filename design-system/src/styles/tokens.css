@@ -1,0 +1,143 @@
+:root,
+:root[data-theme='coffee-light'] {
+    color-scheme: light;
+    --mp-color-page: #f7f0e7;
+    --mp-color-surface: #fffcf8;
+    --mp-color-surface-raised: #ffffff;
+    --mp-color-text: #34251e;
+    --mp-color-text-muted: #6d625d;
+    --mp-color-primary: #8b5e3c;
+    --mp-color-primary-hover: #70482d;
+    --mp-color-on-primary: #ffffff;
+    --mp-color-support: #e7cdb1;
+    --mp-color-soft: #f2e7dc;
+    --mp-color-border: #d7c4b4;
+    --mp-color-link: #7c452a;
+    --mp-color-focus: #9d3f12;
+    --mp-color-success-surface: #e5f3e7;
+    --mp-color-success-text: #245c31;
+    --mp-color-warning-surface: #fff1d8;
+    --mp-color-warning-text: #724500;
+    --mp-color-danger-surface: #fde8e5;
+    --mp-color-danger-text: #8a2520;
+    --mp-color-info-surface: #e8effa;
+    --mp-color-info-text: #294f83;
+    --mp-color-overlay: rgb(52 37 30 / 62%);
+    --mp-color-scrollbar-track: #f7f0e7;
+    --mp-color-scrollbar-thumb: #d8c6b6;
+    --mp-color-scrollbar-thumb-hover: #c9af99;
+}
+
+:root[data-theme='coffee-dark'] {
+    color-scheme: dark;
+    --mp-color-page: #17120f;
+    --mp-color-surface: #241b16;
+    --mp-color-surface-raised: #30231c;
+    --mp-color-text: #f4eae1;
+    --mp-color-text-muted: #c9b8aa;
+    --mp-color-primary: #d1a078;
+    --mp-color-primary-hover: #e2b58f;
+    --mp-color-on-primary: #24150d;
+    --mp-color-support: #795b48;
+    --mp-color-soft: #35271f;
+    --mp-color-border: #755c4c;
+    --mp-color-link: #efbc91;
+    --mp-color-focus: #ffd19f;
+    --mp-color-success-surface: #193c29;
+    --mp-color-success-text: #9be3ad;
+    --mp-color-warning-surface: #493615;
+    --mp-color-warning-text: #ffd489;
+    --mp-color-danger-surface: #4b2525;
+    --mp-color-danger-text: #ffb5ad;
+    --mp-color-info-surface: #20354c;
+    --mp-color-info-text: #a9ceff;
+    --mp-color-overlay: rgb(0 0 0 / 72%);
+    --mp-color-scrollbar-track: #17120f;
+    --mp-color-scrollbar-thumb: #554238;
+    --mp-color-scrollbar-thumb-hover: #6a5143;
+}
+
+:root[data-theme='nature-light'] {
+    color-scheme: light;
+    --mp-color-page: #f5fff1;
+    --mp-color-surface: #ffffff;
+    --mp-color-surface-raised: #ffffff;
+    --mp-color-text: #17322a;
+    --mp-color-text-muted: #52685f;
+    --mp-color-primary: #6ca51f;
+    --mp-color-primary-hover: #4f8012;
+    --mp-color-on-primary: #102018;
+    --mp-color-support: #48b7a0;
+    --mp-color-soft: #e8f4e3;
+    --mp-color-border: #bad1bd;
+    --mp-color-link: #246c61;
+    --mp-color-focus: #356f17;
+    --mp-color-success-surface: #def3e2;
+    --mp-color-success-text: #1f6031;
+    --mp-color-warning-surface: #fff1cf;
+    --mp-color-warning-text: #704600;
+    --mp-color-danger-surface: #fde7e3;
+    --mp-color-danger-text: #88251f;
+    --mp-color-info-surface: #ddf2ef;
+    --mp-color-info-text: #175c52;
+    --mp-color-overlay: rgb(23 50 42 / 60%);
+    --mp-color-scrollbar-track: #f5fff1;
+    --mp-color-scrollbar-thumb: #c9ddc7;
+    --mp-color-scrollbar-thumb-hover: #b5ceb5;
+}
+
+:root[data-theme='nature-dark'] {
+    color-scheme: dark;
+    --mp-color-page: #0e1c18;
+    --mp-color-surface: #172a24;
+    --mp-color-surface-raised: #1d342c;
+    --mp-color-text: #eaf7f1;
+    --mp-color-text-muted: #b5c9bd;
+    --mp-color-primary: #a9ea54;
+    --mp-color-primary-hover: #c4f47d;
+    --mp-color-on-primary: #0e1c18;
+    --mp-color-support: #58d0b7;
+    --mp-color-soft: #214731;
+    --mp-color-border: #729486;
+    --mp-color-link: #7be1d0;
+    --mp-color-focus: #eaf45c;
+    --mp-color-success-surface: #1c472c;
+    --mp-color-success-text: #a9eca8;
+    --mp-color-warning-surface: #493b17;
+    --mp-color-warning-text: #f7db82;
+    --mp-color-danger-surface: #4a2828;
+    --mp-color-danger-text: #ffbab3;
+    --mp-color-info-surface: #173d3d;
+    --mp-color-info-text: #9aedeb;
+    --mp-color-overlay: rgb(0 0 0 / 74%);
+    --mp-color-scrollbar-track: #0e1c18;
+    --mp-color-scrollbar-thumb: #3c5d50;
+    --mp-color-scrollbar-thumb-hover: #4d7363;
+}
+
+:root {
+    --mp-font-sans: Arial, Helvetica, sans-serif;
+    --mp-font-serif: Georgia, 'Times New Roman', serif;
+    --mp-space-1: 0.25rem;
+    --mp-space-2: 0.5rem;
+    --mp-space-3: 0.75rem;
+    --mp-space-4: 1rem;
+    --mp-space-5: 1.25rem;
+    --mp-space-6: 1.5rem;
+    --mp-space-8: 2rem;
+    --mp-space-10: 2.5rem;
+    --mp-space-12: 3rem;
+    --mp-radius-sm: 0.5rem;
+    --mp-radius-md: 0.75rem;
+    --mp-radius-lg: 1rem;
+    --mp-radius-xl: 1.25rem;
+    --mp-shadow-raised: 0 0.75rem 2rem rgb(31 21 15 / 10%);
+    --mp-control-height-sm: 2.5rem;
+    --mp-control-height-md: 3rem;
+    --mp-content-max: 82rem;
+    --mp-sidebar-width: 17.875rem;
+    --mp-topbar-height: 4.25rem;
+    --mp-layer-header: 20;
+    --mp-layer-overlay: 50;
+    --mp-layer-toast: 70;
+}

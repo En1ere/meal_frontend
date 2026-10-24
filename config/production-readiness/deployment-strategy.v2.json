@@ -1,0 +1,20 @@
+{
+    "version": 2,
+    "status": "blocked",
+    "strategy": "blue_green",
+    "blockers": ["deployment_platform", "artifact_registry", "ingress_provider", "production_origins"],
+    "slots": ["blue", "green"],
+    "readinessPaths": ["/health/live", "/health/ready"],
+    "trafficSwitchProvider": null,
+    "rollback": "manual_verified",
+    "databaseCompatibilityGate": "expand_contract_review_required",
+    "targetSchemaVersion": 26,
+    "preTrafficGates": [
+        "immutable_artifact",
+        "database_v26_verified",
+        "security_headers_verified",
+        "browser_registry_verified",
+        "workers_disabled_or_verified",
+        "backup_restore_verified"
+    ]
+}

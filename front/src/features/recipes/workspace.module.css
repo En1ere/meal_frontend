@@ -1,0 +1,166 @@
+.layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.6fr) minmax(260px, 1fr);
+    gap: 1.2rem;
+    align-items: start;
+}
+
+.stack {
+    display: grid;
+    gap: 1rem;
+    min-width: 0;
+}
+
+.panel {
+    padding: 1.2rem;
+    border: 1px solid var(--line);
+    border-radius: 1rem;
+    background: var(--surface);
+    display: grid;
+    gap: 1rem;
+    min-width: 0;
+}
+
+.panel h2,
+.panel h3 {
+    margin: 0;
+}
+
+.row {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(70px, 1fr) minmax(70px, 1fr);
+    gap: 0.7rem;
+    padding-block: 0.7rem;
+    border-bottom: 1px solid var(--line);
+}
+
+.row label,
+.panel label {
+    display: grid;
+    gap: 0.4rem;
+    min-width: 0;
+}
+
+.row input:not([type='checkbox']),
+.row select,
+.panel textarea,
+.panel input:not([type='checkbox']),
+.panel select {
+    width: 100%;
+    min-width: 0;
+    border: 1px solid var(--line);
+    border-radius: 0.65rem;
+    background: var(--surface);
+    color: var(--ink);
+    padding: 0.65rem 0.8rem;
+    font: inherit;
+    transition:
+        border-color 0.2s,
+        background 0.2s;
+}
+
+.row input[type='checkbox'] {
+    width: 1.1rem;
+    height: 1.1rem;
+}
+
+.panel label:has(input[type='checkbox']) {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.layout button,
+.actions button,
+.panel button,
+.dialog button {
+    min-height: 44px;
+    border: 1px solid var(--line);
+    border-radius: 0.65rem;
+    background: var(--soft);
+    color: var(--ink);
+    padding: 0.6rem 0.85rem;
+    font: inherit;
+    cursor: pointer;
+    transition:
+        background 0.2s,
+        border-color 0.2s,
+        opacity 0.2s;
+}
+
+.layout button:disabled,
+.actions button:disabled,
+.panel button:disabled,
+.dialog button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.actions > a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+}
+
+.layout button:hover:not(:disabled),
+.actions button:hover:not(:disabled),
+.panel button:hover:not(:disabled),
+.dialog button:hover:not(:disabled) {
+    border-color: var(--accent);
+    background: var(--surface);
+}
+
+.full {
+    grid-column: 1 / -1;
+}
+
+.preview img {
+    width: 100%;
+    aspect-ratio: 1.6;
+    object-fit: cover;
+    border-radius: 0.7rem;
+}
+
+.notice {
+    padding: 0.85rem;
+    border-radius: 0.7rem;
+    background: var(--soft);
+}
+
+.dialog {
+    width: min(700px, calc(100vw - 2rem));
+    max-height: 90dvh;
+    overflow: auto;
+    border: 1px solid var(--line);
+    border-radius: 1rem;
+    padding: 1.4rem;
+    color: var(--ink);
+    background: var(--surface);
+}
+
+.dialog::backdrop {
+    background: rgb(0 0 0 / 40%);
+}
+
+@media (width <= 850px) {
+    .layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (width <= 480px) {
+    .row {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .row > label:first-child {
+        grid-column: 1 / -1;
+    }
+}
