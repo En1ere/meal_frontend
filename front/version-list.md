@@ -1,5 +1,7 @@
 # Frontend version-list
 
+0.0.111 - 10.24.2026 | 19:31 - Административный интерфейс и его тесты вынесены в независимый meal_admin; клиент устанавливается и запускается без исходников админки.
+
 0.0.110 - 10.24.2026 | 18:34 - Перенос в самостоятельный meal_frontend; переносимые проверки и отсутствие зависимости от исходников backend.
 
 0.0.103 - 14.10.2026 | 15:21 - Account lifecycle проверен desktop/mobile: export expiry, archive redirect, session alerts, draft при 503, stale 412, PIN/TOTP/recovery и 10-minute reauth. Mock синхронизирован с 200 blocked, export_not_ready и retention gates; OpenAPI обновлён.
