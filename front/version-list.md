@@ -1,5 +1,7 @@
 # Frontend version-list
 
+0.0.152 - 29.10.2026 | 18:22 - Release metadata synchronized with backend runtime 0.0.152 and admin 0.0.128 after the backend APP_VERSION drift fix; OpenAPI 0.0.61, schema v31, wire contracts and frontend behavior are unchanged.
+
 0.0.151 - 29.10.2026 | 18:05 - Full OpenAPI 0.0.61 metadata synchronized with backend 0.0.151 and additive schema v31. Generated contracts, package/lock and release documentation were updated; wire paths, payloads and frontend runtime behavior are unchanged.
 
 0.0.150 - 29.10.2026 | 16:52 - Production release metadata and the full OpenAPI 0.0.61 snapshot now reflect backend `0.0.149` and schema v30. Verified Docker runtime, deploy-helper and digest rollback are no longer false deployment blockers; technical origins remain active while the two royalexander custom origins are explicitly pending DNS. Runtime behavior and wire contracts are unchanged.

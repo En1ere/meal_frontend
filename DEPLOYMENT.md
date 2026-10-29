@@ -20,8 +20,8 @@
 | Admin origin                  | `https://admin.abstract-usable-gazebo.ruweb.place`              |
 | Backend health                | `/health/live`, `/health/ready`                                 |
 | Установленный release         | Immutable digest из `/srv/meal/deployment/images.env`           |
-| Целевая root/app версия       | `0.0.42` / `0.0.151`                                            |
-| Связанные runtime-компоненты  | backend `0.0.151` / schema v31; admin `0.0.127`                 |
+| Целевая root/app версия       | `0.0.43` / `0.0.152`                                            |
+| Связанные runtime-компоненты  | backend `0.0.152` / schema v31; admin `0.0.128`                 |
 | Runtime                       | Node.js 24, Docker Compose, loopback `127.0.0.1:3000`           |
 | Traffic                       | Nginx завершает TLS; `/api/` проксируется в backend на loopback |
 

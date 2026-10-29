@@ -1,5 +1,7 @@
 # Meal frontend version-list
 
+0.0.43 - 29.10.2026 | 18:22 - Release metadata синхронизирована с backend runtime 0.0.152 и admin 0.0.128 после устранения APP_VERSION drift; OpenAPI 0.0.61, schema v31 и wire-контракты не менялись.
+
 0.0.42 - 29.10.2026 | 18:05 - Production readiness и полный OpenAPI snapshot 0.0.61 синхронизированы с backend 0.0.151 / additive schema v31; wire paths и payload не менялись. Target gate повышен до `database_v31_verified`, technical origins остаются активными, custom origins — `pending_dns`.
 
 0.0.41 - 29.10.2026 | 16:52 - Синхронизированы production readiness и полный OpenAPI snapshot 0.0.61 с фактическим VPS: Docker runtime, immutable deploy-helper и digest rollback больше не считаются открытыми blockers, target обновлён до schema v30, а будущие custom origins явно остаются `pending_dns`; runtime и wire-контракты не менялись.
