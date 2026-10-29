@@ -1,5 +1,7 @@
 # Meal frontend version-list
 
+0.0.39 - 29.10.2026 | 12:06 - Опубликован безопасный каталог 11 предварительных legal-текстов: allowlisted server-side routes, единая заглушка `[Тут будут данные]`, public shell/navigation и 404 для неизвестного slug. Demonstration manifest больше не считается опубликованным вне mock-режима, consent/registration остаются fail-closed; обновлены тесты и инструкции ручной приёмки.
+
 0.0.38 - 29.10.2026 | 10:17 - Deployment runbook получил краткую карту для агента/оператора и фактический container inventory после VPS cutover: границы репозитория, `main`/GHCR digest/helper, build-time env, loopback/Nginx, smoke и UI-only rollback; legacy systemd runtime отключён, секреты не добавлялись.
 
 0.0.37 - 28.10.2026 | 17:54 - Подготовлен container release path без фактического деплоя: digest-pinned Next standalone image запускается непривилегированно с frontend-only `/healthz`, GHCR workflow дважды блокирует stale SHA, публикует commit tag и immutable digest без `latest`/semver tags и передаёт его ограниченному server helper; все Actions закреплены по commit SHA. Документация фиксирует build-time семантику `NEXT_PUBLIC_*` и `BACKEND_ORIGIN`, read-only/tmpfs hardening и rollback. Deployment readiness отражает Docker Compose/GHCR/host Nginx решения, но остаётся blocked до runtime/helper/rollback evidence; deployed runtime остаётся root/app `0.0.28` / `0.0.137`.

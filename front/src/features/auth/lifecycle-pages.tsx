@@ -57,7 +57,9 @@ export function SignUpPage() {
     });
     const terms = legal.data?.find((item) => item.id === 'offer');
     const privacy = legal.data?.find((item) => item.id === 'privacy_notice');
-    const legalReady = hasPublishedRegistrationDocuments(legal.data);
+    const legalReady = hasPublishedRegistrationDocuments(legal.data, {
+        allowDemonstration: process.env.NEXT_PUBLIC_API_MODE === 'mock',
+    });
     return (
         <AuthShell>
             <h1>{accepted ? 'Подтвердите почту' : 'Создайте аккаунт'}</h1>

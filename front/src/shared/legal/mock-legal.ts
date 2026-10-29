@@ -16,6 +16,14 @@ const titles: Record<LegalDocumentKind, string> = {
     dissemination: 'Публикация материалов',
     marketing: 'Маркетинговые сообщения',
 };
+const draftHrefs: Record<LegalDocumentKind, string> = {
+    offer: '/legal/terms',
+    privacy_notice: '/legal/privacy',
+    ai_data_access: '/legal/ai-consent',
+    special_category: '/legal/special-category-consent',
+    dissemination: '/legal/dissemination-consent',
+    marketing: '/legal/marketing-consent',
+};
 
 export interface LegalDocument {
     id: LegalDocumentKind;
@@ -41,10 +49,8 @@ const toDocuments = (manifest: Manifest): LegalDocument[] =>
         id: item.kind,
         title: `${titles[item.kind]}${item.status === 'demonstration' ? ' (демо)' : ''}`,
         version: String(item.document.documentVersion),
-        status: manifest.status === 'unavailable' ? 'draft' : 'published',
-        href:
-            item.publicUrl ??
-            (item.kind === 'offer' || item.kind === 'dissemination' ? '/legal/terms' : '/legal/privacy'),
+        status: manifest.status === 'approved' && item.status === 'approved' ? 'published' : 'draft',
+        href: item.publicUrl ?? draftHrefs[item.kind],
         requiredAtRegistration: item.required,
         acknowledgementOnly: item.kind === 'privacy_notice',
         demonstration: item.status === 'demonstration',
@@ -100,9 +106,16 @@ export async function setConsent(
     return getLegalSettings(api, signal);
 }
 
-export function hasPublishedRegistrationDocuments(documents: LegalDocument[] | undefined) {
+export function hasPublishedRegistrationDocuments(
+    documents: LegalDocument[] | undefined,
+    options: { allowDemonstration?: boolean } = {},
+) {
     if (!documents) return false;
     return ['offer', 'privacy_notice'].every((id) =>
-        documents.some((item) => item.id === id && item.status === 'published'),
+        documents.some(
+            (item) =>
+                item.id === id &&
+                (item.status === 'published' || (options.allowDemonstration === true && item.demonstration)),
+        ),
     );
 }

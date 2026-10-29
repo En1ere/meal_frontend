@@ -69,8 +69,10 @@
 1. `/onboarding`: пройдите короткий, подробный и демонстрационный сценарии; Back не теряет введённые данные.
 2. `/`: каждый CTA ведёт в заявленный модуль; персональные карточки отражают тариф и данные пользователя.
 3. `/search`: пустой запрос, Unicode, пробелы, нет результатов, пагинация и переход в продукт/рецепт/автора.
-4. `/about`, `/help`, `/pricing`, `/legal/terms`, `/legal/privacy` доступны без входа, имеют header/footer и корректные auth CTA.
-5. `/authors/[username]`, achievements/reputation: inactive/unknown дают корректный not-found; нулевые значения не заменяются на «нет данных».
+4. `/about`, `/help`, `/pricing` и `/legal` доступны без входа, имеют header/footer и корректные auth CTA.
+5. Каталог `/legal` содержит ровно 11 предварительных документов. Проверить прямые ссылки `/legal/terms`, `/legal/privacy`, `/legal/personal-data-consent`, `/legal/special-category-consent`, `/legal/dissemination-consent`, `/legal/ai-consent`, `/legal/marketing-consent`, `/legal/cookies`, `/legal/community-rules`, `/legal/subscription-rules`, `/legal/child-profile-consent`.
+6. На каждой legal-странице видна маркировка предварительного текста и `[Тут будут данные]`; неизвестный slug возвращает 404, а controls юридически значимого принятия отсутствуют.
+7. `/authors/[username]`, achievements/reputation: inactive/unknown дают корректный not-found; нулевые значения не заменяются на «нет данных».
 
 ## 9. Запасы
 

@@ -25,7 +25,7 @@ export function PublicShell({ current, children }: { current: PublicSection; chi
             footerNote="© 2026 Meal Planner. Все права защищены."
             footerNavigation={[
                 { href: '/help', label: 'Справка' },
-                { href: '/legal/privacy', label: 'Правовые документы' },
+                { href: '/legal', label: 'Правовые документы' },
             ]}
             renderLink={({ href, className, children: content, ariaCurrent }) => (
                 <Link href={href} className={className} aria-current={ariaCurrent}>

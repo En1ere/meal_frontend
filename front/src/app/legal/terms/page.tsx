@@ -1,8 +1,9 @@
 import { DraftDocumentPage } from '../../../features/legal/server.js';
+import { findDraftLegalDocument } from '../../../shared/legal/draft-documents.js';
 export const metadata = {
-    title: 'Условия использования — черновик',
+    title: 'Условия использования — предварительный текст',
     robots: { index: false, follow: false },
 };
 export default function Page() {
-    return <DraftDocumentPage filename="01-user-agreement-public-offer.md" title="Условия использования" />;
+    return <DraftDocumentPage document={findDraftLegalDocument('terms')!} />;
 }

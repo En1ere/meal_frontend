@@ -3,10 +3,10 @@ import 'server-only';
 import fs from 'node:fs';
 import path from 'node:path';
 import Link from 'next/link';
+import type { draftLegalDocuments } from '../../shared/legal/draft-documents.js';
 
 interface DraftDocumentPageProps {
-    filename: string;
-    title: string;
+    document: (typeof draftLegalDocuments)[number];
 }
 
 function readDraft(filename: string) {
@@ -14,28 +14,35 @@ function readDraft(filename: string) {
     return fs.readFileSync(source, 'utf8');
 }
 
-export function DraftDocumentPage({ filename, title }: DraftDocumentPageProps) {
-    const draft = readDraft(filename);
+export function DraftDocumentPage({ document }: DraftDocumentPageProps) {
+    const draft = readDraft(document.filename);
 
     return (
         <main id="main" className="draft-legal">
+            <nav className="draft-legal-breadcrumbs" aria-label="Правовые документы">
+                <Link href="/legal">Все правовые документы</Link>
+                <span aria-hidden="true">/</span>
+                <span aria-current="page">{document.title}</span>
+            </nav>
             <aside className="draft-legal-notice" role="note" aria-label="Статус документа">
-                <strong>Черновик — не опубликованная редакция</strong>
+                <strong>Предварительный текст — не утверждённая редакция</strong>
                 <p>
-                    Документ доступен для ознакомления и согласования. Поля с пометкой <code>[УКАЗАТЬ]</code> ещё не
-                    заполнены реальными реквизитами. В тестовом контуре он используется только для проверки интерфейса
-                    регистрации и согласий, но не является опубликованной production-редакцией или юридическим
-                    доказательством публикации.
+                    Документ доступен для ознакомления. Значение <code>[Тут будут данные]</code> отмечает сведения,
+                    которые появятся после утверждения реквизитов и условий. Юридически значимое принятие этого текста
+                    отключено: он не является утверждённой production-редакцией или доказательством согласия.
                 </p>
             </aside>
-            <article aria-label={title}>
+            <article aria-label={document.title}>
                 <pre className="draft-legal-content">{draft}</pre>
             </article>
             <p>
                 Если документ открыт из формы регистрации, вернитесь в исходную вкладку — введённые данные останутся
                 там.
             </p>
-            <Link href="/auth/sign-up">Открыть новую форму регистрации</Link>
+            <div className="draft-legal-actions">
+                <Link href="/legal">К списку документов</Link>
+                <Link href="/auth/sign-up">Открыть новую форму регистрации</Link>
+            </div>
         </main>
     );
 }

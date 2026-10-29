@@ -9,7 +9,7 @@
 3. `NEXT_PUBLIC_APP_VERSION`, `NEXT_PUBLIC_API_MODE=real` и `BACKEND_ORIGIN=http://backend:3001` фиксируются на image build; их runtime-изменение без нового image не сработает.
 4. CI вызывает `sudo /usr/local/sbin/meal-deploy frontend <image@digest> <git-sha>`; source, `.next` и `node_modules` на VPS вручную не копируются.
 5. Container слушает `3000`, на host доступен только `127.0.0.1:3000`; Nginx отдаёт public HTTPS, а `/api/` на том же origin идёт на backend `3001`.
-6. Smoke: local `/healthz`, public `/`, `/recipes`, `/legal/terms`, login/logout, authenticated read и все темы с reload.
+6. Smoke: local `/healthz`, public `/`, `/recipes`, каталог `/legal`, все 11 allowlisted legal routes, неизвестный legal slug с 404, login/logout, authenticated read и все темы с reload.
 7. Frontend rollout не ходит в БД и не запускает migrations; при verify failure helper возвращает previous frontend digest.
 
 ## Текущий inventory

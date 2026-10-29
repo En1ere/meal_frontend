@@ -114,8 +114,12 @@ function Content() {
                                             {document.status === 'published' ? 'опубликован' : 'ещё не опубликован'}
                                         </small>
                                     </span>
-                                    {document.status === 'published' && document.href ? (
-                                        <Link href={document.href}>Открыть</Link>
+                                    {document.href ? (
+                                        <Link href={document.href}>
+                                            {document.status === 'published'
+                                                ? 'Открыть'
+                                                : 'Открыть предварительный текст'}
+                                        </Link>
                                     ) : (
                                         <span aria-disabled="true">Недоступен</span>
                                     )}
@@ -129,7 +133,9 @@ function Content() {
                             {(Object.keys(consentCopy) as ConsentKind[]).map((kind) => {
                                 const consent = query.data.consents[kind];
                                 const document = query.data.documents.find((item) => item.id === kind);
-                                const available = document?.status === 'published';
+                                const available =
+                                    document?.status === 'published' ||
+                                    (process.env.NEXT_PUBLIC_API_MODE === 'mock' && document?.demonstration === true);
                                 const highlighted = requested === kind;
                                 return (
                                     <section

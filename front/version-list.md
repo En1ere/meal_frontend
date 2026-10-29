@@ -1,5 +1,7 @@
 # Frontend version-list
 
+0.0.148 - 29.10.2026 | 12:06 - Added the public draft legal catalog with 11 allowlisted server-rendered documents, a single `[Тут будут данные]` placeholder, clear non-approved status, catalog/footer navigation, stable routes and unknown-slug 404. Demonstration legal manifests now remain drafts outside explicit mock mode, so real registration and consent mutations cannot be unlocked by test evidence.
+
 0.0.147 - 29.10.2026 | 10:17 - The deployment runbook now records the verified VPS container cutover and starts with a concise operator/agent map covering repository ownership, main-to-GHCR digest delivery, build-time API settings, server helper, loopback/Nginx routing, smoke checks, and UI-only digest rollback; no secrets or application behavior were added.
 
 0.0.146 - 28.10.2026 | 17:54 - The production build now emits a digest-pinned Next standalone server with a frontend-only, non-cacheable `/healthz` endpoint. The GHCR pipeline rejects stale main SHAs before build and deploy, publishes only a commit tag plus immutable digest, pins every Action by commit SHA, and runs through the allowlisted server helper. The container is non-root with a read-only-compatible runtime layout; build-time API mode, app version and backend rewrite origin are documented explicitly. No deployment was performed, and the deployed app remains `0.0.137`.

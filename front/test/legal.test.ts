@@ -1,5 +1,10 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
 import { test } from 'node:test';
+import type { ApiClient } from '../src/shared/api/client.js';
+import { draftLegalDocuments } from '../src/shared/legal/draft-documents.js';
+import { getPublicLegalManifest, hasPublishedRegistrationDocuments } from '../src/shared/legal/mock-legal.js';
 import { legalHandle, legalSettings, mockLegalManifest, type LegalMockState } from '../src/mocks/legal.js';
 
 const userId = 'user-demo';
@@ -63,4 +68,44 @@ void test('legal mock replays an idempotent command and rejects stale evidence',
     });
     assert.equal(stale?.status, 409);
     assert.equal(((await stale.json()) as { error: { code: string } }).error.code, 'LEGAL_DOCUMENT_STALE');
+});
+
+void test('public draft catalog is allowlisted, complete and keeps release flags blocked', () => {
+    const root = path.resolve(process.cwd(), '..', 'docs', 'legal');
+    const manifest = JSON.parse(readFileSync(path.join(root, 'package-manifest.json'), 'utf8')) as {
+        packageStatus: string;
+        publicationEligible: boolean;
+        documents: Array<{ file: string; status: string; publicationEligible: boolean }>;
+    };
+    assert.equal(draftLegalDocuments.length, 11);
+    assert.equal(new Set(draftLegalDocuments.map((document) => document.slug)).size, 11);
+    assert.deepEqual(
+        draftLegalDocuments.map((document) => document.filename).sort(),
+        manifest.documents.map((document) => document.file).sort(),
+    );
+    assert.equal(manifest.packageStatus, 'draft_blocked');
+    assert.equal(manifest.publicationEligible, false);
+    assert.ok(manifest.documents.every((document) => document.status === 'draft_blocked'));
+    assert.ok(manifest.documents.every((document) => document.publicationEligible === false));
+
+    for (const document of draftLegalDocuments) {
+        const source = readFileSync(path.join(root, document.filename), 'utf8');
+        const markers = source.match(/\[[^\]]+\]/g) ?? [];
+        assert.ok(source.includes('[Тут будут данные]'), `${document.filename} must expose the agreed placeholder`);
+        assert.ok(
+            markers.every((marker) => marker === '[Тут будут данные]' || marker === '[ ]'),
+            `${document.filename} contains an unexpected placeholder`,
+        );
+    }
+});
+
+void test('demonstration documents stay readable drafts and cannot unlock real registration', async () => {
+    const api = {
+        request: () => Promise.resolve({ data: mockLegalManifest }),
+    } as unknown as ApiClient;
+    const documents = await getPublicLegalManifest(api);
+    assert.ok(documents.every((document) => document.status === 'draft'));
+    assert.ok(documents.every((document) => document.href?.startsWith('/legal/')));
+    assert.equal(hasPublishedRegistrationDocuments(documents), false);
+    assert.equal(hasPublishedRegistrationDocuments(documents, { allowDemonstration: true }), true);
 });
