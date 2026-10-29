@@ -2,10 +2,9 @@
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { useInfiniteQuery, useMutation, useQuery } from '@tanstack/react-query';
-import { useRuntime } from '../../app/providers.js';
+import { useRuntime } from '../../shared/runtime/index.js';
 import type { Success } from '../../shared/api/contracts.generated.js';
-import { useSession } from '../auth/session.js';
-import { PublicShell } from '../public-info/public-shell.js';
+import { useSession } from '../../entities/session/client.js';
 import styles from './news.module.css';
 
 export function NewsPage() {
@@ -25,7 +24,7 @@ export function NewsPage() {
     });
     const items = query.data?.pages.flatMap((page) => page.items) ?? [];
     return (
-        <PublicShell current="news">
+        <>
             <header>
                 <h1>Новости сервиса</h1>
                 <p>Опубликованные новости и важные объявления.</p>
@@ -78,7 +77,7 @@ export function NewsPage() {
                     )}
                 </>
             )}
-        </PublicShell>
+        </>
     );
 }
 type News = Success<'GET /api/v1/news/{id}'>['data'];
@@ -180,7 +179,7 @@ export function NewsDetailPage({ id }: { id: string }) {
         queryFn: async ({ signal }) => (await api!.request('GET /api/v1/news/{id}', undefined, signal, { id })).data,
     });
     return (
-        <PublicShell current="news">
+        <>
             <Link href="/news">← Все новости</Link>
             {query.isPending ? (
                 <p role="status">Загружаем новость…</p>
@@ -195,6 +194,6 @@ export function NewsDetailPage({ id }: { id: string }) {
             ) : (
                 <Reader key={id} item={query.data} />
             )}
-        </PublicShell>
+        </>
     );
 }

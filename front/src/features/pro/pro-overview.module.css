@@ -9,7 +9,7 @@
     min-height: 23rem;
     overflow: hidden;
     border-radius: 1.35rem;
-    background: linear-gradient(135deg, #efe4d9 0%, var(--soft) 70%);
+    background: linear-gradient(135deg, var(--soft) 0%, var(--soft) 70%);
 }
 
 .hero-copy {
@@ -58,14 +58,14 @@
     align-items: center;
     gap: 1.5rem;
     padding: 1.25rem 1.5rem;
-    border: 1px solid #bdcda8;
+    border: 1px solid var(--line);
     border-radius: 1rem;
-    background: #eef4e6;
+    background: var(--mp-color-success-surface);
 }
 
 .read-only {
-    border-color: #dfc08f;
-    background: #fff4df;
+    border-color: var(--mp-color-warning-text);
+    background: var(--surface) 4df;
 }
 
 .active p,

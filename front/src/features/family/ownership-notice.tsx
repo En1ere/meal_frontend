@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { useRuntime } from '../../app/providers.js';
+import { useRuntime } from '../../shared/runtime/index.js';
 import { InlineLoader as ArcInlineLoader } from '@meal-planner/design-system';
 import styles from './family.module.css';
 

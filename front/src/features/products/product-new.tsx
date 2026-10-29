@@ -3,14 +3,15 @@ import Link from 'next/link';
 import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { useRuntime } from '../../app/providers.js';
+import { useRuntime } from '../../shared/runtime/index.js';
 import { ApiError } from '../../shared/api/client.js';
-import { useSession } from '../auth/session.js';
-import { useRequestSignal } from '../auth/use-request-signal.js';
+import { useSession } from '../../entities/session/client.js';
+import { useRequestSignal } from '../../shared/api/use-request-signal.js';
+import { commandError } from '../../shared/api/command-error.js';
+import { units } from '../../entities/measurement/model.js';
 import { InlineLoader as ArcInlineLoader } from '@meal-planner/design-system';
-import { InventoryShell, Loading, Failure, units, commandError } from '../inventory/shared.js';
-import styles from '../inventory/inventory.module.css';
-import productStyles from './products.module.css';
+import styles from './products.module.css';
+import { ProductFailure, ProductLoading } from './async-state.js';
 type AllergenStatus = 'contains' | 'may_contain' | 'unknown';
 function Content() {
     const { api, queryClient } = useRuntime();
@@ -91,9 +92,9 @@ function Content() {
                 необязательные поля останутся неизвестными.
             </p>
             {reference.isPending ? (
-                <Loading />
+                <ProductLoading />
             ) : reference.isError ? (
-                <Failure error={reference.error} retry={() => void reference.refetch()} />
+                <ProductFailure error={reference.error} retry={() => void reference.refetch()} />
             ) : (
                 <form onSubmit={(event) => void submit(event)} className={styles.form}>
                     <fieldset disabled={pending || uncertain} className={styles.lockable}>
@@ -191,7 +192,7 @@ function Content() {
                         <section className={styles.card}>
                             <h2>Аллергены</h2>
                             <p>Неизвестный состав не означает отсутствие аллергенов.</p>
-                            <div className={productStyles.allergens}>
+                            <div className={styles.allergens}>
                                 {reference.data.allergens.map((item) => (
                                     <label key={item.code}>
                                         {item.name}
@@ -235,9 +236,5 @@ function Content() {
     );
 }
 export function ProductNewPage() {
-    return (
-        <InventoryShell>
-            <Content />
-        </InventoryShell>
-    );
+    return <Content />;
 }

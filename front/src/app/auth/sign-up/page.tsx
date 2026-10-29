@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { SignUpPage } from '../../../features/auth/lifecycle-pages.js';
+import { SignUpPage } from '../../../features/auth/lifecycle/client.js';
 import { PageLoader as ArcPageLoader } from '@meal-planner/design-system';
 export const metadata = {
     title: 'Регистрация',

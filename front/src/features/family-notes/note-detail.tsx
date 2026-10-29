@@ -1,11 +1,10 @@
 'use client';
 import Link from 'next/link';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useRuntime } from '../../app/providers.js';
+import { useRuntime } from '../../shared/runtime/index.js';
 import { ApiError } from '../../shared/api/client.js';
 import { Skeleton as ArcSkeleton } from '@meal-planner/design-system';
-import { Guard, useSession } from '../auth/session.js';
-import { PersonalShell } from '../personalization/shell.js';
+import { useSession } from '../../entities/session/client.js';
 import { useState } from 'react';
 import styles from './family-notes.module.css';
 function Content({ id }: { id: string }) {
@@ -150,10 +149,8 @@ function Content({ id }: { id: string }) {
 }
 export function FamilyNoteDetail({ id }: { id: string }) {
     return (
-        <Guard context="user">
-            <PersonalShell>
-                <Content id={id} />
-            </PersonalShell>
-        </Guard>
+        <>
+            <Content id={id} />
+        </>
     );
 }

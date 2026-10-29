@@ -1,5 +1,9 @@
 import { contracts, errorSchema, type Route, type Success } from './contracts.generated.js';
-import { markOfflineSync } from '../../features/offline/offline-store.js';
+
+export interface ApiResponseCompatibility {
+    normalize(route: Route, value: unknown): { value: unknown; commit?: () => void };
+    invalidate(): void;
+}
 
 export class ApiError extends Error {
     constructor(
@@ -19,6 +23,8 @@ export class ApiClient {
     constructor(
         private readonly origin: string,
         private readonly transport: typeof fetch = fetch,
+        private readonly onSuccessfulRequest?: () => void,
+        private readonly compatibility?: ApiResponseCompatibility,
     ) {}
     // Call on logout/account/scope change before committing new private state.
     invalidate() {
@@ -27,6 +33,7 @@ export class ApiClient {
         this.controller = new AbortController();
         this.csrf = undefined;
         this.csrfRequest = undefined;
+        this.compatibility?.invalidate();
     }
     private async csrfToken(): Promise<string> {
         if (this.csrf) return this.csrf;
@@ -90,9 +97,12 @@ export class ApiClient {
             const parsed = errorSchema.parse(value);
             throw new ApiError(response.status, parsed.error.code, parsed.error.message, parsed.meta.requestId);
         }
-        markOfflineSync();
+        this.onSuccessfulRequest?.();
         // Runtime schema is selected by the same route key as the generic response type.
-        return schema.success.parse(value) as Success<R>;
+        const compatible = this.compatibility?.normalize(route, value) ?? { value };
+        const result = schema.success.parse(compatible.value) as Success<R>;
+        compatible.commit?.();
+        return result;
     }
     upload<R extends Route>(route: R, body: FormData, signal?: AbortSignal): Promise<Success<R>> {
         if (!route.startsWith('POST /api/v1/inventory/ingest/')) throw new TypeError('Unsupported upload route');

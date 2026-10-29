@@ -625,6 +625,55 @@ await test('malformed JSON, payload limits and media type match HTTP errors', as
     }
 });
 
+await test('moderator test controls preserve one-shot faults and keep sticky faults active until cleared', async () => {
+    const previousE2eMocks = process.env.NEXT_PUBLIC_E2E_PRODUCTION_MOCKS;
+    process.env.NEXT_PUBLIC_E2E_PRODUCTION_MOCKS = '1';
+    try {
+        const { browser, now } = setup();
+        const challenge = await browser.staff('moderator', 'moderator');
+        const verified = await browser.send('POST /api/v1/staff/auth/mfa/verify', {
+            challenge: challenge.challenge,
+            code: totp(challenge.enrollment!.secret, now()),
+            method: 'totp',
+        });
+        assert.equal(verified.status, 200);
+
+        const control = (mode: 'once' | 'sticky') =>
+            Buffer.from(
+                JSON.stringify({
+                    nonce: crypto.randomUUID(),
+                    path: '/api/v1/moderator/overview',
+                    method: 'GET',
+                    status: 503,
+                    mode,
+                }),
+            ).toString('base64url');
+
+        browser.cookies.moderator_test_control = control('once');
+        const oneShot = await Promise.all([
+            browser.send('GET /api/v1/moderator/overview'),
+            browser.send('GET /api/v1/moderator/overview'),
+        ]);
+        assert.deepEqual(oneShot.map((response) => response.status).sort(), [200, 503]);
+
+        browser.cookies.moderator_test_control = control('sticky');
+        const sticky = await Promise.all([
+            browser.send('GET /api/v1/moderator/overview'),
+            browser.send('GET /api/v1/moderator/overview'),
+        ]);
+        assert.deepEqual(
+            sticky.map((response) => response.status),
+            [503, 503],
+        );
+
+        delete browser.cookies.moderator_test_control;
+        assert.equal((await browser.send('GET /api/v1/moderator/overview')).status, 200);
+    } finally {
+        if (previousE2eMocks === undefined) delete process.env.NEXT_PUBLIC_E2E_PRODUCTION_MOCKS;
+        else process.env.NEXT_PUBLIC_E2E_PRODUCTION_MOCKS = previousE2eMocks;
+    }
+});
+
 await test('moderator mock enforces assignment, transition compatibility and closed-ticket reopen', async () => {
     assert.deepEqual(moderationActionsForStatus('in_review'), ['approve', 'reject']);
     assert.deepEqual(moderationActionsForStatus('approved'), ['publish', 'reject']);

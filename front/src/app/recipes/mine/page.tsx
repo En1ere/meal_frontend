@@ -1,11 +1,14 @@
 import { Suspense } from 'react';
-import { MyRecipes } from '../../../features/recipes/mine.js';
-import { RecipeLoading } from '../../../features/recipes/shared.js';
+import { MyRecipes, RecipeLoading } from '../../../features/recipes/client.js';
+import { recipeShellClassName } from '../../../features/recipes/server.js';
+import { GuardedUserAppShell } from '../../../widgets/user-app-shell/client.js';
 export const metadata = { title: 'Мои рецепты', robots: { index: false, follow: false } };
 export default function Page() {
     return (
         <Suspense fallback={<RecipeLoading />}>
-            <MyRecipes />
+            <GuardedUserAppShell context="user" allowOffline scope="personal" contentClassName={recipeShellClassName()}>
+                <MyRecipes />
+            </GuardedUserAppShell>
         </Suspense>
     );
 }

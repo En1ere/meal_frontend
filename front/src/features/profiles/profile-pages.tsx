@@ -2,24 +2,17 @@
 import Link from 'next/link';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { resolveTheme, ThemeSwitcher, type ThemeName } from '@meal-planner/design-system';
-import { useRuntime, useUi } from '../../app/providers.js';
+import { useRuntime, useUi } from '../../shared/runtime/index.js';
 import { ApiError } from '../../shared/api/client.js';
-import { Guard, useSession } from '../auth/session.js';
+import { setUserSession, useSession } from '../../entities/session/client.js';
 import { Skeleton as ArcSkeleton } from '@meal-planner/design-system';
 import { profileFallbacks as fallback, profileText, recipeCountText } from './fallbacks.js';
 import styles from './profile-pages.module.css';
 import { useState, type ReactNode } from 'react';
 import type { Success } from '../../shared/api/contracts.generated.js';
-import { PublicRecipeFeed } from '../community/community.js';
-import { FollowAuthorButton } from '../recommendations/actions.js';
-import { FollowingList } from '../community/following.js';
-import { PublicProgressSummary } from '../achievements/public-progress.js';
-import { UserAppShell } from '../../ui/AppShell/UserAppShell.js';
-import { PublicShell } from '../public-info/public-shell.js';
 
-function ProfileShell({ children, own = false }: { children: ReactNode; own?: boolean }) {
-    const content = <div className={styles.content}>{children}</div>;
-    return own ? <UserAppShell>{content}</UserAppShell> : <PublicShell current="community">{content}</PublicShell>;
+function ProfileContent({ children }: { children: ReactNode }) {
+    return <div className={styles.content}>{children}</div>;
 }
 export function ProfileLoading() {
     return (
@@ -143,8 +136,9 @@ function OwnProfileForm({
         </form>
     );
 }
-function OwnContent() {
-    const { api, queryClient } = useRuntime();
+function OwnContent({ following }: { following: ReactNode }) {
+    const runtime = useRuntime();
+    const { api, queryClient } = runtime;
     const session = useSession('user');
     const query = useQuery({
         queryKey: ['profile', 'own', session.data?.id],
@@ -197,7 +191,7 @@ function OwnContent() {
                         profile={profile}
                         onSaved={(value) => {
                             queryClient.setQueryData(['profile', 'own', session.data?.id], value);
-                            queryClient.setQueryData(['session', 'user'], (old: typeof session.data) =>
+                            setUserSession(runtime, (old: typeof session.data) =>
                                 old ? { ...old, displayName: value.displayName ?? value.username } : old,
                             );
                         }}
@@ -212,21 +206,29 @@ function OwnContent() {
             </div>
             <section className={styles.card}>
                 <h2>Мои подписки</h2>
-                <FollowingList />
+                {following}
             </section>
         </>
     );
 }
-export function OwnProfilePage() {
+export function OwnProfilePage({ following }: { following: ReactNode }) {
     return (
-        <Guard context="user">
-            <ProfileShell own>
-                <OwnContent />
-            </ProfileShell>
-        </Guard>
+        <ProfileContent>
+            <OwnContent following={following} />
+        </ProfileContent>
     );
 }
-export function PublicProfilePage({ username }: { username: string }) {
+export function PublicProfilePage({
+    username,
+    followAction,
+    progressSummary,
+    recipeFeed,
+}: {
+    username: string;
+    followAction: ReactNode;
+    progressSummary: ReactNode;
+    recipeFeed: ReactNode;
+}) {
     const { api, error } = useRuntime();
     const query = useQuery({
         queryKey: ['profile', 'public', username],
@@ -237,7 +239,7 @@ export function PublicProfilePage({ username }: { username: string }) {
         },
     });
     return (
-        <ProfileShell>
+        <ProfileContent>
             {error ? (
                 <ProfileError error={error} retry={() => window.location.reload()} />
             ) : query.isPending ? (
@@ -250,15 +252,15 @@ export function PublicProfilePage({ username }: { username: string }) {
                         <div>
                             <ProfileAvatar key={query.data.avatarUrl} src={query.data.avatarUrl} />
                             <h1>{query.data.username ? `@${query.data.username}` : fallback.username}</h1>
-                            <FollowAuthorButton username={username} />
-                            <PublicProgressSummary username={username} />
+                            {followAction}
+                            {progressSummary}
                         </div>
                         <img className={styles['hero-image']} src="/assets/achievements-kitchen-cover.webp" alt="" />
                     </section>
                     <section className={styles.card}>
                         <h2>Опубликованные рецепты</h2>
                         <p>{recipeCountText(query.data.recipeCount)}</p>
-                        <PublicRecipeFeed author={username} returnTo={`/authors/${encodeURIComponent(username)}`} />
+                        {recipeFeed}
                     </section>
                     <section className={styles.card}>
                         <h2>Достижения и репутация</h2>
@@ -273,6 +275,6 @@ export function PublicProfilePage({ username }: { username: string }) {
                     </section>
                 </>
             )}
-        </ProfileShell>
+        </ProfileContent>
     );
 }

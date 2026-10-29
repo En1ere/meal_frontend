@@ -3,8 +3,8 @@ import Link from 'next/link';
 import { useRef, useEffect } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
-import { useRuntime } from '../../app/providers.js';
-import { useSession } from '../auth/session.js';
+import { useRuntime } from '../../shared/runtime/index.js';
+import { useSession } from '../../entities/session/client.js';
 import {
     InventoryShell,
     Loading,

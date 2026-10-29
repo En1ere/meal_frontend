@@ -2,13 +2,17 @@
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { useRuntime } from '../../app/providers.js';
-import { useSession } from '../auth/session.js';
-import { InventoryShell, Loading, Failure, units, localDate, expiryText, dateText } from '../inventory/shared.js';
+import { useRuntime } from '../../shared/runtime/index.js';
+import { useSession } from '../../entities/session/client.js';
+import { units } from '../../entities/measurement/model.js';
+import { inventoryScopeQuery } from '../../entities/inventory/model.js';
+import { inventoryKeys } from '../../entities/inventory/query-keys.js';
+import { expiryText } from '../../entities/inventory/presentation.js';
+import { dateText, localDate } from '../../shared/lib/date.js';
 import type { Success } from '../../shared/api/contracts.generated.js';
-import styles from '../inventory/inventory.module.css';
-import productStyles from './products.module.css';
+import styles from './products.module.css';
 import { productView, updateViewUrl } from './url-state.js';
+import { ProductFailure, ProductLoading } from './async-state.js';
 type Product = Success<'GET /api/v1/products/{id}'>['data']['product'];
 const tabs = [
     ['about', 'О продукте'],
@@ -89,7 +93,7 @@ function Info({ product }: { product: Product }) {
                     </p>
                 )}
             </section>
-            <div className={productStyles.tabs} aria-label="Сведения о продукте">
+            <div className={styles.tabs} aria-label="Сведения о продукте">
                 {tabs.map(([value, label]) => (
                     <button
                         className="button outline"
@@ -120,7 +124,7 @@ function Info({ product }: { product: Product }) {
                                 ? `На ${nutrition.basisQuantity} ${units[nutrition.basisUnit]}`
                                 : 'Базис пищевой ценности неизвестен'}
                         </p>
-                        <dl className={productStyles.nutrients}>
+                        <dl className={styles.nutrients}>
                             {(
                                 [
                                     ['kcal', 'Калории', 'ккал'],
@@ -187,7 +191,7 @@ function Content({ id }: { id: string }) {
             (await api!.request('GET /api/v1/products/{id}', undefined, signal, { id })).data.product,
     });
     const batches = useQuery({
-        queryKey: ['inventory', 'product', user.data?.id, id],
+        queryKey: inventoryKeys.forProduct(user.data?.id, id),
         enabled: !!api && !!user.data,
         queryFn: async ({ signal }) =>
             (
@@ -197,13 +201,17 @@ function Content({ id }: { id: string }) {
             ).data,
     });
     const locations = useQuery({
-        queryKey: ['inventory-locations', user.data?.id],
+        queryKey: inventoryKeys.locations('private', user.data?.id),
         enabled: !!api && !!user.data,
         queryFn: async ({ signal }) =>
-            (await api!.request('GET /api/v1/inventory-locations', undefined, signal)).data.items,
+            (
+                await api!.request('GET /api/v1/inventory-locations', undefined, signal, undefined, {
+                    query: inventoryScopeQuery('private'),
+                })
+            ).data.items,
     });
-    if (query.isPending) return <Loading />;
-    if (query.isError) return <Failure error={query.error} retry={() => void query.refetch()} />;
+    if (query.isPending) return <ProductLoading />;
+    if (query.isError) return <ProductFailure error={query.error} retry={() => void query.refetch()} />;
     const product = query.data;
     return (
         <>
@@ -231,9 +239,9 @@ function Content({ id }: { id: string }) {
                         <h2>У меня в запасах</h2>
                         <p className={styles.muted}>Только ваши личные партии</p>
                         {batches.isPending ? (
-                            <Loading />
+                            <ProductLoading />
                         ) : batches.isError ? (
-                            <Failure error={batches.error} retry={() => void batches.refetch()} />
+                            <ProductFailure error={batches.error} retry={() => void batches.refetch()} />
                         ) : batches.data.items.length === 0 ? (
                             <p>Пока нет активных партий этого продукта.</p>
                         ) : (
@@ -270,9 +278,5 @@ function Content({ id }: { id: string }) {
     );
 }
 export function ProductDetailPage({ id }: { id: string }) {
-    return (
-        <InventoryShell>
-            <Content key={id} id={id} />
-        </InventoryShell>
-    );
+    return <Content key={id} id={id} />;
 }

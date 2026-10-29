@@ -2,14 +2,14 @@
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useRuntime } from '../../app/providers.js';
+import { useRuntime } from '../../shared/runtime/index.js';
 import { ApiError } from '../../shared/api/client.js';
 import { authRoutes, safeReturnTo, type AuthContext } from '../../shared/auth/routes.js';
 import { AuthShell as DesignSystemAuthShell } from '@meal-planner/design-system';
 import { Brand } from '../../shared/ui/brand.js';
-import { ThemeControl } from '../../ui/ThemeControl/ThemeControl.js';
-import { useSession } from './session.js';
-import { useRequestSignal } from './use-request-signal.js';
+import { ThemeControl } from '../../shared/ui/theme-control.js';
+import { setUserSession, useSession } from '../../entities/session/client.js';
+import { useRequestSignal } from '../../shared/api/use-request-signal.js';
 import { InlineLoader as ArcInlineLoader } from '@meal-planner/design-system';
 
 const neutralError = (error: unknown) =>
@@ -84,7 +84,7 @@ export function SignIn({
                           : await runtime.api.request('POST /api/v1/auth/pin/login', { pin: password }, signal);
                 signal.throwIfAborted();
                 runtime.reset();
-                runtime.queryClient.setQueryData(['session', 'user'], response.data.user);
+                setUserSession(runtime, response.data.user);
                 runtime.broadcast();
             } else {
                 const response = await runtime.api.request(

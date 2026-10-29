@@ -1,9 +1,8 @@
 'use client';
 import Link from 'next/link';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { useRuntime } from '../../app/providers.js';
-import { Guard, useSession } from '../auth/session.js';
-import { PersonalShell } from './shell.js';
+import { useRuntime } from '../../shared/runtime/index.js';
+import { useSession } from '../../entities/session/client.js';
 import styles from './personalization.module.css';
 const flows = {
     quick: {
@@ -152,10 +151,8 @@ function Content() {
 }
 export function OnboardingPage() {
     return (
-        <Guard context="user">
-            <PersonalShell>
-                <Content />
-            </PersonalShell>
-        </Guard>
+        <>
+            <Content />
+        </>
     );
 }

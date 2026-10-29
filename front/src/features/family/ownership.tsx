@@ -2,10 +2,10 @@
 import Link from 'next/link';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
-import { useRuntime } from '../../app/providers.js';
+import { useRuntime } from '../../shared/runtime/index.js';
+import { familyKeys } from '../../entities/family/model.js';
 import type { Success } from '../../shared/api/contracts.generated.js';
-import { Guard, useSession } from '../auth/session.js';
-import { PersonalShell } from '../personalization/shell.js';
+import { useSession } from '../../entities/session/client.js';
 import styles from './family.module.css';
 type Preview = Success<'POST /api/v1/family/ownership/preview'>['data'];
 
@@ -184,7 +184,7 @@ function RequestContent({ token }: { token: string }) {
                 current ? { ...current, request: result.request, token: result.token } : current,
             );
             void query.refetch();
-            void queryClient.invalidateQueries({ queryKey: ['family'] });
+            void queryClient.invalidateQueries({ queryKey: familyKeys.all });
             void queryClient.invalidateQueries({ queryKey: ['family-ownership'] });
         },
         onError: () => void query.refetch(),
@@ -274,19 +274,15 @@ function RequestContent({ token }: { token: string }) {
 }
 export function OwnershipPage() {
     return (
-        <Guard context="user">
-            <PersonalShell>
-                <OwnershipContent />
-            </PersonalShell>
-        </Guard>
+        <>
+            <OwnershipContent />
+        </>
     );
 }
 export function OwnershipRequestPage({ token }: { token: string }) {
     return (
-        <Guard context="user">
-            <PersonalShell>
-                <RequestContent token={token} />
-            </PersonalShell>
-        </Guard>
+        <>
+            <RequestContent token={token} />
+        </>
     );
 }

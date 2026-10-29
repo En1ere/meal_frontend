@@ -4,16 +4,18 @@ import Link from 'next/link';
 import { useRef } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
-import { useRuntime } from '../../app/providers.js';
+import { useRuntime } from '../../shared/runtime/index.js';
 import { InlineLoader as ArcInlineLoader } from '@meal-planner/design-system';
 import { Skeleton as ArcSkeleton } from '@meal-planner/design-system';
-import { Guard, useSession } from '../auth/session.js';
-import { PersonalShell } from '../personalization/shell.js';
+import { useSession } from '../../entities/session/client.js';
+import { familyKeys } from '../../entities/family/model.js';
+import { useWorkspaceScope } from '../../entities/workspace-scope/client.js';
 import styles from './family.module.css';
 
 function Content() {
     const { api, queryClient } = useRuntime();
     const session = useSession('user');
+    const setScopeFor = useWorkspaceScope((state) => state.setScopeFor);
     const token = useSearchParams().get('token') ?? '';
     const key = useRef(crypto.randomUUID());
     const preview = useQuery({
@@ -35,7 +37,10 @@ function Content() {
                     idempotencyKey: key.current,
                 })
             ).data,
-        onSuccess: (family) => queryClient.setQueryData(['family', session.data?.id], family),
+        onSuccess: (family) => {
+            queryClient.setQueryData(familyKeys.context(session.data?.id), family);
+            if (session.data?.id) setScopeFor(session.data.id, 'family');
+        },
     });
     if (!token)
         return (
@@ -100,10 +105,8 @@ function Content() {
 
 export function FamilyInvitePage() {
     return (
-        <Guard context="user">
-            <PersonalShell>
-                <Content />
-            </PersonalShell>
-        </Guard>
+        <>
+            <Content />
+        </>
     );
 }

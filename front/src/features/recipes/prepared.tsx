@@ -2,9 +2,10 @@
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
-import { useRuntime } from '../../app/providers.js';
-import { Guard, useSession } from '../auth/session.js';
-import { RecipeShell, RecipeLoading, RecipeError, recipeUnits } from './shared.js';
+import { useRuntime } from '../../shared/runtime/index.js';
+import { useSession } from '../../entities/session/client.js';
+import { RecipeShell, RecipeLoading, RecipeError } from './shared.js';
+import { recipeUnits } from '../../entities/recipe/model.js';
 import styles from './workspace.module.css';
 function Content() {
     const { api } = useRuntime();
@@ -54,10 +55,8 @@ function Content() {
 }
 export function PreparedStocks() {
     return (
-        <Guard context="user">
-            <RecipeShell>
-                <Content />
-            </RecipeShell>
-        </Guard>
+        <RecipeShell>
+            <Content />
+        </RecipeShell>
     );
 }

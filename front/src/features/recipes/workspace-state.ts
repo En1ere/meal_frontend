@@ -34,5 +34,27 @@ export const recipeStatus: Record<string, string> = {
     published: 'Опубликован',
     rejected: 'Нужны исправления',
     changes_requested: 'Нужны исправления',
+    hidden: 'Скрыт',
+    unpublished: 'Снят с публикации',
     archived: 'Архив',
 };
+
+export function publicationState(recipe: WorkspaceRecipe): {
+    label: string;
+    publicHref: string | null;
+    mismatch: boolean;
+} {
+    if (!recipe.publication) return { label: 'Публичной версии нет', publicHref: null, mismatch: false };
+    const mismatch = recipe.publication.revisionId !== recipe.revisionId;
+    return {
+        label: mismatch
+            ? 'Опубликована предыдущая редакция; текущая редакция остаётся приватной'
+            : 'Текущая редакция опубликована',
+        publicHref: `/recipes/${recipe.id}`,
+        mismatch,
+    };
+}
+
+export function canSubmitCurrentRevision(recipe: WorkspaceRecipe): boolean {
+    return recipe.review.revisionId !== recipe.revisionId || recipe.review.status === 'draft';
+}

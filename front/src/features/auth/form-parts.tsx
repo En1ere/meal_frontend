@@ -3,7 +3,7 @@ import { useId, useRef, useState, type InputHTMLAttributes, type ReactNode } fro
 import { ApiError } from '../../shared/api/client.js';
 import { ZodError } from 'zod';
 import { InlineLoader as ArcInlineLoader } from '@meal-planner/design-system';
-import { useRequestSignal } from './use-request-signal.js';
+import { useRequestSignal } from '../../shared/api/use-request-signal.js';
 
 export const passwordHelp = 'От 12 до 128 символов: строчные и заглавные буквы, цифры и специальные символы.';
 export function Field({ label, ...props }: InputHTMLAttributes<HTMLInputElement> & { label: string }) {

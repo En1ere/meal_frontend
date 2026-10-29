@@ -1,5 +1,11 @@
-import { OfflineRecipes } from '../../../features/recipes/offline.js';
+import { OfflineRecipes } from '../../../features/recipes/client.js';
+import { recipeShellClassName } from '../../../features/recipes/server.js';
+import { GuardedUserAppShell } from '../../../widgets/user-app-shell/client.js';
 export const metadata = { title: 'Сохранённые рецепты', robots: { index: false, follow: false } };
 export default function Page() {
-    return <OfflineRecipes />;
+    return (
+        <GuardedUserAppShell context="user" allowOffline scope="personal" contentClassName={recipeShellClassName()}>
+            <OfflineRecipes />
+        </GuardedUserAppShell>
+    );
 }

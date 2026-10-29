@@ -2,7 +2,7 @@
 import { BrowserQRCodeSvgWriter } from '@zxing/browser';
 import { useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useRuntime } from '../../app/providers.js';
+import { useRuntime } from '../../shared/runtime/index.js';
 import type { Preserve } from './types.js';
 import { usePreserveCommand } from './use-command.js';
 import { dayText } from './shared.js';

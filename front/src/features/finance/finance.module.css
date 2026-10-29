@@ -65,14 +65,14 @@
     align-items: center;
     gap: 1.5rem;
     padding: 1.1rem 1.25rem;
-    border: 1px solid #bdcda8;
+    border: 1px solid var(--line);
     border-radius: 1rem;
-    background: #eef4e6;
+    background: var(--mp-color-success-surface);
 }
 
 .read-only {
-    border-color: #dfc08f;
-    background: #fff4df;
+    border-color: var(--mp-color-warning-text);
+    background: var(--surface) 4df;
 }
 
 .period,
@@ -262,8 +262,7 @@
     gap: 0.8rem;
 }
 
-.price-grid article,
-.cost-badge {
+.price-grid article {
     display: grid;
     gap: 0.35rem;
     padding: 1.1rem;
@@ -272,13 +271,11 @@
     background: var(--surface);
 }
 
-.price-grid :where(span, small),
-.cost-badge :where(span, small, p) {
+.price-grid :where(span, small) {
     color: var(--muted);
 }
 
-.price-grid :where(strong),
-.cost-badge :where(strong) {
+.price-grid :where(strong) {
     font:
         700 1.35rem Georgia,
         serif;
@@ -308,18 +305,6 @@
     text-align: right;
 }
 
-.cost-badge {
-    max-width: 32rem;
-    margin-block: 1rem;
-    border-color: #bdcda8;
-    background: #f6f7ef;
-}
-
-.cost-badge p {
-    margin: 0.25rem 0 0;
-    font-size: 0.78rem;
-}
-
 .consent {
     grid-column: 1 / -1;
     grid-template-columns: auto 1fr !important;
@@ -339,7 +324,7 @@
 
 .form-error {
     grid-column: 1 / -1;
-    color: #a33b2c;
+    color: var(--danger);
 }
 
 .table-panel {

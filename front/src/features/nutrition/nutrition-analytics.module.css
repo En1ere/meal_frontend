@@ -4,7 +4,7 @@
     max-width: 1180px;
     margin: 0 auto;
     padding: 34px 24px 70px;
-    color: #202b24;
+    color: var(--ink);
 }
 
 .header,
@@ -28,11 +28,11 @@
 .empty p,
 .disclaimer p {
     margin: 0;
-    color: #647168;
+    color: var(--muted);
 }
 
 .eyebrow {
-    color: #628646;
+    color: var(--accent);
     font-size: 0.78rem;
     font-weight: 800;
     letter-spacing: 0.08em;
@@ -41,28 +41,28 @@
 
 .read-only {
     padding: 16px 20px;
-    border: 1px solid #dbcaa6;
+    border: 1px solid var(--line);
     border-radius: 18px;
-    background: #fff9e9;
+    background: var(--surface) 9e9;
 }
 
 .read-only span {
-    color: #74684f;
+    color: var(--muted);
 }
 
 .filters {
     justify-content: flex-start;
     padding: 18px;
-    border: 1px solid #e4e9e4;
+    border: 1px solid var(--line);
     border-radius: 20px;
-    background: #fff;
+    background: var(--surface);
 }
 
 .filters label,
 .panel label {
     display: grid;
     gap: 7px;
-    color: #546159;
+    color: var(--muted);
     font-size: 0.86rem;
     font-weight: 700;
 }
@@ -72,16 +72,16 @@
 .panel select {
     min-height: 44px;
     padding: 0 12px;
-    border: 1px solid #cfd8d1;
+    border: 1px solid var(--line);
     border-radius: 11px;
-    background: #fff;
+    background: var(--surface);
     color: inherit;
     font: inherit;
 }
 
 .filters > span {
     margin-left: auto;
-    color: #7a857e;
+    color: var(--muted);
     font-size: 0.84rem;
 }
 
@@ -94,10 +94,10 @@
 .metrics article,
 .panel,
 .history {
-    border: 1px solid #e1e8e2;
+    border: 1px solid var(--line);
     border-radius: 22px;
-    background: #fff;
-    box-shadow: 0 14px 34px rgb(42 64 47 / 6%);
+    background: var(--surface);
+    box-shadow: 0 14px 34px color-mix(in srgb, var(--ink) 6%, transparent);
 }
 
 .metrics article {
@@ -110,7 +110,7 @@
 .metrics small,
 .section-heading > span,
 .coverage {
-    color: #738078;
+    color: var(--muted);
     font-size: 0.8rem;
 }
 
@@ -143,7 +143,7 @@
 
 .bar-column > span,
 .bar-column > small {
-    color: #667269;
+    color: var(--muted);
     font-size: 0.76rem;
 }
 
@@ -154,14 +154,14 @@
     min-height: 190px;
     overflow: hidden;
     border-radius: 12px 12px 5px 5px;
-    background: #eff3ef;
+    background: var(--soft);
 }
 
 .track i {
     display: block;
     width: 100%;
     border-radius: inherit;
-    background: linear-gradient(180deg, #91b66b, #557e3d);
+    background: linear-gradient(180deg, var(--accent), var(--accent-hover));
 }
 
 .coverage {
@@ -194,7 +194,7 @@
 }
 
 .form-error {
-    color: #a83c35;
+    color: var(--danger);
     font-size: 0.88rem;
 }
 
@@ -211,11 +211,11 @@
     gap: 6px;
     padding: 14px 16px;
     border-radius: 14px;
-    background: #f6f8f5;
+    background: var(--soft);
 }
 
 .history li span {
-    color: #667269;
+    color: var(--muted);
     font-size: 0.84rem;
 }
 
@@ -224,7 +224,7 @@
     gap: 18px;
     padding: 18px 22px;
     border-radius: 18px;
-    background: #f3f6ef;
+    background: var(--soft);
 }
 
 .error,

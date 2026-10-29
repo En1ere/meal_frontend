@@ -234,17 +234,19 @@ function consumeTestControl(cookie: string | undefined, method: string, path: st
         const binary = atob(encoded.padEnd(Math.ceil(encoded.length / 4) * 4, '='));
         const control = JSON.parse(
             new TextDecoder().decode(Uint8Array.from(binary, (character) => character.charCodeAt(0))),
-        ) as { nonce?: string; method?: string; path?: string; status?: number };
+        ) as { nonce?: string; method?: string; path?: string; status?: number; mode?: 'once' | 'sticky' };
+        const sticky = control.mode === 'sticky';
         if (
             !control.nonce ||
-            consumedTestControls.has(control.nonce) ||
+            (!sticky && consumedTestControls.has(control.nonce)) ||
             control.method !== method ||
             control.path !== path ||
             !control.status ||
+            (control.mode !== undefined && control.mode !== 'once' && control.mode !== 'sticky') ||
             ![401, 403, 404, 409, 412, 429, 500, 503].includes(control.status)
         )
             return null;
-        consumedTestControls.add(control.nonce);
+        if (!sticky) consumedTestControls.add(control.nonce);
         return fail(control.status);
     } catch {
         return null;

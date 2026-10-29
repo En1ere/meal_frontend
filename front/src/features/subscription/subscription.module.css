@@ -282,7 +282,7 @@
 }
 
 .dialog::backdrop {
-    background: rgb(35 20 12 / 55%);
+    background: var(--mp-color-overlay);
 }
 
 .dialog > * + * {

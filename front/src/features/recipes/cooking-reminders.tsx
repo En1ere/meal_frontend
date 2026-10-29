@@ -1,8 +1,8 @@
 'use client';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
-import { useRuntime } from '../../app/providers.js';
-import { useSession } from '../auth/session.js';
+import { useRuntime } from '../../shared/runtime/index.js';
+import { useSession } from '../../entities/session/client.js';
 import { useRecipeCommand } from './use-command.js';
 import type { Success } from '../../shared/api/contracts.generated.js';
 import styles from './workspace.module.css';

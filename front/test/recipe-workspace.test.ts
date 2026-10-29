@@ -197,3 +197,75 @@ void test('family recipes are shared with members while only the author can edit
         404,
     );
 });
+
+void test('edit preserves prior review and archive closes the active publication without republishing on restore', async () => {
+    const { state, send } = setup();
+    const created = contracts['POST /api/v1/recipe-workspace'].success.shape.data.parse(
+        await send(base, 'POST', { idempotencyKey: crypto.randomUUID(), document: {} }).json(),
+    ).recipe;
+    const row = state.recipeWorkspace.recipes.find((item) => item.recipe.id === created.id)!;
+    const r1 = row.recipe.revisionId;
+    row.recipe.status = 'published';
+    row.recipe.review = { revisionId: r1, status: 'published', publicReason: null };
+    row.recipe.publication = { revisionId: r1, publishedAt: '2026-10-28T00:00:00.000Z' };
+    const edited = contracts['PUT /api/v1/recipe-workspace/{id}'].success.shape.data.parse(
+        await send(`${base}/${created.id}`, 'PUT', {
+            idempotencyKey: crypto.randomUUID(),
+            expectedVersion: 1,
+            document: created.document,
+        }).json(),
+    ).recipe;
+    assert.notEqual(edited.revisionId, r1);
+    assert.equal(edited.review.revisionId, r1);
+    assert.equal(edited.publication?.revisionId, r1);
+    const archived = contracts['POST /api/v1/recipe-workspace/{id}/archive'].success.shape.data.parse(
+        await send(`${base}/${created.id}/archive`, 'POST', {
+            idempotencyKey: crypto.randomUUID(),
+            expectedVersion: 2,
+        }).json(),
+    ).recipe;
+    assert.equal(archived.review.revisionId, r1);
+    assert.equal(archived.review.status, 'unpublished');
+    assert.equal(archived.publication, null);
+    const restored = contracts['POST /api/v1/recipe-workspace/{id}/restore'].success.shape.data.parse(
+        await send(`${base}/${created.id}/restore`, 'POST', {
+            idempotencyKey: crypto.randomUUID(),
+            expectedVersion: 3,
+        }).json(),
+    ).recipe;
+    assert.equal(restored.archived, false);
+    assert.equal(restored.publication, null);
+});
+
+void test('critical hide closes the active old publication case instead of the newer editable revision', async () => {
+    const { state, send } = setup();
+    const created = contracts['POST /api/v1/recipe-workspace'].success.shape.data.parse(
+        await send(base, 'POST', { idempotencyKey: crypto.randomUUID(), document: {} }).json(),
+    ).recipe;
+    const row = state.recipeWorkspace.recipes.find((item) => item.recipe.id === created.id)!;
+    const r1 = row.recipe.revisionId;
+    row.recipe.status = 'published';
+    row.recipe.review = { revisionId: r1, status: 'published', publicReason: null };
+    row.recipe.publication = { revisionId: r1, publishedAt: '2026-10-28T00:00:00.000Z' };
+    const edited = contracts['PUT /api/v1/recipe-workspace/{id}'].success.shape.data.parse(
+        await send(`${base}/${created.id}`, 'PUT', {
+            idempotencyKey: crypto.randomUUID(),
+            expectedVersion: 1,
+            document: created.document,
+        }).json(),
+    ).recipe;
+    assert.notEqual(edited.revisionId, r1);
+    assert.equal(
+        send(`${base}/${created.id}/reports`, 'POST', {
+            idempotencyKey: crypto.randomUUID(),
+            reason: 'dangerous',
+            comment: null,
+            commentId: null,
+        }).status,
+        200,
+    );
+    const hidden = state.recipeWorkspace.recipes.find((item) => item.recipe.id === created.id)!.recipe;
+    assert.equal(hidden.review.revisionId, r1);
+    assert.equal(hidden.review.status, 'hidden');
+    assert.equal(hidden.publication, null);
+});

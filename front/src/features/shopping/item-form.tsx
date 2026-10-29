@@ -1,12 +1,12 @@
 'use client';
 import { useState } from 'react';
 import type { Success } from '../../shared/api/contracts.generated.js';
-import { units } from '../inventory/shared.js';
+import { units } from '../../entities/measurement/model.js';
 import { ProductPicker } from './product-picker.js';
 import { useShoppingCommand } from './use-command.js';
 import styles from './shopping.module.css';
-import { readOfflineOwner } from '../offline/offline-store.js';
-import { enqueueOfflineOperation } from '../offline/queue.js';
+import { readOfflineOwner } from '../../entities/offline/store.js';
+import { enqueueOfflineOperation } from '../../entities/offline/queue.js';
 type Item = Success<'GET /api/v1/shopping-lists/{id}'>['data']['items'][number];
 export function ItemForm({
     listId,

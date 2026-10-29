@@ -1,4 +1,4 @@
-import { ProductNewPage } from '../../../features/products/product-new.js';
+import { ProductNewPage } from '../../../features/products/client.js';
 export const metadata = { title: 'Новый продукт', robots: { index: false, follow: false } };
 export default function Page() {
     return <ProductNewPage />;

@@ -159,7 +159,7 @@
 }
 
 .error {
-    color: var(--danger, #a33);
+    color: var(--danger);
 }
 
 @media (width <= 640px) {

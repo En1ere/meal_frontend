@@ -2,47 +2,83 @@
 
 import Link from 'next/link';
 import { useRef, useState, type FormEvent } from 'react';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { useRuntime, useUi } from '../../app/providers.js';
+import { useRuntime } from '../../shared/runtime/index.js';
 import { InlineLoader as ArcInlineLoader } from '@meal-planner/design-system';
-import { Guard, useSession } from '../auth/session.js';
-import { PersonalShell } from '../personalization/shell.js';
+import { useSession } from '../../entities/session/client.js';
 import { ApiError } from '../../shared/api/client.js';
+import { useWorkspaceScope } from '../../entities/workspace-scope/client.js';
+import { familyKeys, useFamilyContext } from '../../entities/family/client.js';
+import { keepExactAttempt, type ExactAttempt } from './exact-attempt.js';
 import styles from './family.module.css';
 
 function Content() {
     const { api, queryClient } = useRuntime();
     const session = useSession('user');
     const router = useRouter();
-    const setScope = useUi((state) => state.setScope);
+    const setScope = useWorkspaceScope((state) => state.setScope);
     const [name, setName] = useState('');
-    const idempotencyKey = useRef(crypto.randomUUID());
+    const [unknown, setUnknown] = useState(false);
+    const [needsReadback, setNeedsReadback] = useState(false);
+    const [feedback, setFeedback] = useState('');
+    const [reconciling, setReconciling] = useState(false);
+    const attempt = useRef<ExactAttempt<{ name: string }> | null>(null);
     const submitting = useRef(false);
-    const query = useQuery({
-        queryKey: ['family', session.data?.id],
-        enabled: !!api && !!session.data,
-        queryFn: async ({ signal }) => (await api!.request('GET /api/v1/family', undefined, signal)).data,
-    });
+    const query = useFamilyContext(session.data?.id);
+    const finish = (result: NonNullable<typeof query.data>) => {
+        attempt.current = null;
+        setUnknown(false);
+        setNeedsReadback(false);
+        queryClient.setQueryData(familyKeys.context(session.data?.id), result);
+        setScope('family');
+        router.replace('/family');
+    };
+    const readback = async () => {
+        setReconciling(true);
+        try {
+            const refreshed = await query.refetch();
+            if (refreshed.data?.state === 'active') {
+                finish(refreshed.data);
+                return 'active' as const;
+            }
+            if (refreshed.error) return 'failed' as const;
+            return 'none' as const;
+        } finally {
+            setReconciling(false);
+        }
+    };
     const mutation = useMutation({
         mutationFn: async () => {
-            await api!.request('POST /api/v1/family', {
-                name,
-                idempotencyKey: idempotencyKey.current,
-            });
+            attempt.current = keepExactAttempt(attempt.current, { name: name.trim() });
+            await api!.request('POST /api/v1/family', attempt.current.body);
             return (await api!.request('GET /api/v1/family')).data;
         },
         onSuccess: (result) => {
-            queryClient.setQueryData(['family', session.data?.id], result);
-            setScope('family');
-            router.replace('/family');
+            finish(result);
         },
         onError: async (error) => {
-            if (!(error instanceof ApiError) || ![403, 409, 412].includes(error.status)) return;
-            const refreshed = await query.refetch();
-            if (refreshed.data?.state === 'active') {
-                setScope('family');
-                router.replace('/family');
+            const uncertain = !(error instanceof ApiError) || error.status >= 500;
+            const state = await readback();
+            if (state === 'active') return;
+            if (uncertain) {
+                setUnknown(true);
+                setFeedback(
+                    state === 'failed'
+                        ? 'Результат запроса неизвестен, а перечитать семью не удалось. Название и ключ сохранены для точного повтора.'
+                        : 'Результат запроса неизвестен. Семья пока не найдена; название и ключ сохранены для точного повтора.',
+                );
+            } else {
+                attempt.current = null;
+                setUnknown(false);
+                setNeedsReadback(state === 'failed');
+                setFeedback(
+                    `${error.message}. ${
+                        state === 'failed'
+                            ? 'Перечитать семью не удалось; повторите проверку перед новым действием.'
+                            : 'Состояние семьи перечитано; исправьте ввод и отправьте новое действие.'
+                    }`,
+                );
             }
         },
         onSettled: () => {
@@ -53,6 +89,7 @@ function Content() {
         event.preventDefault();
         if (!name.trim() || submitting.current) return;
         submitting.current = true;
+        setFeedback('');
         mutation.mutate();
     };
     if (query.isPending) return <p role="status">Проверяем семейный доступ…</p>;
@@ -97,6 +134,7 @@ function Content() {
                         Название семьи
                         <input
                             value={name}
+                            disabled={mutation.isPending || unknown || needsReadback || reconciling}
                             maxLength={80}
                             required
                             autoComplete="off"
@@ -104,16 +142,39 @@ function Content() {
                             placeholder="Например, Наш дом"
                         />
                     </label>
-                    <button className="button primary" disabled={mutation.isPending || !name.trim()}>
-                        {mutation.isPending && <ArcInlineLoader label={null} />}Создать семью
+                    <button
+                        className="button primary"
+                        disabled={mutation.isPending || reconciling || needsReadback || !name.trim()}
+                    >
+                        {mutation.isPending && <ArcInlineLoader label={null} />}
+                        {unknown ? 'Повторить сохранённый запрос' : 'Создать семью'}
                     </button>
-                    {mutation.isError && (
-                        <p role="alert">
-                            {mutation.error instanceof ApiError
-                                ? `${mutation.error.message}. Ввод сохранён; состояние семьи перечитано.`
-                                : 'Не удалось создать семью. Ввод сохранён; попробуйте ещё раз.'}
-                        </p>
+                    {(unknown || needsReadback) && (
+                        <button
+                            type="button"
+                            className="button outline"
+                            disabled={mutation.isPending || reconciling}
+                            onClick={() => {
+                                void (async () => {
+                                    const state = await readback();
+                                    if (state === 'none') {
+                                        if (needsReadback) setNeedsReadback(false);
+                                        setFeedback(
+                                            unknown
+                                                ? 'Семья пока не найдена. Для безопасного продолжения повторите сохранённый запрос без изменения названия.'
+                                                : 'Семья не создана. Проверка завершена; можно исправить название и отправить новое действие.',
+                                        );
+                                    } else if (state === 'failed')
+                                        setFeedback(
+                                            'Перечитать семью не удалось. Сохранённый запрос не изменён; попробуйте проверку ещё раз.',
+                                        );
+                                })();
+                            }}
+                        >
+                            {reconciling ? 'Проверяем состояние…' : 'Перечитать состояние семьи'}
+                        </button>
                     )}
+                    {feedback && <p role="alert">{feedback}</p>}
                 </form>
             </section>
             <section className={styles.panel}>
@@ -126,10 +187,8 @@ function Content() {
 
 export function FamilySetupPage() {
     return (
-        <Guard context="user">
-            <PersonalShell>
-                <Content />
-            </PersonalShell>
-        </Guard>
+        <>
+            <Content />
+        </>
     );
 }

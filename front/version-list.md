@@ -1,5 +1,75 @@
 # Frontend version-list
 
+0.0.146 - 28.10.2026 | 17:54 - The production build now emits a digest-pinned Next standalone server with a frontend-only, non-cacheable `/healthz` endpoint. The GHCR pipeline rejects stale main SHAs before build and deploy, publishes only a commit tag plus immutable digest, pins every Action by commit SHA, and runs through the allowlisted server helper. The container is non-root with a read-only-compatible runtime layout; build-time API mode, app version and backend rewrite origin are documented explicitly. No deployment was performed, and the deployed app remains `0.0.137`.
+
+0.0.145 - 28.10.2026 | 17:31 - The moderator recovery harness now has an explicit sticky fault-control mode: concurrent matching requests keep receiving the configured failure until the cookie is cleared, while all existing controls remain one-shot by default. The recovery E2E clears the control only after observing the error UI and then uses the existing Retry action; runtime and wire contracts are unchanged, and the deployed app remains `0.0.137`.
+
+0.0.144 - 28.10.2026 | 14:49 - The final public API checkpoint eliminates the remaining 14 recipes app-to-feature deep imports and reduces the architecture debt to zero. Route modules now enter features only through client/server/index public APIs, and the gate immediately blocks any violation. URLs, runtime behavior, and wire contracts are unchanged; the deployed app remains `0.0.137`.
+
+0.0.143 - 28.10.2026 | 14:47 - The fifth public API checkpoint reduces app-to-feature deep imports from 39 to 14. Twenty-five inventory, preserves, and shopping route imports now consume client public APIs while shell styles remain server-safe. URLs, personal/family scope, runtime behavior, and wire contracts are unchanged; the deployed app remains `0.0.137`.
+
+0.0.142 - 28.10.2026 | 14:31 - The fourth public API checkpoint reduces app-to-feature deep imports from 50 to 39. Eleven family and family-notes route imports now consume narrow client APIs for overview, setup, invite, access, ownership, and notes list/editor/detail. URLs, family scope, runtime behavior, and wire contracts are unchanged; the deployed app remains `0.0.137`.
+
+0.0.141 - 28.10.2026 | 14:15 - The third public API checkpoint reduces app-to-feature deep imports from 67 to 50. Seventeen auth, AI, and AI appeals route imports now consume explicit client public APIs. URLs, session/MFA semantics, runtime behavior, and wire contracts are unchanged; the deployed app remains `0.0.137`.
+
+0.0.140 - 28.10.2026 | 14:05 - The second public API checkpoint reduces app-to-feature deep imports from 87 to 67. Twenty news, notifications, support, moderation, offline, personalization, and achievements route/composition imports now consume explicit client public APIs, while the server-only moderation shell remains in `server.ts`. URLs, runtime semantics, and wire contracts are unchanged; deployed app remains `0.0.137`.
+
+0.0.139 - 28.10.2026 | 13:42 - The first low-coupling public API checkpoint reduces app-to-feature deep imports from 100 to 87. Thirteen public-info, legal, pro, search, subscription, privacy, account lifecycle, diary, exports, family chat, and nutrition routes now consume explicit client/server feature APIs. URLs, runtime semantics, and wire contracts are unchanged; deployed app remains `0.0.137`.
+
+0.0.138 - 28.10.2026 | 13:12 - Deployment documentation now records the linked admin `0.0.117` immutable release `20261028-0757`, successful root/deep-link and password-to-mandatory-MFA checks, and `coffee-light` / `nature-dark` smoke with zero runtime errors. The deployed frontend remains root/app `0.0.28` / `0.0.137`; runtime code and public contracts are unchanged.
+
+0.0.137 - 28.10.2026 | 12:27 - Repository production acceptance can launch an already installed managed Chromium/Edge through an explicit absolute `PLAYWRIGHT_EXECUTABLE_PATH`, while preserving mutation denial and the exact desktop/mobile check matrix. Online API/session initialization no longer waits for best-effort offline Service Worker readiness, so a blocked or stalled worker cannot leave protected pages at an endless session check. The release is deployed and passed 24/24 live desktop/mobile checks with zero mutation requests and runtime errors.
+
+0.0.136 - 28.10.2026 | 12:16 - Deployment documentation now records the verified test runtime at root/app `0.0.26` / `0.0.135`, backend `0.0.128` with schema v29, admin `0.0.114`, immutable release identity, authenticated recipes smoke and persisted four-theme behavior. This is a documentation-only repository revision; no new runtime build was deployed.
+
+0.0.135 - 28.10.2026 | 11:39 - Recipe workspace now renders independent review/publication axes, preserves an active published r1 while r2 is pending/rejected, replaces it with approved r3, and removes public links after hide/unpublish/archive. A narrow two-phase legacy response/cache normalizer supports frontend-first rollout without inventing public reasons or timestamps and rejects partial/mixed payloads; mocks, unit/E2E, schema-v29 readiness and testing docs are updated.
+
+0.0.134 - 27.10.2026 | 18:56 - Frontend release operations now have a reproducible deployment/rollback runbook, immutable artifact checks, pre/post-traffic smoke and mutation-denying production acceptance. The provider-neutral readiness validator is owned by this repository and requires schema v28; runtime behavior and backend contracts are unchanged.
+
+0.0.133 - 27.10.2026 | 18:38 - The final three feature-to-feature dependencies are removed: critical re-auth now lives in the shared account-security entity, while AI appeals and privacy own their CSS modules. The architecture gate enforces a zero cross-feature baseline; lifecycle E2E waits for auth runtime readiness before input without changing URLs, product behavior, or backend contracts.
+
+0.0.132 - 27.10.2026 | 18:29 - Recommendation actions now live in an account-scoped entity, while profile/account screens compose through widgets and explicit feature client APIs; user-home styles are localized in auth. The exact architecture baseline drops to 3 cross-feature edges and 100 app deep imports with unchanged URLs and backend contracts.
+
+0.0.131 - 27.10.2026 | 18:12 - Family create/leave now freeze the full payload with its idempotency key, reconcile server state after every failed outcome, and expose a locked exact retry for unknown results. Recipe submission conflicts await a current workspace readback before another moderation attempt.
+
+0.0.130 - 27.10.2026 | 18:00 - Twelve byte-identical nested layouts now share four URL-neutral route groups with unchanged personal/family/offline policies, reducing browser chunks from 200 to 192. The release gate retains raw/gzip caps and adds total files, unique SHA-256 payloads, plus complete manifest-backed per-route request and gzip-transfer budgets.
+
+0.0.129 - 27.10.2026 | 17:46 - Exact architecture debt baseline now blocks new cross-feature and route deep imports; preserves consumes measurement/date entities directly, shopping routes use its public API, and reusable finance-cost UI moved from a page implementation into an account-scoped entity. Finance and meal-plan expose client entrypoints.
+
+0.0.128 - 27.10.2026 | 14:02 - Receipts co-located with shopping purchase intake, shared byte-level image validation reused by receipt/inventory flows, canonical inventory location keys and measurement/date entities remove shopping→inventory internals; family pickers hide personal pending products and unknown-outcome retries freeze the complete receipt form.
+
+0.0.127 - 27.10.2026 | 13:52 - Inventory ingest переведён на entities/inventory, entities/measurement и shared command-error без sibling-feature imports; canonical user/scope query keys и public client API защищены gate, а UI теперь честно требует locationId, как wire commit contract.
+
+0.0.126 - 27.10.2026 | 13:42 - Добавлены entities/measurement и entities/inventory с pure scope/query/date models, command-error вынесен в shared/api; products получил локальные async-state/CSS и client API, а architecture gate запрещает возврат к inventory internals и deep route imports.
+
+0.0.125 - 27.10.2026 | 13:30 - Recipe presentation и wire-code справочники вынесены в entities/recipe; public community feed/comments перенесены в recipes bounded context и открыты через client API, цикл recipes ↔ community устранён; новые cross-feature CSS блокируются поверх явного debt-allowlist.
+
+0.0.124 - 27.10.2026 | 13:20 - Offline runtime оформлен как entities/offline, recipe read cache — как entities/recipe-cache: recipes/shopping/widgets/app больше не импортируют внутренности offline feature, offline-store не зависит от recipes feature, а architecture gate блокирует оба удалённых legacy пути.
+
+0.0.123 - 27.10.2026 | 13:15 - `useRequestSignal` вынесен из auth в shared/api для 15 transport-потребителей, а `useConsent`/`isConsentRequiredError` — из legal feature в entities/consent для семи доменов; query key, retry policy и четыре 403-кода сохранены, прямые импорты старых путей заблокированы.
+
+0.0.122 - 27.10.2026 | 13:04 - Добавлен widgets/session-guard, который единожды компонует auth redirect, family/workspace initialization и offline fallback; все дублирующие Guard в achievements, profile, inventory, shopping, preserves, plan, recipes и moderation удалены, legacy features/auth/session удалён, route-level offline матрица сохранена.
+
+0.0.121 - 27.10.2026 | 12:55 - Добавлена entities/family: canonical `['family', userId]` централизован без изменения wire/query contracts, invitation accept сразу переключает account-bound scope; app routes используют server-safe feature entrypoints, widget получает OwnershipNotice через публичный client API, architecture gate и 145-й unit-тест фиксируют границы.
+
+0.0.120 - 27.10.2026 | 12:46 - Добавлена entities/workspace-scope с отдельным Zustand store/provider: выбранный personal/family workspace привязан к user id и атомарно сбрасывается при auth transitions; Guard стал единственной route-aware точкой инициализации, а inventory/shopping/preserves/recipes/plan больше не создают конкурирующие эффекты.
+
+0.0.119 - 27.10.2026 | 12:37 - Добавлена entities/session с чистым model и client entrypoint: useSession мигрирован из auth feature во всех 70 потребителях, user cache writes синхронизируют offline owner/recipe cache через app-owned lifecycle port; 143 unit-теста фиксируют keys и ручные переходы authenticated/unauthorized.
+
+0.0.118 - 27.10.2026 | 12:13 - Exhaustive route smoke корректно переживает service-worker document swap: DOM-аудит повторяется после восстановления session-loader и landmark, memory-safe fresh-server контракт задокументирован, а theme-init загружается через Next Script beforeInteractive без React warning и без вспышки неверной темы.
+
+0.0.117 - 27.10.2026 | 11:44 - UserAppShell стал widget с guarded entrypoint; inventory/products, shopping/receipts/purchases, preserves, recipes/reports, meal-plan и moderation получают shell из app layouts/pages. Feature сохраняют только domain scope/context, а architecture gate запрещает возврат legacy src/ui.
+
+0.0.116 - 27.10.2026 | 11:37 - PersonalShell перенесён в widgets с сохранением порядка Guard → UserAppShell → OwnershipNotice; 25 feature-потребителей очищены от shell/route guard, а 40 authenticated routes получают композицию через шесть Next layouts и 18 page wrappers.
+
+0.0.115 - 27.10.2026 | 11:28 - Public-shell композиция поднята из community/news/public-info/profile/achievements в Next app routes; PublicShell и OfflineStatus получили widget-owned стили и публичные entrypoints, ThemeControl перенесён в shared UI. Architecture gate подтверждает отсутствие `features → widgets`.
+
+0.0.114 - 27.10.2026 | 11:15 - Архитектурный foundation: 84 feature/UI импорта больше не зависят от `app/providers`, runtime и UI store получили нижележащую shared-границу, API transport сообщает об успешном запросе через callback composition root вместо импорта offline feature; добавлены архитектурный gate и unit-регрессия callback.
+
+0.0.113 - 27.10.2026 | 11:05 - Next.js production build развёрнут на тестовом VPS; проверены root/deep navigation, real API login/me, отрисовка главной и переключение четырёх тем. Публичный origin и эксплуатационные ограничения зафиксированы в README и backend deployment runbook.
+
+0.0.112 - 10.26.2026 | 15:37 - Production-readiness: все локальные цвета приложения заменены семантическими токенами, четыре темы применяются до гидрации и сохраняются в public/authenticated desktop/mobile shell; добавлены регрессии токенов, полный контроль маршрутов/интерактивов, budget и пакетно-изолированные memory-safe production-проверки, руководство ручной приёмки.
+
 0.0.111 - 10.24.2026 | 19:31 - Административный интерфейс и его тесты вынесены в независимый meal_admin; клиент устанавливается и запускается без исходников админки.
 
 0.0.110 - 10.24.2026 | 18:34 - Перенос в самостоятельный meal_frontend; переносимые проверки и отсутствие зависимости от исходников backend.

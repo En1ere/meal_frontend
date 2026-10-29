@@ -149,8 +149,8 @@
     width: fit-content;
     padding: 0.35rem 0.55rem;
     border-radius: 0.5rem;
-    background: #fff0df;
-    color: #7f441c;
+    background: var(--surface) 0df;
+    color: var(--mp-color-warning-text);
     font-size: 0.82rem;
 }
 

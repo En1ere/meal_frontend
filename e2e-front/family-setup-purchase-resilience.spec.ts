@@ -174,6 +174,7 @@ test('family setup preserves input across max-members, stale and 503 outcomes, t
     await page.getByRole('button', { name: 'Создать семью' }).click();
     await expect(page.getByRole('alert').filter({ hasText: 'В семье больше нет свободных мест' })).toBeVisible();
     await expect(input).toHaveValue('Семья после восстановления');
+    await expect(input).toBeEnabled();
 
     await setControl(page, 'family_test_control', {
         path: '/api/v1/family',
@@ -183,6 +184,7 @@ test('family setup preserves input across max-members, stale and 503 outcomes, t
     await page.getByRole('button', { name: 'Создать семью' }).click();
     await expect(page.getByRole('alert').filter({ hasText: 'Состояние изменилось' })).toBeVisible();
     await expect(input).toHaveValue('Семья после восстановления');
+    await expect(input).toBeEnabled();
 
     await setControl(page, 'family_test_control', {
         path: '/api/v1/family',
@@ -190,9 +192,11 @@ test('family setup preserves input across max-members, stale and 503 outcomes, t
         value: 503,
     });
     await page.getByRole('button', { name: 'Создать семью' }).click();
-    await expect(page.getByRole('alert').filter({ hasText: 'Сервис временно недоступен' })).toBeVisible();
+    await expect(page.getByRole('alert').filter({ hasText: 'Результат запроса неизвестен' })).toBeVisible();
     await expect(input).toHaveValue('Семья после восстановления');
-    await page.getByRole('button', { name: 'Создать семью' }).click();
+    await expect(input).toBeDisabled();
+    await expect(page.getByRole('button', { name: 'Перечитать состояние семьи' })).toBeVisible();
+    await page.getByRole('button', { name: 'Повторить сохранённый запрос' }).click();
     await page.waitForURL((url) => url.pathname === '/family');
     await expect(page.getByRole('heading', { name: 'Семья после восстановления' })).toBeVisible();
 });

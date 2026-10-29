@@ -108,7 +108,7 @@
     width: 100%;
     min-height: 54px;
     padding: 13px 18px;
-    border: 1px solid #bfa894;
+    border: 1px solid var(--line);
     border-radius: 8px;
     background: var(--surface);
     color: var(--ink);

@@ -2,11 +2,10 @@
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { useRuntime } from '../../app/providers.js';
+import { useRuntime } from '../../shared/runtime/index.js';
 import type { Success } from '../../shared/api/contracts.generated.js';
 import { Skeleton as ArcSkeleton } from '@meal-planner/design-system';
-import { Guard, useSession } from '../auth/session.js';
-import { PersonalShell } from '../personalization/shell.js';
+import { useSession } from '../../entities/session/client.js';
 import styles from './family-chat.module.css';
 
 type Chat = Success<'GET /api/v1/family/chat'>['data'];
@@ -459,10 +458,8 @@ function Content() {
 }
 export function FamilyChatPage() {
     return (
-        <Guard context="user">
-            <PersonalShell>
-                <Content />
-            </PersonalShell>
-        </Guard>
+        <>
+            <Content />
+        </>
     );
 }

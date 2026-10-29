@@ -2,9 +2,9 @@
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useRuntime } from '../../app/providers.js';
+import { useRuntime } from '../../shared/runtime/index.js';
 import type { Success } from '../../shared/api/contracts.generated.js';
-import { useSession } from '../auth/session.js';
+import { useSession } from '../../entities/session/client.js';
 import {
     InventoryShell,
     Loading,

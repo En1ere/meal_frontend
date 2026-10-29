@@ -2,12 +2,15 @@
 import Link from 'next/link';
 import { useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useRuntime } from '../../app/providers.js';
-import { useRequestSignal } from '../auth/use-request-signal.js';
-import { useSession } from '../auth/session.js';
+import { useRuntime } from '../../shared/runtime/index.js';
+import { useRequestSignal } from '../../shared/api/use-request-signal.js';
+import { useSession } from '../../entities/session/client.js';
+import { inventoryScopeQuery } from '../../entities/inventory/model.js';
+import { inventoryKeys } from '../../entities/inventory/query-keys.js';
+import { units } from '../../entities/measurement/model.js';
 import { ApiError } from '../../shared/api/client.js';
 import type { Success } from '../../shared/api/contracts.generated.js';
-import { units, localDate } from '../inventory/shared.js';
+import { localDate } from '../../shared/lib/date.js';
 import { ProductPicker } from './product-picker.js';
 import { useShoppingCommand } from './use-command.js';
 import styles from './shopping.module.css';
@@ -47,11 +50,14 @@ export function PurchaseLines({
     const { api } = useRuntime();
     const user = useSession('user');
     const locations = useQuery({
-        queryKey: ['inventory-locations', user.data?.id, scope],
+        queryKey: inventoryKeys.locations(scope, user.data?.id),
         enabled: !!api && !!user.data,
         queryFn: async ({ signal }) =>
-            (await api!.request('GET /api/v1/inventory-locations', undefined, signal, undefined, { query: { scope } }))
-                .data,
+            (
+                await api!.request('GET /api/v1/inventory-locations', undefined, signal, undefined, {
+                    query: inventoryScopeQuery(scope),
+                })
+            ).data.items,
     });
     const change = (id: string, patch: Partial<PurchaseLine>) =>
         setLines(lines.map((l) => (l.id === id ? { ...l, ...patch } : l)));
@@ -141,7 +147,7 @@ export function PurchaseLines({
                                 onChange={(e) => change(l.id, { locationId: e.target.value || null })}
                             >
                                 <option value="">Выберите место</option>
-                                {locations.data?.items.map((p) => (
+                                {locations.data?.map((p) => (
                                     <option key={p.id} value={p.id}>
                                         {p.name}
                                     </option>

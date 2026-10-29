@@ -1,0 +1,14 @@
+.main {
+    display: grid;
+    gap: 1.25rem;
+    width: min(1180px, calc(100% - 2rem));
+    margin: 0 auto;
+    padding: clamp(2.5rem, 6vw, 5rem) 0;
+}
+
+@media (width <= 760px) {
+    .main {
+        width: min(100% - 1.5rem, 42rem);
+        padding: 2rem 0;
+    }
+}

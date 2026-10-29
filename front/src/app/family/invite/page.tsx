@@ -1,5 +1,10 @@
-import { FamilyInvitePage } from '../../../features/family/family-invite.js';
+import { FamilyInvitePage } from '../../../features/family/invite/client.js';
+import { PersonalShell } from '../../../widgets/personal-shell/client.js';
 
 export default function Page() {
-    return <FamilyInvitePage />;
+    return (
+        <PersonalShell>
+            <FamilyInvitePage />
+        </PersonalShell>
+    );
 }

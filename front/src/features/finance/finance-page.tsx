@@ -4,11 +4,10 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useState, type FormEvent } from 'react';
 import { Skeleton } from '@meal-planner/design-system';
-import { useRuntime } from '../../app/providers.js';
+import { useRuntime } from '../../shared/runtime/index.js';
 import type { Success } from '../../shared/api/contracts.generated.js';
 import { ApiError } from '../../shared/api/client.js';
-import { Guard, useSession } from '../auth/session.js';
-import { PersonalShell } from '../personalization/shell.js';
+import { useSession } from '../../entities/session/client.js';
 import styles from './finance.module.css';
 
 type ExpenseList = Success<'GET /api/v1/finance/expenses'>['data'];
@@ -44,11 +43,7 @@ const minor = (value: FormDataEntryValue | null) => {
 const localIso = (value: string) => new Date(`${value}T12:00:00`).toISOString();
 
 function Frame({ children }: { children: React.ReactNode }) {
-    return (
-        <Guard context="user">
-            <PersonalShell>{children}</PersonalShell>
-        </Guard>
-    );
+    return <>{children}</>;
 }
 
 function Loading() {
@@ -1001,38 +996,5 @@ function FinancePricesContent() {
                 </section>
             )}
         </div>
-    );
-}
-
-type CostRoute =
-    | 'GET /api/v1/finance/costs/recipes/{id}'
-    | 'GET /api/v1/finance/costs/shopping-lists/{id}'
-    | 'GET /api/v1/finance/costs/meal-plans/{id}';
-export function CostEstimateBadge({ route, id }: { route: CostRoute; id: string }) {
-    const { api } = useRuntime();
-    const session = useSession('user');
-    const query = useQuery({
-        queryKey: ['finance-cost', route, id, session.data?.id],
-        enabled: !!api && !!session.data,
-        queryFn: ({ signal }) => api!.request(route, undefined, signal, { id }).then((response) => response.data),
-        retry: false,
-    });
-    if (!query.data) return null;
-    const value = query.data;
-    return (
-        <aside className={styles['cost-badge']} aria-label="Примерная стоимость">
-            <span>Примерная стоимость</span>
-            <strong>
-                {value.complete && value.estimatedTotalMinor !== null
-                    ? money.format(value.estimatedTotalMinor / 100)
-                    : `от ${money.format(value.knownSubtotalMinor / 100)}`}
-            </strong>
-            <small>
-                {value.complete
-                    ? `${value.totalLineCount} позиций учтено`
-                    : `Учтено ${value.knownLineCount} из ${value.totalLineCount}; итог неполный`}
-            </small>
-            <p>{value.disclaimer}</p>
-        </aside>
     );
 }

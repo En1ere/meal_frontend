@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { EmailLinkPage } from '../../../../features/auth/lifecycle-pages.js';
+import { EmailLinkPage } from '../../../../features/auth/lifecycle/client.js';
 import { PageLoader as ArcPageLoader } from '@meal-planner/design-system';
 export const metadata = {
     title: 'Отмена смены адреса',

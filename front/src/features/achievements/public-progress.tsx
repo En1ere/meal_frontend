@@ -4,13 +4,11 @@ import { useMemo, useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import type { Success } from '../../shared/api/contracts.generated.js';
-import { useRuntime } from '../../app/providers.js';
+import { useRuntime } from '../../shared/runtime/index.js';
 import { ApiError } from '../../shared/api/client.js';
-import { Guard, useSession } from '../auth/session.js';
+import { useSession } from '../../entities/session/client.js';
 import { Skeleton as ArcSkeleton } from '@meal-planner/design-system';
 import styles from './public-progress.module.css';
-import { UserAppShell } from '../../ui/AppShell/UserAppShell.js';
-import { PublicShell } from '../public-info/public-shell.js';
 
 type AchievementsPayload = Success<'GET /api/v1/authors/{username}/achievements'>['data'];
 type ReputationPayload = Success<'GET /api/v1/authors/{username}/reputation'>['data'];
@@ -40,9 +38,8 @@ function iconSource(icon: IconMetadata): string {
     return fallbackIcons[icon.fallbackKey] ?? '/assets/achievements/medal-bronze-book.png';
 }
 
-function ProgressShell({ children, own = false }: { children: ReactNode; own?: boolean }) {
-    const content = <div className={styles.content}>{children}</div>;
-    return own ? <UserAppShell>{content}</UserAppShell> : <PublicShell current="community">{content}</PublicShell>;
+function ProgressContent({ children }: { children: ReactNode }) {
+    return <div className={styles.content}>{children}</div>;
 }
 
 function LoadingProgress() {
@@ -293,37 +290,33 @@ function OwnProgress({ view }: { view: 'achievements' | 'reputation' }) {
 
 export function PublicAchievementsPage({ username }: { username: string }) {
     return (
-        <ProgressShell>
+        <ProgressContent>
             <PublicAchievementsContent username={username} />
-        </ProgressShell>
+        </ProgressContent>
     );
 }
 
 export function PublicReputationPage({ username }: { username: string }) {
     return (
-        <ProgressShell>
+        <ProgressContent>
             <PublicReputationContent username={username} />
-        </ProgressShell>
+        </ProgressContent>
     );
 }
 
 export function OwnAchievementsPage() {
     return (
-        <Guard context="user">
-            <ProgressShell own>
-                <OwnProgress view="achievements" />
-            </ProgressShell>
-        </Guard>
+        <ProgressContent>
+            <OwnProgress view="achievements" />
+        </ProgressContent>
     );
 }
 
 export function OwnReputationPage() {
     return (
-        <Guard context="user">
-            <ProgressShell own>
-                <OwnProgress view="reputation" />
-            </ProgressShell>
-        </Guard>
+        <ProgressContent>
+            <OwnProgress view="reputation" />
+        </ProgressContent>
     );
 }
 

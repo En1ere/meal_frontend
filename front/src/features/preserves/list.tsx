@@ -2,11 +2,12 @@
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useRuntime } from '../../app/providers.js';
-import { useSession } from '../auth/session.js';
-import { localDate, units } from '../inventory/shared.js';
+import { useRuntime } from '../../shared/runtime/index.js';
+import { useSession } from '../../entities/session/client.js';
+import { units } from '../../entities/measurement/model.js';
+import { localDate } from '../../shared/lib/date.js';
 import { PreserveShell, PreserveLoading, expiryLabel, dayText } from './shared.js';
-import { RecipeImage } from '../recipes/shared.js';
+import { RecipeImage } from '../../entities/recipe/client.js';
 import { PreserveForm } from './form.js';
 import { preserveTypes } from './types.js';
 import styles from './preserves.module.css';

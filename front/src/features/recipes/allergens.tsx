@@ -1,10 +1,10 @@
 'use client';
 import Link from 'next/link';
 import { useId, useMemo, useRef, useState } from 'react';
-import { useRuntime } from '../../app/providers.js';
+import { useRuntime } from '../../shared/runtime/index.js';
 import { ApiError } from '../../shared/api/client.js';
 import { InlineLoader as ArcInlineLoader } from '@meal-planner/design-system';
-import { useSession } from '../auth/session.js';
+import { useSession } from '../../entities/session/client.js';
 import type { RecipeDetailData } from './detail.js';
 import styles from './recipes.module.css';
 

@@ -1,8 +1,8 @@
 'use client';
 import { useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useRuntime } from '../../app/providers.js';
-import { useSession } from '../auth/session.js';
+import { useRuntime } from '../../shared/runtime/index.js';
+import { useSession } from '../../entities/session/client.js';
 import { ApiError } from '../../shared/api/client.js';
 import type { Success } from '../../shared/api/contracts.generated.js';
 import { PurchaseLines, type PurchaseLine } from './purchase-review.js';

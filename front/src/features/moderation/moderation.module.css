@@ -6,12 +6,12 @@
 
 .eyebrow {
     margin: 0 0 4px;
-    color: #6377a0;
+    color: var(--muted);
 }
 
 .title {
     margin: 0;
-    color: #111;
+    color: var(--ink);
     font-family: Georgia, serif;
     font-size: clamp(2.4rem, 5vw, 4rem);
     line-height: 1;
@@ -19,42 +19,42 @@
 
 .subtitle {
     margin: 8px 0 18px;
-    color: #6377a0;
+    color: var(--muted);
     font-size: 1.15rem;
 }
 
 .tabs {
     display: flex;
     gap: 26px;
-    border-bottom: 1px solid #e3d6cf;
+    border-bottom: 1px solid var(--line);
     margin-bottom: 20px;
 }
 
 .tabs > * {
     padding: 10px 30px;
-    color: #101a3d;
+    color: var(--ink);
     text-decoration: none;
 }
 
 .tabs [aria-current='page'] {
     border-radius: 999px;
-    background: #ad542f;
-    color: #fff;
+    background: var(--accent);
+    color: var(--on-accent);
 }
 
 .panel {
     margin-bottom: 16px;
     padding: 20px;
-    border: 1px solid #e3d6cf;
+    border: 1px solid var(--line);
     border-radius: 10px;
-    background: rgb(255 255 255 / 78%);
-    box-shadow: 0 10px 30px rgb(87 45 28 / 4%);
+    background: color-mix(in srgb, var(--surface) 78%, transparent);
+    box-shadow: 0 10px 30px color-mix(in srgb, var(--ink) 4%, transparent);
 }
 
 .panel h2,
 .decision h2 {
     margin: 0 0 14px;
-    color: #111;
+    color: var(--ink);
     font-family: Georgia, serif;
     font-size: 1.8rem;
 }
@@ -71,24 +71,24 @@
     justify-content: space-between;
     min-height: 102px;
     padding: 18px;
-    border: 1px solid #e7dbd5;
+    border: 1px solid var(--line);
     border-radius: 8px;
 }
 
 .queue-card h3 {
     margin: 0;
-    color: #111;
+    color: var(--ink);
     font-family: Georgia, serif;
     font-size: 1.35rem;
 }
 
 .queue-card p {
     margin: 6px 0 0;
-    color: #687da9;
+    color: var(--muted);
 }
 
 .queue-card a {
-    color: #9b3115;
+    color: var(--danger);
 }
 
 .table {
@@ -101,7 +101,7 @@
     gap: 14px;
     align-items: center;
     padding: 13px;
-    border-top: 1px solid #eee4df;
+    border-top: 1px solid var(--line);
 }
 
 .table-row:first-child {
@@ -111,7 +111,7 @@
 .table-row a,
 .back,
 .related {
-    color: #1d55a4;
+    color: var(--link);
 }
 
 .sla {
@@ -119,16 +119,16 @@
     gap: 3px;
     padding: 14px 18px;
     border-radius: 8px;
-    background: #f8f2ee;
+    background: var(--soft);
 }
 
 .sla span,
 .hint {
-    color: #687da9;
+    color: var(--muted);
 }
 
 .attention {
-    border-left: 4px solid #a74823;
+    border-left: 4px solid var(--accent);
 }
 
 .filters {
@@ -143,7 +143,7 @@
 .panel label {
     display: grid;
     gap: 6px;
-    color: #526c9c;
+    color: var(--muted);
 }
 
 .filters select,
@@ -151,11 +151,11 @@
 .decision textarea,
 .panel textarea {
     width: 100%;
-    border: 1px solid #e3d6cf;
+    border: 1px solid var(--line);
     border-radius: 8px;
-    background: #fff;
+    background: var(--surface);
     padding: 12px;
-    color: #101a3d;
+    color: var(--ink);
     font: inherit;
 }
 
@@ -175,14 +175,14 @@
     grid-template-columns: minmax(0, 1fr) 300px;
     gap: 26px;
     padding: 22px;
-    border: 1px solid #e3d6cf;
+    border: 1px solid var(--line);
     border-radius: 10px;
-    background: #fff;
+    background: var(--surface);
 }
 
 .task-card h2 {
     margin: 0 0 22px;
-    color: #111;
+    color: var(--ink);
     font-family: Georgia, serif;
     font-size: 2rem;
 }
@@ -195,7 +195,7 @@
 }
 
 .task-card dt {
-    color: #687da9;
+    color: var(--muted);
 }
 
 .task-card dd {
@@ -207,13 +207,13 @@
     align-content: center;
     gap: 10px;
     padding-left: 26px;
-    border-left: 1px solid #eaded8;
+    border-left: 1px solid var(--line);
 }
 
 .empty,
 .state {
     padding: 30px;
-    border: 1px dashed #cba99a;
+    border: 1px dashed var(--line);
     border-radius: 10px;
     text-align: center;
 }
@@ -221,8 +221,8 @@
 .notice {
     padding: 10px 14px;
     border-radius: 8px;
-    background: #eef4ff;
-    color: #274f8b;
+    background: var(--mp-color-info-surface);
+    color: var(--mp-color-info-text);
 }
 
 .review-grid {
@@ -239,9 +239,9 @@
     display: grid;
     gap: 16px;
     padding: 22px;
-    border: 1px solid #e3d6cf;
+    border: 1px solid var(--line);
     border-radius: 10px;
-    background: #fff;
+    background: var(--surface);
 }
 
 .compare {
@@ -252,13 +252,13 @@
 
 .compare article {
     padding: 16px;
-    border: 1px solid #e3d6cf;
+    border: 1px solid var(--line);
     border-radius: 8px;
 }
 
 .compare h3 {
     margin-top: 0;
-    color: #526c9c;
+    color: var(--muted);
     font-weight: 500;
 }
 
@@ -266,12 +266,12 @@
     display: inline-block;
     padding: 5px 10px;
     border-radius: 8px;
-    background: #f6ece7;
-    color: #8e3218;
+    background: var(--danger-surface);
+    color: var(--danger);
 }
 
 .warning {
-    border-left: 3px solid #a74823;
+    border-left: 3px solid var(--accent);
     padding-left: 10px;
 }
 
@@ -279,16 +279,16 @@
     display: flex;
     justify-content: space-between;
     padding: 12px;
-    border: 1px solid #eaded8;
+    border: 1px solid var(--line);
     border-radius: 8px;
     text-decoration: none;
 }
 
 .confirm {
     padding: 14px;
-    border: 1px solid #cba99a;
+    border: 1px solid var(--line);
     border-radius: 8px;
-    background: #fffaf7;
+    background: var(--surface) af7;
 }
 
 .support-grid {
@@ -302,7 +302,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: 20px;
-    color: #526c9c;
+    color: var(--muted);
 }
 
 .messages {
@@ -312,19 +312,19 @@
 
 .messages article {
     padding: 14px 18px;
-    border: 1px solid #dbe2ee;
+    border: 1px solid var(--line);
     border-radius: 8px;
-    background: #f7f9fd;
+    background: var(--soft);
 }
 
 .messages article.staff-message {
-    border-color: #eaded8;
-    background: #fff8f3;
+    border-color: var(--line);
+    background: var(--surface) 8f3;
 }
 
 .messages time {
     margin-left: 14px;
-    color: #687da9;
+    color: var(--muted);
     font-size: 0.9rem;
 }
 
@@ -363,7 +363,7 @@
     .task-actions {
         padding: 16px 0 0;
         border-left: 0;
-        border-top: 1px solid #eaded8;
+        border-top: 1px solid var(--line);
     }
 
     .task-card dl {

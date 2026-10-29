@@ -2,9 +2,14 @@
 import Link from 'next/link';
 import { useRef, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { useRuntime } from '../../app/providers.js';
+import { useRuntime } from '../../shared/runtime/index.js';
 import { ApiError } from '../../shared/api/client.js';
-import { units, commandError, inventoryBase, inventoryScopeQuery, type InventoryScope } from '../inventory/shared.js';
+import { commandError } from '../../shared/api/command-error.js';
+import { useSession } from '../../entities/session/client.js';
+import { units } from '../../entities/measurement/model.js';
+import { inventoryScopeQuery, type InventoryScope } from '../../entities/inventory/model.js';
+import { inventoryKeys } from '../../entities/inventory/query-keys.js';
+import { inventoryBase } from '../../entities/inventory/routes.js';
 import { rowError, type ReviewRow } from './contracts.js';
 import styles from './ingest.module.css';
 
@@ -20,11 +25,12 @@ function Row({
     scope: InventoryScope;
 }) {
     const { api } = useRuntime();
+    const session = useSession('user');
     const [query, setQuery] = useState(row.name);
     const [search, setSearch] = useState(row.name);
     const products = useQuery({
-        queryKey: ['products', 'ingest', search],
-        enabled: !!api && !!search.trim() && !row.skip,
+        queryKey: ['products', 'ingest', session.data?.id, search],
+        enabled: !!api && !!session.data && !!search.trim() && !row.skip,
         queryFn: async ({ signal }) =>
             (
                 await api!.request('GET /api/v1/products', undefined, signal, undefined, {
@@ -37,14 +43,14 @@ function Row({
             ).data,
     });
     const locations = useQuery({
-        queryKey: ['inventory', scope, 'locations'],
-        enabled: !!api,
+        queryKey: inventoryKeys.locations(scope, session.data?.id),
+        enabled: !!api && !!session.data,
         queryFn: async ({ signal }) =>
             (
                 await api!.request('GET /api/v1/inventory-locations', undefined, signal, undefined, {
                     query: inventoryScopeQuery(scope),
                 })
-            ).data,
+            ).data.items,
     });
     const change = (values: Partial<ReviewRow>) => update({ ...row, ...values, reviewed: values.reviewed ?? false });
     return (
@@ -166,8 +172,8 @@ function Row({
                                 disabled={disabled || locations.isFetching}
                                 onChange={(event) => change({ locationId: event.target.value, locationName: '' })}
                             >
-                                <option value="">Не указано</option>
-                                {locations.data?.items.map((item) => (
+                                <option value="">Выберите место</option>
+                                {locations.data?.map((item) => (
                                     <option key={item.id} value={item.id}>
                                         {item.name}
                                     </option>
@@ -183,11 +189,11 @@ function Row({
                     )}
                     {row.locationName && (
                         <p className={styles.notice}>
-                            В файле: «{row.locationName}». Выберите место или{' '}
+                            В файле: «{row.locationName}».{' '}
                             <button disabled={disabled} onClick={() => change({ locationName: '', locationId: '' })}>
-                                оставьте без места
+                                Очистить подсказку из файла
                             </button>
-                            .
+                            . Затем выберите место хранения.
                         </p>
                     )}
                     <label className={styles.check}>
@@ -238,7 +244,7 @@ export function IngestReview({
                     ingredientId: row.ingredientId,
                     quantity: row.quantity || null,
                     unit: row.unit,
-                    locationId: row.locationId || null,
+                    locationId: row.locationId,
                     openedAt: null,
                     purchasedOn: null,
                     expiryOn: row.expiryOn || null,
@@ -257,7 +263,7 @@ export function IngestReview({
             return (await api.request('POST /api/v1/inventory/import/commit', pendingCommand.current)).data;
         },
         onSuccess: () => {
-            void queryClient.invalidateQueries({ queryKey: ['inventory'] });
+            void queryClient.invalidateQueries({ queryKey: inventoryKeys.root });
         },
     });
     const definiteFailure =

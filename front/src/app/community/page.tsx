@@ -1,11 +1,13 @@
 import { Suspense } from 'react';
-import { CommunityPage } from '../../features/community/community.js';
-import { RecipeLoading } from '../../features/recipes/shared.js';
+import { CommunityPage, RecipeLoading } from '../../features/recipes/client.js';
+import { PublicShell } from '../../widgets/public-shell/index.js';
 export const metadata = { title: 'Рецепты сообщества' };
 export default function Page() {
     return (
-        <Suspense fallback={<RecipeLoading />}>
-            <CommunityPage />
-        </Suspense>
+        <PublicShell current="community">
+            <Suspense fallback={<RecipeLoading />}>
+                <CommunityPage />
+            </Suspense>
+        </PublicShell>
     );
 }

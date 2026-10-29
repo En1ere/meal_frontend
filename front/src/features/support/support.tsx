@@ -3,10 +3,9 @@ import Link from 'next/link';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useRef, useState, type ChangeEvent, type FormEvent } from 'react';
-import { useRuntime } from '../../app/providers.js';
+import { useRuntime } from '../../shared/runtime/index.js';
 import type { Success } from '../../shared/api/contracts.generated.js';
-import { Guard, useSession } from '../auth/session.js';
-import { PersonalShell } from '../personalization/shell.js';
+import { useSession } from '../../entities/session/client.js';
 import styles from './support.module.css';
 type Attachment = {
     name: string;
@@ -28,11 +27,9 @@ function files(event: ChangeEvent<HTMLInputElement>): Attachment[] {
 }
 export function SupportList() {
     return (
-        <Guard context="user">
-            <PersonalShell>
-                <ListContent />
-            </PersonalShell>
-        </Guard>
+        <>
+            <ListContent />
+        </>
     );
 }
 function ListContent() {
@@ -105,11 +102,9 @@ function ListContent() {
 }
 export function SupportNew() {
     return (
-        <Guard context="user">
-            <PersonalShell>
-                <NewContent />
-            </PersonalShell>
-        </Guard>
+        <>
+            <NewContent />
+        </>
     );
 }
 function NewContent() {
@@ -224,11 +219,9 @@ function NewContent() {
 }
 export function SupportDetail({ id }: { id: string }) {
     return (
-        <Guard context="user">
-            <PersonalShell>
-                <DetailContent id={id} />
-            </PersonalShell>
-        </Guard>
+        <>
+            <DetailContent id={id} />
+        </>
     );
 }
 function DetailContent({ id }: { id: string }) {

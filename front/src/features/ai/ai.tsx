@@ -3,12 +3,11 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useInfiniteQuery, useMutation, useQuery } from '@tanstack/react-query';
 import { useState, type FormEvent } from 'react';
-import { useRuntime } from '../../app/providers.js';
+import { useRuntime } from '../../shared/runtime/index.js';
 import type { Success } from '../../shared/api/contracts.generated.js';
-import { Guard, useSession } from '../auth/session.js';
-import { PersonalShell } from '../personalization/shell.js';
+import { useSession } from '../../entities/session/client.js';
 import styles from './ai.module.css';
-import { isConsentRequiredError, useConsent } from '../legal/consent-state.js';
+import { isConsentRequiredError, useConsent } from '../../entities/consent/client.js';
 const statusLabels = {
     preview: 'Предпросмотр',
     processing: 'В работе',
@@ -20,11 +19,7 @@ const taskClassLabels = { standard: 'обычная', advanced: 'расшире�
 const priorityLabels = { normal: 'обычный', pro: 'Pro' } as const;
 const actionLabel = (cost: number) => (cost === 1 ? 'AI-действие' : cost < 5 ? 'AI-действия' : 'AI-действий');
 function Frame({ children }: { children: React.ReactNode }) {
-    return (
-        <Guard context="user">
-            <PersonalShell>{children}</PersonalShell>
-        </Guard>
-    );
+    return <>{children}</>;
 }
 export function AiPage() {
     return (

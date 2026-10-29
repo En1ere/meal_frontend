@@ -3,10 +3,10 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useRuntime } from '../../app/providers.js';
-import { useSession } from '../auth/session.js';
+import { useRuntime } from '../../shared/runtime/index.js';
+import { useSession } from '../../entities/session/client.js';
+import { units } from '../../entities/measurement/model.js';
 import type { Success } from '../../shared/api/contracts.generated.js';
-import { units } from '../inventory/shared.js';
 import {
     ShoppingShell,
     ShoppingLoading,
@@ -20,9 +20,9 @@ import { useShoppingCommand } from './use-command.js';
 import { ItemForm } from './item-form.js';
 import { PurchaseReview, emptyPurchaseLine } from './purchase-review.js';
 import styles from './shopping.module.css';
-import { readOfflineOwner } from '../offline/offline-store.js';
-import { readOfflineSnapshotData, saveOfflineSnapshot } from '../offline/snapshots.js';
-import { CostEstimateBadge } from '../finance/finance-page.js';
+import { readOfflineOwner } from '../../entities/offline/store.js';
+import { readOfflineSnapshotData, saveOfflineSnapshot } from '../../entities/offline/snapshots.js';
+import { CostEstimateBadge } from '../../entities/finance-cost/client.js';
 type List = Success<'GET /api/v1/shopping-lists/{id}'>['data'];
 function Content({ id }: { id?: string }) {
     const scope = useShoppingScope();
@@ -393,7 +393,7 @@ function Content({ id }: { id?: string }) {
                                     </label>
                                     <span>
                                         {item.quantity ?? 'Количество неизвестно'}{' '}
-                                        {item.unit ? (units[item.unit as keyof typeof units] ?? item.unit) : ''}
+                                        {item.unit ? (units[item.unit] ?? item.unit) : ''}
                                         <br />
                                         {item.manual ? 'Вручную' : 'Из рецепта'}
                                         {item.allocatedQuantity !== null && ` · Зачтено ${item.allocatedQuantity}`}

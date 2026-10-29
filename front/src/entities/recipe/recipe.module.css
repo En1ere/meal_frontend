@@ -1,0 +1,9 @@
+.panel {
+    padding: 1.25rem;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 1rem;
+    display: grid;
+    gap: 1rem;
+    min-width: 0;
+}

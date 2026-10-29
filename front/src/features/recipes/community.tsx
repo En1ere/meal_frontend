@@ -2,11 +2,11 @@
 import Link from 'next/link';
 import { useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useRuntime } from '../../app/providers.js';
-import { useSession } from '../auth/session.js';
+import { useRuntime } from '../../shared/runtime/index.js';
+import { useSession } from '../../entities/session/client.js';
 import { RecipeLoading, RecipeError } from './shared.js';
 import { useRecipeCommand } from './use-command.js';
-import { useConsent } from '../legal/consent-state.js';
+import { useConsent } from '../../entities/consent/client.js';
 import styles from './workspace.module.css';
 const reasons: Record<string, string> = {
     copyright: 'Нарушение авторских прав',

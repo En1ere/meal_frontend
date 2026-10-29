@@ -3,13 +3,13 @@ import { useState, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useRuntime } from '../../app/providers.js';
+import { useRuntime } from '../../shared/runtime/index.js';
 import { ApiError } from '../../shared/api/client.js';
 import { authRoutes, type AuthContext } from '../../shared/auth/routes.js';
 import { Brand } from '../../shared/ui/brand.js';
-import { ThemeControl } from '../../ui/ThemeControl/ThemeControl.js';
-import { Guard, useSession } from './session.js';
-import { useRequestSignal } from './use-request-signal.js';
+import { ThemeControl } from '../../shared/ui/theme-control.js';
+import { useSession } from '../../entities/session/client.js';
+import { useRequestSignal } from '../../shared/api/use-request-signal.js';
 import { Skeleton as ArcSkeleton } from '@meal-planner/design-system';
 import { InlineLoader as ArcInlineLoader } from '@meal-planner/design-system';
 
@@ -118,20 +118,17 @@ export function SessionsPanel({ context }: { context: AuthContext }) {
 export function StaffHome({ context }: { context: 'moderator' }) {
     const session = useSession(context);
     return (
-        <Guard context={context}>
-            <main id="main" className="staff-home">
-                <Brand />
-                <ThemeControl />
-                <p className="eyebrow">Модерация</p>
-                <h1>Служебный вход подтверждён</h1>
-                <p>{session.data?.displayName}. Двухфакторная проверка пройдена.</p>
-                <p className="inline-note">
-                    На этом этапе доступны управление сессиями и выход. Рабочие инструменты этого раздела ещё не
-                    подключены.
-                </p>
-                <SessionsPanel context={context} />
-                <Link href="/about">О сервисе</Link>
-            </main>
-        </Guard>
+        <main id="main" className="staff-home">
+            <Brand />
+            <ThemeControl />
+            <p className="eyebrow">Модерация</p>
+            <h1>Служебный вход подтверждён</h1>
+            <p>{session.data?.displayName}. Двухфакторная проверка пройдена.</p>
+            <p className="inline-note">
+                На этом этапе доступны управление сессиями и выход. Рабочие инструменты этого раздела ещё не подключены.
+            </p>
+            <SessionsPanel context={context} />
+            <Link href="/about">О сервисе</Link>
+        </main>
     );
 }

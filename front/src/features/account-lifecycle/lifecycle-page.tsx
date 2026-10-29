@@ -3,11 +3,10 @@
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useRuntime } from '../../app/providers.js';
+import { useRuntime } from '../../shared/runtime/index.js';
 import { ApiError } from '../../shared/api/client.js';
-import { Guard, useSession } from '../auth/session.js';
-import { PersonalShell } from '../personalization/shell.js';
-import { CriticalReauthDialog, type ReauthResult } from './critical-reauth.js';
+import { useSession } from '../../entities/session/client.js';
+import { CriticalReauthDialog, type ReauthResult } from '../../entities/account-security/client.js';
 import styles from './lifecycle.module.css';
 
 type Action = 'archive' | 'request' | 'cancel' | 'finalize';
@@ -484,10 +483,8 @@ function LifecycleContent() {
 
 export function AccountLifecyclePage() {
     return (
-        <Guard context="user">
-            <PersonalShell>
-                <LifecycleContent />
-            </PersonalShell>
-        </Guard>
+        <>
+            <LifecycleContent />
+        </>
     );
 }

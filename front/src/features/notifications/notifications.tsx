@@ -3,12 +3,11 @@ import Link from 'next/link';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
-import { useRuntime } from '../../app/providers.js';
+import { useRuntime } from '../../shared/runtime/index.js';
 import type { Success } from '../../shared/api/contracts.generated.js';
-import { Guard, useSession } from '../auth/session.js';
-import { PersonalShell } from '../personalization/shell.js';
+import { useSession } from '../../entities/session/client.js';
 import styles from './notifications.module.css';
-import { useConsent } from '../legal/consent-state.js';
+import { useConsent } from '../../entities/consent/client.js';
 
 const categories = [
     ['all', 'Все'],
@@ -179,11 +178,9 @@ function CenterContent() {
 }
 export function NotificationCenter() {
     return (
-        <Guard context="user">
-            <PersonalShell>
-                <CenterContent />
-            </PersonalShell>
-        </Guard>
+        <>
+            <CenterContent />
+        </>
     );
 }
 
@@ -357,10 +354,8 @@ function SettingsContent() {
 }
 export function NotificationSettings() {
     return (
-        <Guard context="user">
-            <PersonalShell>
-                <SettingsContent />
-            </PersonalShell>
-        </Guard>
+        <>
+            <SettingsContent />
+        </>
     );
 }

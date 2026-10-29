@@ -3,13 +3,12 @@ import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useState, type FormEvent } from 'react';
-import { useRuntime } from '../../app/providers.js';
+import { useRuntime } from '../../shared/runtime/index.js';
 import { ApiError } from '../../shared/api/client.js';
 import type { Success } from '../../shared/api/contracts.generated.js';
 import { InlineLoader as ArcInlineLoader } from '@meal-planner/design-system';
 import { Skeleton as ArcSkeleton } from '@meal-planner/design-system';
-import { Guard, useSession } from '../auth/session.js';
-import { PersonalShell } from '../personalization/shell.js';
+import { useSession } from '../../entities/session/client.js';
 import styles from './family-notes.module.css';
 
 type Item = { id?: string; text: string };
@@ -150,9 +149,5 @@ function LoadedForm({ id }: { id: string }) {
     return <Form key={`${note.data.id}:${note.data.version}`} id={id} source={note.data} />;
 }
 export function FamilyNoteEditor({ id }: { id?: string | undefined }) {
-    return (
-        <Guard context="user">
-            <PersonalShell>{id ? <LoadedForm id={id} /> : <Form />}</PersonalShell>
-        </Guard>
-    );
+    return <>{id ? <LoadedForm id={id} /> : <Form />}</>;
 }

@@ -1,3 +1,102 @@
+.muted {
+    color: var(--muted);
+}
+
+.card {
+    padding: 1.25rem;
+    border: 1px solid var(--line);
+    border-radius: 1rem;
+    background: var(--surface);
+    display: grid;
+    gap: 1rem;
+    min-width: 0;
+}
+
+.columns {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    align-items: start;
+}
+
+.lockable,
+.form .lockable {
+    display: block;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.form {
+    display: grid;
+    gap: 1rem;
+}
+
+.form label {
+    display: grid;
+    gap: 0.4rem;
+}
+
+.form fieldset {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    border: 1px solid var(--line);
+    border-radius: 0.5rem;
+}
+
+.form fieldset label {
+    display: flex;
+    align-items: center;
+}
+
+.form select,
+.card select,
+.form textarea {
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    padding: 0.7rem;
+    border: 1px solid var(--line);
+    border-radius: 0.5rem;
+    background: var(--surface);
+    color: var(--ink);
+    font: inherit;
+}
+
+.notice {
+    padding: 0.8rem 1rem;
+    background: var(--soft);
+    border-radius: 0.7rem;
+    border: 1px solid var(--line);
+}
+
+.danger {
+    color: var(--danger);
+}
+
+.details {
+    display: grid;
+    grid-template-columns: minmax(110px, 1fr) 1fr;
+    gap: 0.75rem;
+    margin: 0;
+}
+
+.details dt {
+    color: var(--muted);
+}
+
+.details dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.history {
+    display: grid;
+    gap: 0.75rem;
+}
+
 .tabs {
     display: flex;
     flex-wrap: wrap;
@@ -29,6 +128,10 @@
 }
 
 @media (width <= 760px) {
+    .columns {
+        grid-template-columns: 1fr;
+    }
+
     .allergens {
         grid-template-columns: 1fr;
     }

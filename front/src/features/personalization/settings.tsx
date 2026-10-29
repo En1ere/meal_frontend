@@ -2,60 +2,57 @@
 import Link from 'next/link';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
-import { useRuntime } from '../../app/providers.js';
+import { useRuntime } from '../../shared/runtime/index.js';
 import type { Success } from '../../shared/api/contracts.generated.js';
-import { Guard, useSession } from '../auth/session.js';
-import { PersonalShell } from './shell.js';
+import { useSession } from '../../entities/session/client.js';
 import styles from './personalization.module.css';
-import { useConsent } from '../legal/consent-state.js';
+import { useConsent } from '../../entities/consent/client.js';
 import { ApiError } from '../../shared/api/client.js';
 
 export function SettingsPage() {
     return (
-        <Guard context="user">
-            <PersonalShell>
-                <h1>Настройки</h1>
-                <p>Управляйте профилем, питанием, безопасностью и данными на устройстве.</p>
-                <div className={styles.cards}>
-                    <Link className={styles.card} href="/settings/preferences">
-                        <h2>Питание</h2>
-                        <p>Рацион, аллергены, исключения, техника и цели.</p>
-                    </Link>
-                    <Link className={styles.card} href="/settings/account">
-                        <h2>Аккаунт</h2>
-                        <p>Пароль, PIN, почта и активные сессии.</p>
-                    </Link>
-                    <Link className={styles.card} href="/settings/offline">
-                        <h2>Offline</h2>
-                        <p>Данные на устройстве и очередь синхронизации.</p>
-                    </Link>
-                    <Link className={styles.card} href="/settings/privacy">
-                        <h2>Документы и согласия</h2>
-                        <p>Документы, отдельные согласия, отзыв и история изменений.</p>
-                    </Link>
-                    <Link className={styles.card} href="/settings/notifications">
-                        <h2>Уведомления</h2>
-                        <p>Категории, Web Push, email и тихие часы.</p>
-                    </Link>
-                    <Link className={styles.card} href="/settings/subscription">
-                        <h2>Подписка и квоты</h2>
-                        <p>Текущий тариф, trial и доступные AI-действия.</p>
-                    </Link>
-                    <Link className={styles.card} href="/support">
-                        <h2>Поддержка</h2>
-                        <p>Обращения, ответы и история переписки.</p>
-                    </Link>
-                    <Link className={styles.card} href="/exports">
-                        <h2>Экспорт</h2>
-                        <p>Проверка состава, история запросов и защищённое скачивание.</p>
-                    </Link>
-                    <Link className={styles.card} href="/settings/account/lifecycle">
-                        <h2>Управление аккаунтом</h2>
-                        <p>Готовность, архивирование и безопасный запрос на удаление.</p>
-                    </Link>
-                </div>
-            </PersonalShell>
-        </Guard>
+        <>
+            <h1>Настройки</h1>
+            <p>Управляйте профилем, питанием, безопасностью и данными на устройстве.</p>
+            <div className={styles.cards}>
+                <Link className={styles.card} href="/settings/preferences">
+                    <h2>Питание</h2>
+                    <p>Рацион, аллергены, исключения, техника и цели.</p>
+                </Link>
+                <Link className={styles.card} href="/settings/account">
+                    <h2>Аккаунт</h2>
+                    <p>Пароль, PIN, почта и активные сессии.</p>
+                </Link>
+                <Link className={styles.card} href="/settings/offline">
+                    <h2>Offline</h2>
+                    <p>Данные на устройстве и очередь синхронизации.</p>
+                </Link>
+                <Link className={styles.card} href="/settings/privacy">
+                    <h2>Документы и согласия</h2>
+                    <p>Документы, отдельные согласия, отзыв и история изменений.</p>
+                </Link>
+                <Link className={styles.card} href="/settings/notifications">
+                    <h2>Уведомления</h2>
+                    <p>Категории, Web Push, email и тихие часы.</p>
+                </Link>
+                <Link className={styles.card} href="/settings/subscription">
+                    <h2>Подписка и квоты</h2>
+                    <p>Текущий тариф, trial и доступные AI-действия.</p>
+                </Link>
+                <Link className={styles.card} href="/support">
+                    <h2>Поддержка</h2>
+                    <p>Обращения, ответы и история переписки.</p>
+                </Link>
+                <Link className={styles.card} href="/exports">
+                    <h2>Экспорт</h2>
+                    <p>Проверка состава, история запросов и защищённое скачивание.</p>
+                </Link>
+                <Link className={styles.card} href="/settings/account/lifecycle">
+                    <h2>Управление аккаунтом</h2>
+                    <p>Готовность, архивирование и безопасный запрос на удаление.</p>
+                </Link>
+            </div>
+        </>
     );
 }
 
@@ -254,10 +251,8 @@ function PreferencesContent() {
 }
 export function PreferencesPage() {
     return (
-        <Guard context="user">
-            <PersonalShell>
-                <PreferencesContent />
-            </PersonalShell>
-        </Guard>
+        <>
+            <PreferencesContent />
+        </>
     );
 }

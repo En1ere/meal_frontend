@@ -1,13 +1,15 @@
 'use client';
 import { useRef, useState } from 'react';
-import { useRuntime } from '../../app/providers.js';
+import { useRuntime } from '../../shared/runtime/index.js';
 import { ApiError } from '../../shared/api/client.js';
 import { contracts, type Route, type Success } from '../../shared/api/contracts.generated.js';
-import { useRequestSignal } from '../auth/use-request-signal.js';
-import { readOfflineOwner } from '../offline/offline-store.js';
-import { enqueueOfflineOperation } from '../offline/queue.js';
+import { setUserSession } from '../../entities/session/client.js';
+import { useRequestSignal } from '../../shared/api/use-request-signal.js';
+import { readOfflineOwner } from '../../entities/offline/store.js';
+import { enqueueOfflineOperation } from '../../entities/offline/queue.js';
 export function useRecipeCommand() {
-    const { api, queryClient } = useRuntime();
+    const runtime = useRuntime();
+    const { api, queryClient } = runtime;
     const signal = useRequestSignal();
     const [pending, setPending] = useState(false),
         [error, setError] = useState(''),
@@ -96,7 +98,7 @@ export function useRecipeCommand() {
                 attempt.current = null;
                 if (e.status === 401) {
                     api.invalidate();
-                    queryClient.setQueryData(['session', 'user'], null);
+                    setUserSession(runtime, null);
                     queryClient.removeQueries({
                         predicate: (q) =>
                             ['recipe-workspace', 'cooking', 'shopping', 'recipe-community'].includes(

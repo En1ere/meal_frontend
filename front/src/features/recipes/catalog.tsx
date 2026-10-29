@@ -3,16 +3,17 @@ import Link from 'next/link';
 import { useRef, type ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useRuntime } from '../../app/providers.js';
-import { Guard, useSession } from '../auth/session.js';
+import { useRuntime } from '../../shared/runtime/index.js';
+import { useSession } from '../../entities/session/client.js';
 import type { Success } from '../../shared/api/contracts.generated.js';
-import { RecipeShell, RecipeImage, RecipeLoading, RecipeError, Rating } from './shared.js';
+import { RecipeShell, RecipeLoading, RecipeError } from './shared.js';
+import { RecipeImage, Rating } from '../../entities/recipe/client.js';
 import {
     FollowAuthorButton,
     RecommendationFeedback,
     useRecommendationActions,
     type Recommendation,
-} from '../recommendations/actions.js';
+} from '../../entities/recommendation/client.js';
 import { catalogState, catalogHref } from './url-state.js';
 import styles from './recipes.module.css';
 type Summary = Success<'GET /api/v1/recipes'>['data']['items'][number];
@@ -476,10 +477,8 @@ function Content() {
 }
 export function RecipesCatalog() {
     return (
-        <Guard context="user">
-            <RecipeShell>
-                <Content />
-            </RecipeShell>
-        </Guard>
+        <RecipeShell>
+            <Content />
+        </RecipeShell>
     );
 }

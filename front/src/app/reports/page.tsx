@@ -1,6 +1,5 @@
 import { Suspense } from 'react';
-import { RecipeReports } from '../../features/recipes/reports.js';
-import { RecipeLoading } from '../../features/recipes/shared.js';
+import { RecipeLoading, RecipeReports } from '../../features/recipes/client.js';
 export default function Page() {
     return (
         <Suspense fallback={<RecipeLoading />}>

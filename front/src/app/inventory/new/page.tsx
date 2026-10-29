@@ -1,6 +1,5 @@
 import { Suspense } from 'react';
-import { InventoryCreatePage } from '../../../features/inventory/create-page.js';
-import { Loading } from '../../../features/inventory/shared.js';
+import { InventoryCreatePage, Loading } from '../../../features/inventory/client.js';
 export const metadata = { title: 'Добавить продукт', robots: { index: false, follow: false } };
 export default function Page() {
     return (

@@ -3,8 +3,8 @@
 import { useEffect } from 'react';
 import type { QueryClient } from '@tanstack/react-query';
 import type { ApiClient } from '../../shared/api/client.js';
-import { readOfflineOwner } from './offline-store.js';
-import { syncOfflineQueue } from './queue.js';
+import { readOfflineOwner } from '../../entities/offline/store.js';
+import { syncOfflineQueue } from '../../entities/offline/queue.js';
 
 export function OfflineSyncCoordinator({ api, queryClient }: { api: ApiClient | null; queryClient: QueryClient }) {
     useEffect(() => {

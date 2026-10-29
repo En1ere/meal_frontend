@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
+import Script from 'next/script';
 import type { ReactNode } from 'react';
 import '@meal-planner/design-system/styles.css';
 import { Providers } from './providers.js';
-import { OfflineStatus } from '../features/offline/status.js';
+import { OfflineStatus } from '../widgets/offline-status/client.js';
 import './globals.css';
 export const metadata: Metadata = {
     title: { default: 'Meal Planner', template: '%s · Meal Planner' },
@@ -10,7 +11,10 @@ export const metadata: Metadata = {
 };
 export default function RootLayout({ children }: { children: ReactNode }) {
     return (
-        <html lang="ru" suppressHydrationWarning>
+        <html lang="ru" data-theme="coffee-light" suppressHydrationWarning>
+            <head>
+                <Script src="/theme-init.js" strategy="beforeInteractive" />
+            </head>
             <body>
                 <a className="skip-link" href="#main">
                     К содержимому

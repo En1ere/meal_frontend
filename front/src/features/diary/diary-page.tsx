@@ -3,14 +3,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
-import { useRuntime } from '../../app/providers.js';
+import { useRuntime } from '../../shared/runtime/index.js';
 import type { Success } from '../../shared/api/contracts.generated.js';
 import { ApiError } from '../../shared/api/client.js';
 import { Skeleton as ArcSkeleton } from '@meal-planner/design-system';
-import { Guard, useSession } from '../auth/session.js';
-import { PersonalShell } from '../personalization/shell.js';
+import { useSession } from '../../entities/session/client.js';
 import styles from './diary.module.css';
-import { isConsentRequiredError, useConsent } from '../legal/consent-state.js';
+import { isConsentRequiredError, useConsent } from '../../entities/consent/client.js';
 
 type Day = Success<'GET /api/v1/diary'>['data'];
 type Entry = Day['items'][number];
@@ -733,10 +732,8 @@ function EditEntryDialog({
 
 export function DiaryPage() {
     return (
-        <Guard context="user">
-            <PersonalShell>
-                <Content />
-            </PersonalShell>
-        </Guard>
+        <>
+            <Content />
+        </>
     );
 }

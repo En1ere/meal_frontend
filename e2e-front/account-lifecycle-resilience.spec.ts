@@ -20,9 +20,15 @@ async function login(page: Page, email = 'user1@meal-planner.test', password = '
     await page.goto('/auth');
     await page.getByText('Тестовые аккаунты', { exact: true }).waitFor();
     await ensureServiceWorker(page);
-    await page.getByLabel('Электронная почта', { exact: true }).fill(email);
-    await page.getByLabel('Пароль', { exact: true }).fill(password);
-    await page.getByRole('button', { name: 'Войти', exact: true }).click();
+    const submit = page.getByRole('button', { name: 'Войти', exact: true });
+    await expect(submit).toBeEnabled();
+    const emailInput = page.getByLabel('Электронная почта', { exact: true });
+    const passwordInput = page.getByLabel('Пароль', { exact: true });
+    await emailInput.fill(email);
+    await passwordInput.fill(password);
+    await expect(emailInput).toHaveValue(email);
+    await expect(passwordInput).toHaveValue(password);
+    await submit.click();
     await expect.poll(() => new URL(page.url()).pathname, { timeout: 60_000 }).toBe('/');
     await expect(page.getByRole('link', { name: /^Профиль:/u })).toBeVisible({ timeout: 30_000 });
 }

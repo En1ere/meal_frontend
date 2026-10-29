@@ -1,9 +1,10 @@
 'use client';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useRuntime } from '../../app/providers.js';
-import { useSession } from '../auth/session.js';
-import { localDate, units } from '../inventory/shared.js';
+import { useRuntime } from '../../shared/runtime/index.js';
+import { useSession } from '../../entities/session/client.js';
+import { units } from '../../entities/measurement/model.js';
+import { localDate } from '../../shared/lib/date.js';
 import type { Preserve } from './types.js';
 import { preserveTypes } from './types.js';
 import { usePreserveCommand } from './use-command.js';

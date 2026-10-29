@@ -60,11 +60,21 @@ async function loginModerator(page: Page, returnTo = '/moderation') {
     expect(new URL(page.url()).pathname + new URL(page.url()).search).toBe(returnTo);
 }
 
-async function setFailure(page: Page, path: string, method: 'GET' | 'POST', status: number) {
-    const value = Buffer.from(JSON.stringify({ nonce: crypto.randomUUID(), path, method, status })).toString(
+async function setFailure(
+    page: Page,
+    path: string,
+    method: 'GET' | 'POST',
+    status: number,
+    mode: 'once' | 'sticky' = 'once',
+) {
+    const value = Buffer.from(JSON.stringify({ nonce: crypto.randomUUID(), path, method, status, mode })).toString(
         'base64url',
     );
     await page.context().addCookies([{ name: 'moderator_test_control', value, url: 'http://localhost:3000' }]);
+}
+
+async function clearFailure(page: Page) {
+    await page.context().clearCookies({ name: 'moderator_test_control' });
 }
 
 async function decide(page: Page, action: string, reason: string) {
@@ -218,9 +228,10 @@ test('recoverable 503, next-page failure, 429 and crash surfaces keep determinis
     await page.getByRole('button', { name: 'Повторить загрузку' }).click();
     await expect(page.getByText('Запечённые яблоки', { exact: true })).toBeVisible();
 
-    await setFailure(page, '/api/v1/moderator/overview', 'GET', 500);
+    await setFailure(page, '/api/v1/moderator/overview', 'GET', 500, 'sticky');
     await gotoStable(page, '/moderation');
     await expect(page.getByRole('heading', { name: 'Не удалось загрузить данные.' })).toBeVisible();
+    await clearFailure(page);
     await page.getByRole('button', { name: 'Повторить' }).click();
     await expect(page.getByRole('heading', { name: 'Модерация' })).toBeVisible();
 

@@ -292,13 +292,13 @@
 }
 
 .available {
-    background: #e8f2e3;
-    color: #295328;
+    background: var(--mp-color-success-surface);
+    color: var(--mp-color-success-text);
 }
 
 .warning {
-    background: #fff0df;
-    color: #7f441c;
+    background: var(--surface) 0df;
+    color: var(--mp-color-warning-text);
 }
 
 .cards {
@@ -407,8 +407,8 @@
     width: fit-content;
     padding: 0.35rem 0.55rem;
     border-radius: 0.5rem;
-    background: #fff0df;
-    color: #7f441c;
+    background: var(--surface) 0df;
+    color: var(--mp-color-warning-text);
     font-size: 0.82rem;
 }
 
@@ -479,7 +479,7 @@
 }
 
 .dialog::backdrop {
-    background: rgb(30 20 15 / 40%);
+    background: var(--mp-color-overlay);
 }
 
 .dialog form {
@@ -505,7 +505,7 @@
 }
 
 .allergen-summary {
-    background: #fffaf4;
+    background: var(--surface) af4;
 }
 
 .allergen-heading,
@@ -527,7 +527,7 @@
     align-items: center;
     gap: 0.55rem;
     padding: 0.5rem 0.65rem;
-    border: 1px solid #ead8c5;
+    border: 1px solid var(--line);
     border-radius: 0.7rem;
     background: var(--surface);
     color: var(--ink);
@@ -554,8 +554,8 @@
 }
 
 .allergen-incomplete {
-    border-color: #c9834a;
-    background: #fff0df;
+    border-color: var(--mp-color-warning-text);
+    background: var(--surface) 0df;
 }
 
 .allergen-dialog {
@@ -595,9 +595,9 @@
 
 .unknown-group {
     padding: 1rem;
-    border: 1px solid #c9834a;
+    border: 1px solid var(--mp-color-warning-text);
     border-radius: 0.8rem;
-    background: #fff8ee;
+    background: var(--surface) 8ee;
 }
 
 .unknown-list {
@@ -660,7 +660,7 @@
     gap: 0.75rem;
     padding: 1rem;
     border-radius: 0.75rem;
-    background: #e8f2e3;
+    background: var(--mp-color-success-surface);
 }
 
 .detail-layout {

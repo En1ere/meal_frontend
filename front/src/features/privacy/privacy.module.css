@@ -1,0 +1,60 @@
+.notice {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.25rem 1.5rem;
+    border: 1px solid var(--line);
+    border-radius: 1rem;
+    background: var(--surface);
+}
+
+.card,
+.panel {
+    padding: 1.25rem;
+    border: 1px solid var(--line);
+    border-radius: 1rem;
+    background: var(--surface);
+}
+
+.card > * + *,
+.panel > * + * {
+    margin-top: 0.75rem;
+}
+
+.list {
+    padding: 0;
+    list-style: none;
+}
+
+.list li {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--line);
+}
+
+.list strong {
+    text-align: right;
+}
+
+.stack {
+    display: grid;
+    gap: 1rem;
+}
+
+@media (width<=800px) {
+    .notice {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .list li {
+        flex-direction: column;
+    }
+
+    .list strong {
+        text-align: left;
+    }
+}

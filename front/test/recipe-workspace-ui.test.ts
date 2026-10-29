@@ -1,12 +1,19 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { emptyDocument, moveRow, submissionProblems } from '../src/features/recipes/workspace-state.js';
+import {
+    canSubmitCurrentRevision,
+    emptyDocument,
+    moveRow,
+    publicationState,
+    submissionProblems,
+    type WorkspaceRecipe,
+} from '../src/features/recipes/workspace-state.js';
 import {
     readRecipeCache,
     storeRecipeCache,
     clearRecipeCache,
     recipeCacheKey,
-} from '../src/features/recipes/offline-cache.js';
+} from '../src/entities/recipe-cache/model.js';
 import { publicRecipeFixtures } from '../src/mocks/recipe-fixtures.js';
 void test('draft minimum is enforced only on submit; reorder preserves ingredient identity', () => {
     const draft = emptyDocument();
@@ -49,4 +56,23 @@ void test('offline read cache keeps two recipes, scopes by user, expires and cle
     assert.equal(data.has(recipeCacheKey), false);
     data.set(recipeCacheKey, 'bad-json');
     assert.deepEqual(readRecipeCache(storage, 'user-one'), []);
+});
+
+void test('public link follows publication axis while review can describe a newer rejected revision', () => {
+    const fixture = publicRecipeFixtures()[0]!;
+    const currentRevisionId = crypto.randomUUID();
+    const recipe = {
+        id: fixture.id,
+        revisionId: currentRevisionId,
+        review: { revisionId: currentRevisionId, status: 'rejected', publicReason: 'Уточните способ приготовления' },
+        publication: { revisionId: fixture.revisionId, publishedAt: fixture.publishedAt },
+    } as WorkspaceRecipe;
+    assert.deepEqual(publicationState(recipe), {
+        label: 'Опубликована предыдущая редакция; текущая редакция остаётся приватной',
+        publicHref: `/recipes/${fixture.id}`,
+        mismatch: true,
+    });
+    assert.equal(publicationState({ ...recipe, publication: null }).publicHref, null);
+    assert.equal(canSubmitCurrentRevision(recipe), false);
+    assert.equal(canSubmitCurrentRevision({ ...recipe, revisionId: crypto.randomUUID() }), true);
 });

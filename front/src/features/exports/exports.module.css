@@ -294,7 +294,7 @@
 }
 
 .ready {
-    color: #176b3a;
+    color: var(--mp-color-success-text);
 }
 
 .failed,

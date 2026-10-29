@@ -186,6 +186,8 @@ export function workspaceVisibleRecipe(state: MockState, userId: string, id: str
         version: 1,
         revision: 1,
         status: 'published',
+        review: { revisionId: publicRecipe.revisionId, status: 'published', publicReason: null },
+        publication: { revisionId: publicRecipe.revisionId, publishedAt: publicRecipe.publishedAt },
         archived: false,
         baseRecipeId: null,
         availabilityScope: 'private',
@@ -460,6 +462,8 @@ export function recipeWorkspaceHandle(c: {
                 revision: 1,
                 version: 1,
                 status: 'draft',
+                review: { revisionId: '', status: 'draft', publicReason: null },
+                publication: null,
                 archived: false,
                 baseRecipeId: null,
                 availabilityScope: scope,
@@ -468,6 +472,7 @@ export function recipeWorkspaceHandle(c: {
                 document,
                 nutrition: nutrition(document, undefined),
             };
+            recipe.review.revisionId = recipe.revisionId;
             data.recipes.unshift({ userId, familyId, recipe, history: [], submittedRevisionIds: [] });
             result = { recipe };
         } else if (action === 'variant') {
@@ -479,12 +484,15 @@ export function recipeWorkspaceHandle(c: {
                     revision: 1,
                     version: 1,
                     status: 'draft',
+                    review: { revisionId: '', status: 'draft', publicReason: null },
+                    publication: null,
                     baseRecipeId: id,
                     availabilityScope: 'private',
                     authorLogin: state.users.find((u) => u.id === userId)?.login ?? null,
                     canEdit: true,
                     nutrition: nutrition(base.document, base.nutrition),
                 };
+            recipe.review.revisionId = recipe.revisionId;
             data.recipes.unshift({ userId, familyId: null, recipe, history: [], submittedRevisionIds: [] });
             result = { recipe };
         } else if (['rating', 'comments', 'reports'].includes(action) && !commentId) {
@@ -542,7 +550,14 @@ export function recipeWorkspaceHandle(c: {
                         data.hidden.push(id);
                         const row = data.recipes.find((r) => r.recipe.id === id);
                         if (row) {
+                            const reviewedRevisionId = row.recipe.publication?.revisionId ?? row.recipe.revisionId;
                             row.recipe.status = 'hidden';
+                            row.recipe.review = {
+                                revisionId: reviewedRevisionId,
+                                status: 'hidden',
+                                publicReason: null,
+                            };
+                            row.recipe.publication = null;
                             row.recipe.version++;
                         }
                     }
@@ -594,9 +609,24 @@ export function recipeWorkspaceHandle(c: {
                 workspaceConsumeAllowance(data, userId, 'submission', now);
                 row.submittedRevisionIds.push(row.recipe.revisionId);
                 row.recipe.status = 'pending';
+                row.recipe.review = {
+                    revisionId: row.recipe.revisionId,
+                    status: 'pending',
+                    publicReason: null,
+                };
                 row.recipe.version++;
             } else if (action === 'archive' || action === 'restore') {
                 row.recipe.archived = action === 'archive';
+                if (action === 'archive' && row.recipe.publication) {
+                    const reviewedRevisionId = row.recipe.publication.revisionId;
+                    row.recipe.publication = null;
+                    row.recipe.status = 'unpublished';
+                    row.recipe.review = {
+                        revisionId: reviewedRevisionId,
+                        status: 'unpublished',
+                        publicReason: null,
+                    };
+                }
                 row.recipe.version++;
             } else return fail(404);
             result = { recipe: row.recipe };

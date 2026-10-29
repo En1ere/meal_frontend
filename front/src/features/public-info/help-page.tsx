@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
-import { PublicShell } from './public-shell.js';
 import styles from './public-info.module.css';
 
 interface Article {
@@ -115,7 +114,7 @@ export function HelpPage() {
     );
     const popular = categories.flatMap((category) => category.articles).slice(0, 5);
     return (
-        <PublicShell current="help">
+        <>
             <section className={styles.hero}>
                 <p className={styles.eyebrow}>Центр помощи Meal Planner</p>
                 <h1>Чем помочь?</h1>
@@ -203,6 +202,6 @@ export function HelpPage() {
                     </Link>
                 </div>
             </section>
-        </PublicShell>
+        </>
     );
 }

@@ -3,10 +3,9 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useState, type FormEvent } from 'react';
-import { useRuntime } from '../../app/providers.js';
-import { Guard, useSession } from '../auth/session.js';
-import { PersonalShell } from '../personalization/shell.js';
-import styles from '../support/support.module.css';
+import { useRuntime } from '../../shared/runtime/index.js';
+import { useSession } from '../../entities/session/client.js';
+import styles from './ai-appeals.module.css';
 
 const appealStatuses = {
     pending: 'На рассмотрении',
@@ -21,11 +20,7 @@ const restrictionStatuses = {
 } as const;
 
 function Frame({ children }: { children: React.ReactNode }) {
-    return (
-        <Guard context="user">
-            <PersonalShell>{children}</PersonalShell>
-        </Guard>
-    );
+    return <>{children}</>;
 }
 
 export function AiAppealsPage() {

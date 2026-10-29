@@ -1,5 +1,10 @@
-import { OwnProfilePage } from '../../features/profiles/profile-pages.js';
+import { OwnProfilePage } from '../../widgets/profile-pages/client.js';
+import { GuardedUserAppShell } from '../../widgets/user-app-shell/client.js';
 export const metadata = { title: 'Мой профиль', robots: { index: false, follow: false } };
 export default function Page() {
-    return <OwnProfilePage />;
+    return (
+        <GuardedUserAppShell context="user">
+            <OwnProfilePage />
+        </GuardedUserAppShell>
+    );
 }

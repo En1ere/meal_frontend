@@ -1,10 +1,11 @@
 'use client';
 import Link from 'next/link';
 import { useSyncExternalStore } from 'react';
-import { Guard, useSession } from '../auth/session.js';
-import { RecipeShell, recipeUnits } from './shared.js';
-import { readRecipeCache, recipeCacheKey } from './offline-cache.js';
-import { readOfflineOwner, subscribeOfflineState } from '../offline/offline-store.js';
+import { useSession } from '../../entities/session/client.js';
+import { RecipeShell } from './shared.js';
+import { recipeUnits } from '../../entities/recipe/model.js';
+import { readRecipeCache, recipeCacheKey } from '../../entities/recipe-cache/model.js';
+import { readOfflineOwner, subscribeOfflineState } from '../../entities/offline/store.js';
 const subscribe = (callback: () => void) => {
     window.addEventListener('storage', callback);
     return () => window.removeEventListener('storage', callback);
@@ -71,10 +72,8 @@ export function SavedRecipesReader() {
 }
 export function OfflineRecipes() {
     return (
-        <Guard context="user" allowOffline>
-            <RecipeShell>
-                <SavedRecipesReader />
-            </RecipeShell>
-        </Guard>
+        <RecipeShell>
+            <SavedRecipesReader />
+        </RecipeShell>
     );
 }

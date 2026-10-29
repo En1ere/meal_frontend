@@ -2,9 +2,10 @@
 
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
-import { useRuntime } from '../../app/providers.js';
-import { Guard, useSession } from '../auth/session.js';
-import { RecipeError, RecipeLoading, RecipeShell, recipeUnits } from './shared.js';
+import { useRuntime } from '../../shared/runtime/index.js';
+import { useSession } from '../../entities/session/client.js';
+import { RecipeError, RecipeLoading, RecipeShell } from './shared.js';
+import { recipeUnits } from '../../entities/recipe/model.js';
 import styles from './workspace.module.css';
 
 function Content({ id }: { id: string }) {
@@ -98,10 +99,8 @@ function Content({ id }: { id: string }) {
 
 export function FamilyRecipeDetail({ id }: { id: string }) {
     return (
-        <Guard context="user">
-            <RecipeShell family>
-                <Content id={id} />
-            </RecipeShell>
-        </Guard>
+        <RecipeShell family>
+            <Content id={id} />
+        </RecipeShell>
     );
 }

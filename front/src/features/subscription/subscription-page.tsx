@@ -4,11 +4,11 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useRef, useState } from 'react';
-import { useRuntime } from '../../app/providers.js';
+import { useRuntime } from '../../shared/runtime/index.js';
 import type { Success } from '../../shared/api/contracts.generated.js';
 import { Skeleton as ArcSkeleton } from '@meal-planner/design-system';
-import { Guard, useSession } from '../auth/session.js';
-import { PersonalShell } from '../personalization/shell.js';
+import { useSession } from '../../entities/session/client.js';
+import { familyKeys } from '../../entities/family/model.js';
 import styles from './subscription.module.css';
 
 type Overview = Success<'GET /api/v1/settings/subscription'>['data'];
@@ -58,7 +58,7 @@ function Content() {
     const refreshRelated = (value: Overview) => {
         queryClient.setQueryData(key, value);
         void queryClient.invalidateQueries({ queryKey: ['ai-balance', session.data?.id] });
-        void queryClient.invalidateQueries({ queryKey: ['family', session.data?.id] });
+        void queryClient.invalidateQueries({ queryKey: familyKeys.context(session.data?.id) });
         void queryClient.invalidateQueries({ queryKey: ['meal-plan'] });
     };
     const recover = () => {
@@ -706,10 +706,8 @@ function Content() {
 
 export function SubscriptionPage() {
     return (
-        <Guard context="user">
-            <PersonalShell>
-                <Content />
-            </PersonalShell>
-        </Guard>
+        <>
+            <Content />
+        </>
     );
 }

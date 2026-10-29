@@ -1,4 +1,5 @@
-import { PricingPage } from '../../features/public-info/pricing-page.js';
+import { PricingPage } from '../../features/public-info/client.js';
+import { PublicShell } from '../../widgets/public-shell/index.js';
 
 export const metadata = {
     title: 'Тарифы — Meal Planner',
@@ -6,5 +7,9 @@ export const metadata = {
 };
 
 export default function Page() {
-    return <PricingPage />;
+    return (
+        <PublicShell current="pricing">
+            <PricingPage />
+        </PublicShell>
+    );
 }

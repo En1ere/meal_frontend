@@ -2,12 +2,12 @@
 
 import Link from 'next/link';
 import { useInfiniteQuery } from '@tanstack/react-query';
-import { useRuntime } from '../../app/providers.js';
-import { useSession } from '../auth/session.js';
-import { FollowAuthorButton } from '../recommendations/actions.js';
+import { useRuntime } from '../../shared/runtime/index.js';
+import { useSession } from '../../entities/session/client.js';
 import styles from './following.module.css';
+import type { ReactNode } from 'react';
 
-export function FollowingList() {
+export function FollowingList({ renderFollowAction }: { renderFollowAction: (username: string) => ReactNode }) {
     const { api } = useRuntime();
     const session = useSession('user');
     const query = useInfiniteQuery({
@@ -60,7 +60,7 @@ export function FollowingList() {
                                     : `${author.recipeCount} опубликованных рецептов`}
                             </small>
                         </div>
-                        <FollowAuthorButton username={author.username} />
+                        {renderFollowAction(author.username)}
                     </li>
                 ))}
             </ul>

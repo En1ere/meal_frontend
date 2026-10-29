@@ -3,18 +3,19 @@ import Link from 'next/link';
 import { useEffect, useRef, useState, useTransition } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useRuntime } from '../../app/providers.js';
-import { Guard, useSession } from '../auth/session.js';
+import { useRuntime } from '../../shared/runtime/index.js';
+import { useSession } from '../../entities/session/client.js';
 import type { Success } from '../../shared/api/contracts.generated.js';
-import { RecipeShell, RecipeLoading, RecipeError, recipeUnits } from './shared.js';
+import { RecipeShell, RecipeLoading, RecipeError } from './shared.js';
+import { recipeUnits } from '../../entities/recipe/model.js';
 import { useRecipeCommand } from './use-command.js';
 import { ApiError } from '../../shared/api/client.js';
 import { useCookingAlert } from './use-cooking-alert.js';
 import { RecipeCommunity } from './community.js';
 import { CookingReminders } from './cooking-reminders.js';
 import styles from './workspace.module.css';
-import { readOfflineOwner } from '../offline/offline-store.js';
-import { readOfflineSnapshotData, saveOfflineSnapshot } from '../offline/snapshots.js';
+import { readOfflineOwner } from '../../entities/offline/store.js';
+import { readOfflineSnapshotData, saveOfflineSnapshot } from '../../entities/offline/snapshots.js';
 type Attempt = Success<'GET /api/v1/cooking-attempts/{id}'>['data'];
 type StockBatch = Success<'GET /api/v1/cooking-attempts/stock-options'>['data']['items'][number];
 type PreserveContainer = StockBatch['containers'][number];
@@ -984,10 +985,8 @@ function CookingContent({ id }: { id: string }) {
 }
 export function RecipeCooking({ id }: { id: string }) {
     return (
-        <Guard context="user" allowOffline>
-            <RecipeShell>
-                <CookingContent id={id} />
-            </RecipeShell>
-        </Guard>
+        <RecipeShell>
+            <CookingContent id={id} />
+        </RecipeShell>
     );
 }

@@ -1,62 +1,30 @@
 'use client';
 
-import { Fragment, createContext, useContext, useEffect, useState, useRef, type ReactNode } from 'react';
+import { Fragment, useEffect, useState, useRef, type ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { createStore } from 'zustand/vanilla';
-import { useStore } from 'zustand';
-import { defaultClientTheme, resolveTheme, type ThemeName } from '@meal-planner/design-system';
+import { defaultClientTheme, resolveTheme } from '@meal-planner/design-system';
 import { ApiClient } from '../shared/api/client.js';
-import { clearBrowserRecipeCache } from '../features/recipes/offline-cache.js';
-import type { Success } from '../shared/api/contracts.generated.js';
-import { forgetOfflineOwner, registerOfflineWorker } from '../features/offline/offline-store.js';
-import { OfflineSyncCoordinator } from '../features/offline/sync-coordinator.js';
+import { clearBrowserRecipeCache } from '../entities/recipe-cache/model.js';
+import { RecipeWorkspaceCompatibility } from '../entities/recipe/index.js';
+import {
+    forgetOfflineOwner,
+    markOfflineSync,
+    registerOfflineWorker,
+    rememberOfflineOwner,
+} from '../entities/offline/store.js';
+import { OfflineSyncCoordinator } from '../features/offline/client.js';
+import { createUiStore, RuntimeProvider, type MfaFlow } from '../shared/runtime/index.js';
+import { WorkspaceScopeProvider } from '../entities/workspace-scope/client.js';
+import { createWorkspaceScopeStore } from '../entities/workspace-scope/model.js';
 
-export type MfaFlow = Success<'POST /api/v1/staff/auth/login'>['data'] & {
-    context: 'moderator';
-    returnTo: string;
+const sessionLifecycle = {
+    onUserAuthenticated: rememberOfflineOwner,
+    onUserUnauthorized: () => {
+        forgetOfflineOwner();
+        clearBrowserRecipeCache();
+    },
 };
 
-type UiState = {
-    theme: ThemeName;
-    collapsed: boolean;
-    scope: 'family' | 'personal';
-    scopeInitializedFor: string | null;
-    setTheme: (value: ThemeName) => void;
-    toggleSidebar: () => void;
-    setScope: (value: 'family' | 'personal') => void;
-    setScopeFor: (userId: string, value: 'family' | 'personal') => void;
-    initializeScope: (userId: string, hasFamily: boolean) => void;
-    resetScope: () => void;
-};
-const createUiStore = () =>
-    createStore<UiState>((set) => ({
-        theme: defaultClientTheme,
-        collapsed: false,
-        scope: 'personal',
-        scopeInitializedFor: null,
-        setTheme: (theme) => set({ theme }),
-        toggleSidebar: () => set((s) => ({ collapsed: !s.collapsed })),
-        setScope: (scope) => set({ scope }),
-        setScopeFor: (scopeInitializedFor, scope) => set({ scope, scopeInitializedFor }),
-        initializeScope: (userId, hasFamily) =>
-            set((state) =>
-                state.scopeInitializedFor === userId
-                    ? state
-                    : { scope: hasFamily ? 'family' : 'personal', scopeInitializedFor: userId },
-            ),
-        resetScope: () => set({ scope: 'personal', scopeInitializedFor: null }),
-    }));
-interface Runtime {
-    api: ApiClient | null;
-    error: string | null;
-    queryClient: QueryClient;
-    reset: () => void;
-    broadcast: () => void;
-    ui: ReturnType<typeof createUiStore>;
-    mfa: MfaFlow | null;
-    setMfa: (value: MfaFlow | null) => void;
-}
-const Context = createContext<Runtime | null>(null);
 export function Providers({ children }: { children: ReactNode }) {
     const [queryClient] = useState(
         () =>
@@ -68,6 +36,7 @@ export function Providers({ children }: { children: ReactNode }) {
             }),
     );
     const [ui] = useState(createUiStore);
+    const [workspaceScope] = useState(createWorkspaceScopeStore);
     const [api, setApi] = useState<ApiClient | null>(null);
     const [error, setError] = useState<string | null>(null);
     const channel = useRef<BroadcastChannel | null>(null);
@@ -91,11 +60,19 @@ export function Providers({ children }: { children: ReactNode }) {
                             return;
                         }
                     }
-                    await registerOfflineWorker().catch(() => {
+                    void registerOfflineWorker().catch(() => {
                         /* The online application remains usable when offline shell registration fails. */
                     });
                 }
-                if (active) setApi(new ApiClient(window.location.origin));
+                if (active)
+                    setApi(
+                        new ApiClient(
+                            window.location.origin,
+                            fetch,
+                            markOfflineSync,
+                            new RecipeWorkspaceCompatibility(),
+                        ),
+                    );
             } catch {
                 if (active) setError('Не удалось подготовить подключение. Обновите страницу.');
             }
@@ -131,7 +108,7 @@ export function Providers({ children }: { children: ReactNode }) {
             forgetOfflineOwner();
             api.invalidate();
             queryClient.clear();
-            ui.getState().resetScope();
+            workspaceScope.getState().reset();
             setMfa(null);
             setAuthGeneration((value) => value + 1);
         };
@@ -140,42 +117,37 @@ export function Providers({ children }: { children: ReactNode }) {
             channel.current = null;
             next.close();
         };
-    }, [api, queryClient, ui]);
+    }, [api, queryClient, ui, workspaceScope]);
     const reset = () => {
         clearBrowserRecipeCache();
         forgetOfflineOwner();
         api?.invalidate();
         queryClient.clear();
-        ui.getState().resetScope();
+        workspaceScope.getState().reset();
         setMfa(null);
         setAuthGeneration((value) => value + 1);
     };
     return (
-        <Context.Provider
-            value={{
-                api,
-                error,
-                queryClient,
-                reset,
-                broadcast: () => channel.current?.postMessage('changed'),
-                ui,
-                mfa,
-                setMfa,
-            }}
-        >
-            <QueryClientProvider client={queryClient}>
-                <OfflineSyncCoordinator api={api} queryClient={queryClient} />
-                {/* Drop mounted query observers and transient MFA/form state on account changes. */}
-                <Fragment key={authGeneration}>{children}</Fragment>
-            </QueryClientProvider>
-        </Context.Provider>
+        <WorkspaceScopeProvider value={workspaceScope}>
+            <RuntimeProvider
+                value={{
+                    api,
+                    error,
+                    queryClient,
+                    reset,
+                    broadcast: () => channel.current?.postMessage('changed'),
+                    ui,
+                    mfa,
+                    setMfa,
+                    sessionLifecycle,
+                }}
+            >
+                <QueryClientProvider client={queryClient}>
+                    <OfflineSyncCoordinator api={api} queryClient={queryClient} />
+                    {/* Drop mounted query observers and transient MFA/form state on account changes. */}
+                    <Fragment key={authGeneration}>{children}</Fragment>
+                </QueryClientProvider>
+            </RuntimeProvider>
+        </WorkspaceScopeProvider>
     );
-}
-export function useRuntime() {
-    const value = useContext(Context);
-    if (!value) throw new Error('Missing runtime provider');
-    return value;
-}
-export function useUi<T>(selector: (state: UiState) => T) {
-    return useStore(useRuntime().ui, selector);
 }

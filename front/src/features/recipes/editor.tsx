@@ -3,12 +3,13 @@ import Link from 'next/link';
 import { Suspense, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useRuntime } from '../../app/providers.js';
-import { Guard, useSession } from '../auth/session.js';
+import { useRuntime } from '../../shared/runtime/index.js';
+import { useSession } from '../../entities/session/client.js';
 import { ApiError } from '../../shared/api/client.js';
 import { contracts } from '../../shared/api/contracts.generated.js';
-import { useRequestSignal } from '../auth/use-request-signal.js';
-import { RecipeShell, RecipeLoading, RecipeError, categoryLabels, methodLabels, recipeUnits } from './shared.js';
+import { useRequestSignal } from '../../shared/api/use-request-signal.js';
+import { RecipeShell, RecipeLoading, RecipeError } from './shared.js';
+import { categoryLabels, methodLabels, recipeUnits } from '../../entities/recipe/model.js';
 import {
     emptyDocument,
     moveRow,
@@ -18,9 +19,10 @@ import {
     type RecipeDocument,
 } from './workspace-state.js';
 import styles from './workspace.module.css';
-import { readOfflineOwner, subscribeOfflineState } from '../offline/offline-store.js';
-import { enqueueOfflineOperation, readOfflineDraftState } from '../offline/queue.js';
-import { readOfflineSnapshotData, saveOfflineSnapshot } from '../offline/snapshots.js';
+import { readOfflineOwner, subscribeOfflineState } from '../../entities/offline/store.js';
+import { enqueueOfflineOperation, readOfflineDraftState } from '../../entities/offline/queue.js';
+import { readOfflineSnapshotData, saveOfflineSnapshot } from '../../entities/offline/snapshots.js';
+import { normalizeCachedWorkspaceRecipe } from '../../entities/recipe/index.js';
 
 function EditorForm({
     initial,
@@ -648,7 +650,7 @@ function EditorContent({ id, scope }: { id?: string; scope: 'private' | 'family'
             if (scope === 'private' && !navigator.onLine) {
                 const cached = await readOfflineSnapshotData<WorkspaceRecipe>(owner!, `recipe-workspace:${id}`);
                 if (!cached) throw new Error('Этот рецепт не сохранён для offline-редактирования.');
-                return cached;
+                return normalizeCachedWorkspaceRecipe(cached);
             }
             const recipe = (
                 await api!.request(
@@ -724,12 +726,10 @@ function EditorContent({ id, scope }: { id?: string; scope: 'private' | 'family'
 }
 export function RecipeEditor({ id, scope = 'private' }: { id?: string; scope?: 'private' | 'family' }) {
     return (
-        <Guard context="user" allowOffline={scope === 'private'}>
-            <RecipeShell family={scope === 'family'}>
-                <Suspense fallback={<RecipeLoading />}>
-                    <EditorContent scope={scope} {...(id ? { id } : {})} />
-                </Suspense>
-            </RecipeShell>
-        </Guard>
+        <RecipeShell family={scope === 'family'}>
+            <Suspense fallback={<RecipeLoading />}>
+                <EditorContent scope={scope} {...(id ? { id } : {})} />
+            </Suspense>
+        </RecipeShell>
     );
 }

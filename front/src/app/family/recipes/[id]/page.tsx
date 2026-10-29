@@ -1,4 +1,4 @@
-import { FamilyRecipeDetail } from '../../../../features/recipes/family-detail.js';
+import { FamilyRecipeDetail } from '../../../../features/recipes/client.js';
 
 export const metadata = { title: 'Семейный рецепт', robots: { index: false, follow: false } };
 

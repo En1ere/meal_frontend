@@ -1,6 +1,6 @@
 # Meal Planner frontend
 
-Клиентское Next.js-приложение для публичных, пользовательских и модераторских сценариев. Текущая версия берётся из `package.json`.
+Клиентское Next.js-приложение для публичных, пользовательских и модераторских сценариев. Текущая package-версия — `0.0.146`; deployed runtime остаётся `0.0.137`. Read-only desktop/mobile production acceptance прошёл `24/24` без mutation requests и runtime errors.
 
 Административный интерфейс вынесен в независимый `meal_admin`; его исходники и установка для запуска клиента не нужны. Backend находится в `meal_backend`.
 
@@ -16,7 +16,7 @@ npm test
 npm run build
 ```
 
-Локальный dev-сервер использует порт `3000`. Production-like запуск: `npm run build`, затем `npm run start`.
+Локальный dev-сервер использует порт `3000`. Production-like запуск: `npm run build`, затем `npm run start`. Container build создаёт Next standalone output; собственный frontend-only liveness endpoint доступен на `/healthz`, а публичные `/health/live` и `/health/ready` по-прежнему отражают backend.
 
 ## Архитектурные границы
 

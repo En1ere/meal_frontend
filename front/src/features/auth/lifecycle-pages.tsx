@@ -6,7 +6,7 @@ import { leaveRevokedSessions } from './revoked-session-navigation.js';
 import { useQuery } from '@tanstack/react-query';
 import { Skeleton as ArcSkeleton } from '@meal-planner/design-system';
 import { ApiError } from '../../shared/api/client.js';
-import { useRuntime } from '../../app/providers.js';
+import { useRuntime } from '../../shared/runtime/index.js';
 import { AuthShell } from './auth-screen.js';
 import {
     Field,

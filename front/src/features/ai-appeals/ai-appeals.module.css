@@ -1,0 +1,77 @@
+.heading,
+.ticket,
+.message header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.heading p,
+.ticket p,
+.ticket small,
+.message small {
+    color: var(--muted);
+}
+
+.list,
+.conversation,
+.form {
+    display: grid;
+    gap: 1rem;
+}
+
+.ticket,
+.panel,
+.message,
+.form {
+    padding: 1.25rem;
+    border: 1px solid var(--line);
+    border-radius: 1rem;
+    background: var(--surface);
+}
+
+.ticket {
+    text-decoration: none;
+}
+
+.form label {
+    display: grid;
+    gap: 0.45rem;
+}
+
+.form textarea {
+    resize: vertical;
+}
+
+.conversation {
+    max-width: 54rem;
+}
+
+.message {
+    max-width: 46rem;
+}
+
+.message.own {
+    margin-left: auto;
+    background: var(--soft);
+}
+
+.message p {
+    white-space: pre-wrap;
+}
+
+@media (width<=700px) {
+    .heading,
+    .ticket {
+        flex-direction: column;
+    }
+
+    .message {
+        max-width: 100%;
+    }
+
+    .message.own {
+        margin-left: 0;
+    }
+}

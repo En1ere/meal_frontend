@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { AppIcon } from '@meal-planner/design-system';
-import { PublicShell } from '../../features/public-info/public-shell.js';
+import { PublicShell } from '../../widgets/public-shell/index.js';
 
 export const metadata = {
     title: 'Meal Planner — планируйте вкусную жизнь',

@@ -1,12 +1,16 @@
 'use client';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
-import { useRuntime, useUi } from '../../app/providers.js';
+import { useRuntime } from '../../shared/runtime/index.js';
 import { Skeleton as ArcSkeleton } from '@meal-planner/design-system';
-import { Guard, useSession } from './session.js';
-import { PersonalShell } from '../personalization/shell.js';
-import { RecommendationFeedback, useRecommendationActions, type Recommendation } from '../recommendations/actions.js';
-import styles from '../personalization/personalization.module.css';
+import { useSession } from '../../entities/session/client.js';
+import { useWorkspaceScope } from '../../entities/workspace-scope/client.js';
+import {
+    RecommendationFeedback,
+    useRecommendationActions,
+    type Recommendation,
+} from '../../entities/recommendation/client.js';
+import styles from './user-home.module.css';
 
 const mealName = (value: string) =>
     ({ breakfast: 'Завтрак', lunch: 'Обед', dinner: 'Ужин', snack: 'Перекус' })[value] ?? value;
@@ -41,7 +45,7 @@ function HomeRecommendationCard({ item, position }: { item: RecipeRecommendation
 }
 function Content() {
     const { api } = useRuntime();
-    const scope = useUi((state) => state.scope);
+    const scope = useWorkspaceScope((state) => state.scope);
     const inventoryPath = scope === 'family' ? '/family/inventory' : '/inventory';
     const recipesPath = scope === 'family' ? '/family/recipes' : '/recipes';
     const planPath = scope === 'family' ? '/family/plan' : '/plan';
@@ -212,10 +216,8 @@ function Content() {
 }
 export function UserHome() {
     return (
-        <Guard context="user">
-            <PersonalShell>
-                <Content />
-            </PersonalShell>
-        </Guard>
+        <>
+            <Content />
+        </>
     );
 }

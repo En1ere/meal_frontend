@@ -4,11 +4,11 @@ import Link from 'next/link';
 import { useEffect, useState, type FormEvent } from 'react';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useRuntime } from '../../app/providers.js';
+import { useRuntime } from '../../shared/runtime/index.js';
 import type { Success } from '../../shared/api/contracts.generated.js';
-import { Guard, useSession } from '../auth/session.js';
-import { PersonalShell } from '../personalization/shell.js';
-import { RecipeImage, Rating, categoryLabels } from '../recipes/shared.js';
+import { useSession } from '../../entities/session/client.js';
+import { RecipeImage, Rating } from '../../entities/recipe/client.js';
+import { categoryLabels } from '../../entities/recipe/model.js';
 import styles from './search.module.css';
 
 type SearchType = 'product' | 'recipe' | 'brand' | 'store';
@@ -287,10 +287,8 @@ function SearchContent() {
 
 export function SearchPage() {
     return (
-        <Guard context="user">
-            <PersonalShell>
-                <SearchContent />
-            </PersonalShell>
-        </Guard>
+        <>
+            <SearchContent />
+        </>
     );
 }

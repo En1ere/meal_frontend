@@ -4,12 +4,11 @@ import Link from 'next/link';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useInfiniteQuery, useMutation } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
-import { useRuntime } from '../../app/providers.js';
+import { useRuntime } from '../../shared/runtime/index.js';
 import { ApiError } from '../../shared/api/client.js';
 import type { Success } from '../../shared/api/contracts.generated.js';
-import { Guard, useSession } from '../auth/session.js';
-import { CriticalReauthDialog } from '../account-lifecycle/critical-reauth.js';
-import { PersonalShell } from '../personalization/shell.js';
+import { useSession } from '../../entities/session/client.js';
+import { CriticalReauthDialog } from '../../entities/account-security/client.js';
 import styles from './exports.module.css';
 
 type Preview = Success<'POST /api/v1/exports/preview'>['data'];
@@ -494,10 +493,8 @@ function ExportsContent() {
 
 export function ExportsPage() {
     return (
-        <Guard context="user">
-            <PersonalShell>
-                <ExportsContent />
-            </PersonalShell>
-        </Guard>
+        <>
+            <ExportsContent />
+        </>
     );
 }

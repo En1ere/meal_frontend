@@ -1,12 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { useRuntime, useUi } from '../../app/providers.js';
 import { Skeleton as ArcSkeleton } from '@meal-planner/design-system';
-import { Guard, useSession } from '../auth/session.js';
-import { PersonalShell } from '../personalization/shell.js';
+import { useSession } from '../../entities/session/client.js';
+import { useFamilyContext } from '../../entities/family/client.js';
 import styles from './family.module.css';
 
 const entries = [
@@ -20,17 +17,8 @@ const entries = [
 ] as const;
 
 function Content() {
-    const { api } = useRuntime();
     const session = useSession('user');
-    const setScope = useUi((state) => state.setScope);
-    const query = useQuery({
-        queryKey: ['family', session.data?.id],
-        enabled: !!api && !!session.data,
-        queryFn: async ({ signal }) => (await api!.request('GET /api/v1/family', undefined, signal)).data,
-    });
-    useEffect(() => {
-        if (query.data?.state === 'active') setScope('family');
-    }, [query.data?.state, setScope]);
+    const query = useFamilyContext(session.data?.id);
     if (query.isPending)
         return (
             <div className={styles.stack}>
@@ -141,10 +129,8 @@ function Content() {
 
 export function FamilyPage() {
     return (
-        <Guard context="user">
-            <PersonalShell>
-                <Content />
-            </PersonalShell>
-        </Guard>
+        <>
+            <Content />
+        </>
     );
 }

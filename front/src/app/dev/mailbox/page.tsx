@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { MockMailbox } from '../../../features/auth/mock-mailbox.js';
+import { MockMailbox } from '../../../features/auth/mailbox/client.js';
 export const metadata = {
     title: 'Тестовая почта',
     robots: { index: false, follow: false },

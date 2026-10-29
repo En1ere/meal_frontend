@@ -4,15 +4,15 @@ import Link from 'next/link';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { useRuntime } from '../../app/providers.js';
-import type { Success } from '../../shared/api/contracts.generated.js';
+import { useRuntime } from '../../shared/runtime/index.js';
+import { ApiError } from '../../shared/api/client.js';
 import { InlineLoader as ArcInlineLoader } from '@meal-planner/design-system';
 import { Skeleton as ArcSkeleton } from '@meal-planner/design-system';
-import { Guard, useSession } from '../auth/session.js';
-import { PersonalShell } from '../personalization/shell.js';
+import { useSession } from '../../entities/session/client.js';
+import { useWorkspaceScope } from '../../entities/workspace-scope/client.js';
+import { familyKeys, useFamilyContext, type Family } from '../../entities/family/client.js';
+import { keepExactAttempt, type ExactAttempt } from './exact-attempt.js';
 import styles from './family.module.css';
-
-type Family = NonNullable<Success<'GET /api/v1/family'>['data']['family']>;
 
 function MembersPanel({ family, userId }: { family: Family; userId: string }) {
     const { api, queryClient } = useRuntime();
@@ -72,7 +72,7 @@ function MembersPanel({ family, userId }: { family: Family; userId: string }) {
                 )
             ).data,
         onSuccess: (result) => {
-            queryClient.setQueryData(['family', userId], result);
+            queryClient.setQueryData(familyKeys.context(userId), result);
             setSelected(null);
             key.current = crypto.randomUUID();
         },
@@ -241,33 +241,101 @@ function MembersPanel({ family, userId }: { family: Family; userId: string }) {
 }
 
 function AccessPanel({ family, state, plan, userId }: { family: Family; state: string; plan: string; userId: string }) {
-    const { api, queryClient, ui } = useRuntime();
+    const { api, queryClient } = useRuntime();
+    const resetScope = useWorkspaceScope((scope) => scope.reset);
     const router = useRouter();
     const preview = useQuery({
         queryKey: ['family-leave-preview', userId, family.version],
         queryFn: async ({ signal }) => (await api!.request('GET /api/v1/family/leave-preview', undefined, signal)).data,
     });
     const [successor, setSuccessor] = useState('');
-    const leaveKey = useRef(crypto.randomUUID());
+    const [unknown, setUnknown] = useState(false);
+    const [needsReadback, setNeedsReadback] = useState(false);
+    const [reconciling, setReconciling] = useState(false);
+    const [feedback, setFeedback] = useState('');
+    const pendingRef = useRef(false);
+    const attempt = useRef<
+        ExactAttempt<{
+            expectedVersion: number;
+            selection: 'automatic' | 'manual';
+            successorMembershipId: string | null;
+        }>
+    >(null);
+    const finish = () => {
+        attempt.current = null;
+        setUnknown(false);
+        setNeedsReadback(false);
+        queryClient.removeQueries({ queryKey: familyKeys.context(userId) });
+        queryClient.removeQueries({ queryKey: ['family-leave-preview', userId] });
+        resetScope();
+        router.replace('/');
+    };
+    const readback = async () => {
+        setReconciling(true);
+        try {
+            const context = (await api!.request('GET /api/v1/family')).data;
+            queryClient.setQueryData(familyKeys.context(userId), context);
+            if (!context.family) {
+                finish();
+                return 'left' as const;
+            }
+            const nextPreview = (await api!.request('GET /api/v1/family/leave-preview')).data;
+            queryClient.setQueryData(['family-leave-preview', userId, context.family.version], nextPreview);
+            return 'member' as const;
+        } catch {
+            return 'failed' as const;
+        } finally {
+            setReconciling(false);
+        }
+    };
     const leave = useMutation({
-        mutationFn: async (automatic: boolean) => {
-            if (!preview.data) throw new Error('Preview missing');
-            return (
-                await api!.request('POST /api/v1/family/leave', {
-                    expectedVersion: preview.data.familyVersion,
-                    selection: automatic ? 'automatic' : 'manual',
-                    successorMembershipId: automatic ? null : successor,
-                    idempotencyKey: leaveKey.current,
-                })
-            ).data;
+        mutationFn: async () => {
+            if (!attempt.current) throw new Error('Leave attempt missing');
+            return (await api!.request('POST /api/v1/family/leave', attempt.current.body)).data;
         },
-        onSuccess: () => {
-            queryClient.removeQueries({ queryKey: ['family', userId] });
-            queryClient.removeQueries({ queryKey: ['family-leave-preview', userId] });
-            ui.getState().resetScope();
-            router.replace('/');
+        onSuccess: finish,
+        onError: async (error) => {
+            const uncertain = !(error instanceof ApiError) || error.status >= 500;
+            const result = await readback();
+            if (result === 'left') return;
+            if (uncertain) {
+                setUnknown(true);
+                setFeedback(
+                    result === 'failed'
+                        ? 'Результат выхода неизвестен, а перечитать семью не удалось. Выбор и ключ сохранены для точного повтора.'
+                        : 'Результат выхода неизвестен. Членство ещё видно; выбор и ключ сохранены для точного повтора.',
+                );
+                return;
+            }
+            attempt.current = null;
+            setUnknown(false);
+            setNeedsReadback(result === 'failed');
+            setFeedback(
+                `${error.message}. ${
+                    result === 'failed'
+                        ? 'Перечитать состав не удалось; повторите проверку перед новым подтверждением.'
+                        : 'Состав и последствия перечитаны; проверьте их и подтвердите новый выход.'
+                }`,
+            );
+        },
+        onSettled: () => {
+            pendingRef.current = false;
         },
     });
+    const run = (automatic?: boolean) => {
+        if (pendingRef.current || needsReadback) return;
+        if (!attempt.current) {
+            if (!preview.data || automatic === undefined) return;
+            attempt.current = keepExactAttempt(null, {
+                expectedVersion: preview.data.familyVersion,
+                selection: automatic ? 'automatic' : 'manual',
+                successorMembershipId: automatic ? null : successor,
+            });
+        }
+        pendingRef.current = true;
+        setFeedback('');
+        leave.mutate();
+    };
     return (
         <div className={styles.stack}>
             <section className={styles.panel}>
@@ -305,7 +373,11 @@ function AccessPanel({ family, state, plan, userId }: { family: Family; state: s
                                 <p>Перед выходом владение обязательно перейдёт одному из оставшихся участников.</p>
                                 <label>
                                     Кому передать владение
-                                    <select value={successor} onChange={(event) => setSuccessor(event.target.value)}>
+                                    <select
+                                        value={successor}
+                                        disabled={leave.isPending || unknown || needsReadback || reconciling}
+                                        onChange={(event) => setSuccessor(event.target.value)}
+                                    >
                                         <option value="">Выберите участника</option>
                                         {preview.data.candidates.map((candidate) => (
                                             <option key={candidate.id} value={candidate.id}>
@@ -320,15 +392,17 @@ function AccessPanel({ family, state, plan, userId }: { family: Family; state: s
                                 <div className={styles.actions}>
                                     <button
                                         className={`button ${styles.danger}`}
-                                        disabled={!successor || leave.isPending}
-                                        onClick={() => leave.mutate(false)}
+                                        disabled={
+                                            !successor || leave.isPending || unknown || needsReadback || reconciling
+                                        }
+                                        onClick={() => run(false)}
                                     >
                                         Передать и выйти
                                     </button>
                                     <button
                                         className="button outline"
-                                        disabled={leave.isPending}
-                                        onClick={() => leave.mutate(true)}
+                                        disabled={leave.isPending || unknown || needsReadback || reconciling}
+                                        onClick={() => run(true)}
                                     >
                                         Всё равно
                                     </button>
@@ -343,8 +417,8 @@ function AccessPanel({ family, state, plan, userId }: { family: Family; state: s
                                 </p>
                                 <button
                                     className={`button ${styles.danger}`}
-                                    disabled={leave.isPending}
-                                    onClick={() => leave.mutate(true)}
+                                    disabled={leave.isPending || unknown || needsReadback || reconciling}
+                                    onClick={() => run(true)}
                                 >
                                     Выйти из семьи
                                 </button>
@@ -352,7 +426,41 @@ function AccessPanel({ family, state, plan, userId }: { family: Family; state: s
                         )}
                     </>
                 )}
-                {leave.isError && <p role="alert">Состав изменился или действие недоступно. Ничего не изменено.</p>}
+                {unknown && (
+                    <button
+                        className={`button ${styles.danger}`}
+                        disabled={leave.isPending || reconciling}
+                        onClick={() => run()}
+                    >
+                        Повторить сохранённый выход
+                    </button>
+                )}
+                {(unknown || needsReadback) && (
+                    <button
+                        className="button outline"
+                        disabled={leave.isPending || reconciling}
+                        onClick={() => {
+                            void (async () => {
+                                const result = await readback();
+                                if (result === 'member') {
+                                    if (needsReadback) setNeedsReadback(false);
+                                    setFeedback(
+                                        unknown
+                                            ? 'Членство ещё активно. Для безопасного продолжения повторите сохранённый выход без изменения выбора.'
+                                            : 'Состав и последствия перечитаны. Проверьте их и подтвердите новый выход.',
+                                    );
+                                } else if (result === 'failed') {
+                                    setFeedback(
+                                        'Перечитать состав не удалось. Сохранённая команда не изменена; попробуйте проверку ещё раз.',
+                                    );
+                                }
+                            })();
+                        }}
+                    >
+                        {reconciling ? 'Проверяем состояние…' : 'Перечитать состав и последствия'}
+                    </button>
+                )}
+                {feedback && <p role="alert">{feedback}</p>}
             </section>
             <Link href="/family">← Вернуться к семье</Link>
         </div>
@@ -360,13 +468,8 @@ function AccessPanel({ family, state, plan, userId }: { family: Family; state: s
 }
 
 function FamilyQuery({ view }: { view: 'members' | 'access' }) {
-    const { api } = useRuntime();
     const session = useSession('user');
-    const query = useQuery({
-        queryKey: ['family', session.data?.id],
-        enabled: !!api && !!session.data,
-        queryFn: async ({ signal }) => (await api!.request('GET /api/v1/family', undefined, signal)).data,
-    });
+    const query = useFamilyContext(session.data?.id);
     if (query.isPending) return <ArcSkeleton variant="lines" lines={5} label="Загружаем семью" />;
     if (query.isError)
         return (
@@ -400,10 +503,8 @@ function FamilyQuery({ view }: { view: 'members' | 'access' }) {
 
 export function FamilyDetailsPage({ view }: { view: 'members' | 'access' }) {
     return (
-        <Guard context="user">
-            <PersonalShell>
-                <FamilyQuery view={view} />
-            </PersonalShell>
-        </Guard>
+        <>
+            <FamilyQuery view={view} />
+        </>
     );
 }

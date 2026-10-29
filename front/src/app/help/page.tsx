@@ -1,4 +1,5 @@
-import { HelpPage } from '../../features/public-info/help-page.js';
+import { HelpPage } from '../../features/public-info/client.js';
+import { PublicShell } from '../../widgets/public-shell/index.js';
 
 export const metadata = {
     title: 'Справка — Meal Planner',
@@ -6,5 +7,9 @@ export const metadata = {
 };
 
 export default function Page() {
-    return <HelpPage />;
+    return (
+        <PublicShell current="help">
+            <HelpPage />
+        </PublicShell>
+    );
 }

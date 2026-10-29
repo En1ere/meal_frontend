@@ -2,8 +2,8 @@
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
-import { useRuntime } from '../../app/providers.js';
-import { Guard, useSession } from '../auth/session.js';
+import { useRuntime } from '../../shared/runtime/index.js';
+import { useSession } from '../../entities/session/client.js';
 import { RecipeShell, RecipeLoading, RecipeError } from './shared.js';
 import styles from './workspace.module.css';
 function Content() {
@@ -54,11 +54,9 @@ function Content() {
 }
 export function RecipeReports() {
     return (
-        <Guard context="user">
-            <RecipeShell>
-                <Content />
-            </RecipeShell>
-        </Guard>
+        <RecipeShell>
+            <Content />
+        </RecipeShell>
     );
 }
 function DetailContent({ id }: { id: string }) {
@@ -101,10 +99,8 @@ function DetailContent({ id }: { id: string }) {
 }
 export function RecipeReportDetail({ id }: { id: string }) {
     return (
-        <Guard context="user">
-            <RecipeShell>
-                <DetailContent id={id} />
-            </RecipeShell>
-        </Guard>
+        <RecipeShell>
+            <DetailContent id={id} />
+        </RecipeShell>
     );
 }

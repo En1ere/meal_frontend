@@ -1,19 +1,18 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react';
+import { useMemo, useState, type FormEvent, type ReactNode } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useRuntime, useUi } from '../../app/providers.js';
+import { useRuntime } from '../../shared/runtime/index.js';
 import { ApiError } from '../../shared/api/client.js';
 import type { Success } from '../../shared/api/contracts.generated.js';
-import { UserAppShell } from '../../ui/AppShell/UserAppShell.js';
 import { Skeleton as ArcSkeleton } from '@meal-planner/design-system';
 import { InlineLoader as ArcInlineLoader } from '@meal-planner/design-system';
-import { Guard, useSession } from '../auth/session.js';
+import { useSession } from '../../entities/session/client.js';
 import { PlanAutomation } from './automation.js';
 import styles from './plan.module.css';
-import { CostEstimateBadge } from '../finance/finance-page.js';
+import { CostEstimateBadge } from '../../entities/finance-cost/client.js';
 
 type Plan = Success<'GET /api/v1/meal-plan'>['data'];
 type Entry = Plan['entries'][number];
@@ -81,15 +80,8 @@ const errorText = (error: unknown) =>
     error instanceof ApiError ? error.message : 'Не удалось выполнить запрос. Попробуйте ещё раз.';
 
 function PlanShell({ children, scope }: { children: ReactNode; scope: 'private' | 'family' }) {
-    const setScope = useUi((state) => state.setScope);
-    useEffect(() => setScope(scope === 'family' ? 'family' : 'personal'), [scope, setScope]);
-    return (
-        <Guard context="user">
-            <UserAppShell scope={scope === 'family' ? 'family' : 'personal'} contentClassName={styles.main}>
-                {children}
-            </UserAppShell>
-        </Guard>
-    );
+    void scope;
+    return children;
 }
 
 export function MealPlanLoading() {

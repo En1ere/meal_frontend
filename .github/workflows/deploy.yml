@@ -1,0 +1,160 @@
+name: Build and deploy frontend image
+
+on:
+    push:
+        branches: [main]
+
+permissions:
+    contents: read
+
+concurrency:
+    group: meal-frontend-main
+    cancel-in-progress: false
+
+env:
+    REGISTRY: ghcr.io
+    IMAGE_NAME: ${{ github.repository_owner }}/meal_frontend
+    BACKEND_ORIGIN: http://backend:3001
+
+jobs:
+    quality:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+            - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+              with:
+                  node-version-file: .node-version
+                  cache: npm
+                  cache-dependency-path: package-lock.json
+            - run: npm ci
+            - run: npm run check
+            - name: Read release versions
+              id: version
+              shell: bash
+              run: |
+                  echo "root=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+                  echo "app=$(node -p "require('./front/package.json').version")" >> "$GITHUB_OUTPUT"
+            - name: Build production application
+              env:
+                  NODE_ENV: production
+                  NEXT_PUBLIC_API_MODE: real
+                  NEXT_PUBLIC_APP_VERSION: ${{ steps.version.outputs.app }}
+                  BACKEND_ORIGIN: ${{ env.BACKEND_ORIGIN }}
+              run: npm run build
+            - name: Verify browser budget against the existing build
+              run: node scripts/check-browser-budget.mjs
+
+    image:
+        needs: quality
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            packages: write
+        outputs:
+            digest: ${{ steps.build.outputs.digest }}
+            image: ${{ steps.image.outputs.reference }}
+            root_version: ${{ steps.version.outputs.root }}
+            app_version: ${{ steps.version.outputs.app }}
+        steps:
+            - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+            - name: Read release versions
+              id: version
+              shell: bash
+              run: |
+                  echo "root=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+                  echo "app=$(node -p "require('./front/package.json').version")" >> "$GITHUB_OUTPUT"
+            - name: Normalize immutable image reference
+              id: image
+              shell: bash
+              run: echo "reference=${REGISTRY}/${IMAGE_NAME,,}" >> "$GITHUB_OUTPUT"
+            - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+            - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+              with:
+                  registry: ${{ env.REGISTRY }}
+                  username: ${{ github.actor }}
+                  password: ${{ secrets.GITHUB_TOKEN }}
+            - name: Refuse a stale main build
+              shell: bash
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  SOURCE_SHA: ${{ github.sha }}
+              run: |
+                  set -euo pipefail
+                  current_sha="$(curl --fail --silent --show-error \
+                      --header "Authorization: Bearer $GITHUB_TOKEN" \
+                      --header "Accept: application/vnd.github+json" \
+                      --header "X-GitHub-Api-Version: 2022-11-28" \
+                      "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/git/ref/heads/main" | jq -r '.object.sha')"
+                  test "$current_sha" = "$SOURCE_SHA" || {
+                      echo "Refusing stale main build: expected $SOURCE_SHA, current $current_sha" >&2
+                      exit 75
+                  }
+            - uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5
+              id: metadata
+              with:
+                  images: ${{ steps.image.outputs.reference }}
+                  flavor: latest=false
+                  tags: type=sha,format=long,prefix=sha-
+            - uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+              id: build
+              with:
+                  context: .
+                  push: true
+                  build-args: |
+                      NEXT_PUBLIC_APP_VERSION=${{ steps.version.outputs.app }}
+                      NEXT_PUBLIC_API_MODE=real
+                      BACKEND_ORIGIN=${{ env.BACKEND_ORIGIN }}
+                  tags: ${{ steps.metadata.outputs.tags }}
+                  labels: ${{ steps.metadata.outputs.labels }}
+                  cache-from: type=gha,scope=meal-frontend
+                  cache-to: type=gha,mode=max,scope=meal-frontend
+                  provenance: mode=max
+                  sbom: true
+
+    deploy:
+        needs: image
+        runs-on: ubuntu-latest
+        environment: test
+        concurrency:
+            group: meal-production
+            cancel-in-progress: false
+        steps:
+            - name: Refuse a stale main deployment
+              shell: bash
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: |
+                  set -euo pipefail
+                  current_sha="$(curl --fail --silent --show-error \
+                      --header "Authorization: Bearer $GITHUB_TOKEN" \
+                      --header "Accept: application/vnd.github+json" \
+                      --header "X-GitHub-Api-Version: 2022-11-28" \
+                      "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/git/ref/heads/main" | jq -r '.object.sha')"
+                  test "$current_sha" = "$GITHUB_SHA" || {
+                      echo "Refusing stale deployment: expected $GITHUB_SHA, current $current_sha" >&2
+                      exit 75
+                  }
+            - name: Configure pinned SSH identity
+              shell: bash
+              env:
+                  DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+                  DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+              run: |
+                  install -d -m 700 "$HOME/.ssh"
+                  printf '%s\n' "$DEPLOY_SSH_KEY" > "$HOME/.ssh/id_ed25519"
+                  printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
+                  chmod 600 "$HOME/.ssh/id_ed25519" "$HOME/.ssh/known_hosts"
+            - name: Deploy immutable digest through the server helper
+              shell: bash
+              env:
+                  DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+                  DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+                  IMAGE_REFERENCE: ${{ needs.image.outputs.image }}@${{ needs.image.outputs.digest }}
+              run: |
+                  ssh \
+                    -o BatchMode=yes \
+                    -o IdentitiesOnly=yes \
+                    -o StrictHostKeyChecking=yes \
+                    "$DEPLOY_USER@$DEPLOY_HOST" \
+                    -- sudo /usr/local/sbin/meal-deploy \
+                    frontend "$IMAGE_REFERENCE" "$GITHUB_SHA"

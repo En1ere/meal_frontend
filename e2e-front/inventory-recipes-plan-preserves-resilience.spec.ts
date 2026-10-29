@@ -26,7 +26,10 @@ function contextOptions(testInfo: TestInfo) {
 async function installFaultController(page: Page) {
     await page.addInitScript(() => {
         const nativeFetch = window.fetch.bind(window);
-        const state = { fault: null as Fault | null };
+        const state = {
+            fault: null as Fault | null,
+            requests: [] as Array<{ url: string; method: string; body: string }>,
+        };
         Object.defineProperty(window, '__domainQaFault', {
             value: state,
             configurable: false,
@@ -35,6 +38,11 @@ async function installFaultController(page: Page) {
         window.fetch = async (input, init) => {
             const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
             const method = (init?.method ?? (input instanceof Request ? input.method : 'GET')).toUpperCase();
+            state.requests.push({
+                url,
+                method,
+                body: typeof init?.body === 'string' ? init.body : '',
+            });
             const fault = state.fault;
             if (fault && method === fault.method && url.includes(fault.path) && (fault.remaining ?? 1) > 0) {
                 fault.remaining = (fault.remaining ?? 1) - 1;
@@ -64,7 +72,59 @@ async function installFaultController(page: Page) {
                     { status: fault.status, headers: { 'content-type': 'application/json' } },
                 );
             }
-            return nativeFetch(input, init);
+            const response = await nativeFetch(input, init);
+            const projectionText = localStorage.getItem('qa-recipe-revision-projection');
+            const parsedUrl = new URL(url, location.href);
+            if (
+                projectionText &&
+                method === 'GET' &&
+                parsedUrl.pathname === '/api/v1/recipe-workspace' &&
+                response.ok
+            ) {
+                const projection = JSON.parse(projectionText) as {
+                    id: string;
+                    stage: 'published-r1' | 'rejected-r2' | 'published-r3';
+                    r2: string;
+                    r3: string;
+                };
+                const body = (await response.clone().json()) as {
+                    data: { items: Array<Record<string, unknown>> };
+                };
+                const recipe = body.data.items.find((item) => item.id === projection.id);
+                if (recipe) {
+                    const r1 = String(recipe.revisionId);
+                    if (projection.stage === 'published-r1') {
+                        recipe.status = 'published';
+                        recipe.review = { revisionId: r1, status: 'published', publicReason: null };
+                        recipe.publication = { revisionId: r1, publishedAt: '2026-10-28T00:00:00.000Z' };
+                    } else if (projection.stage === 'rejected-r2') {
+                        recipe.revisionId = projection.r2;
+                        recipe.revision = Number(recipe.revision) + 1;
+                        recipe.status = 'rejected';
+                        recipe.review = {
+                            revisionId: projection.r2,
+                            status: 'rejected',
+                            publicReason: 'Уточните способ приготовления',
+                        };
+                        recipe.publication = { revisionId: r1, publishedAt: '2026-10-28T00:00:00.000Z' };
+                    } else {
+                        recipe.revisionId = projection.r3;
+                        recipe.revision = Number(recipe.revision) + 2;
+                        recipe.status = 'published';
+                        recipe.review = { revisionId: projection.r3, status: 'published', publicReason: null };
+                        recipe.publication = {
+                            revisionId: projection.r3,
+                            publishedAt: '2026-10-28T01:00:00.000Z',
+                        };
+                    }
+                }
+                return new Response(JSON.stringify(body), {
+                    status: response.status,
+                    statusText: response.statusText,
+                    headers: response.headers,
+                });
+            }
+            return response;
         };
     });
 }
@@ -73,6 +133,21 @@ async function setFault(page: Page, fault: Fault | null) {
     await page.evaluate((value) => {
         (window as typeof window & { __domainQaFault: { fault: Fault | null } }).__domainQaFault.fault = value;
     }, fault);
+}
+
+async function setRecipeRevisionProjection(
+    page: Page,
+    projection: {
+        id: string;
+        stage: 'published-r1' | 'rejected-r2' | 'published-r3';
+        r2: string;
+        r3: string;
+    } | null,
+) {
+    await page.evaluate((value) => {
+        if (value) localStorage.setItem('qa-recipe-revision-projection', JSON.stringify(value));
+        else localStorage.removeItem('qa-recipe-revision-projection');
+    }, projection);
 }
 
 async function reloadExact(page: Page) {
@@ -406,6 +481,85 @@ test('recipe draft is replay-safe, reloads, and starts a cooking attempt with pe
     await reloadExact(page);
     await expect(page.getByText(/Шаг 1 из/u)).toBeVisible();
     await expect(page.getByRole('button', { name: 'Вернуть к выполнению', exact: true })).toBeVisible();
+});
+
+test('recipe submission conflict awaits workspace readback before another attempt', async ({ page }) => {
+    test.setTimeout(90_000);
+    await login(page, 'user1@meal-planner.test', '/recipes/new');
+    const title = `Recipe submit readback ${test.info().project.name}`;
+    const id = await createRecipe(page, title);
+    await gotoExact(page, '/recipes/mine');
+    const card = page.locator('article').filter({ hasText: title });
+    const submit = card.getByRole('button', { name: 'Отправить на модерацию', exact: true });
+    await expect(submit).toBeEnabled();
+    let workspaceReads = 0;
+    page.on('request', (request) => {
+        const url = new URL(request.url());
+        if (request.method() === 'GET' && url.pathname === '/api/v1/recipe-workspace') workspaceReads++;
+    });
+    await setFault(page, {
+        path: `/api/v1/recipe-workspace/${id}/submit`,
+        method: 'POST',
+        status: 412,
+    });
+    await submit.click();
+    await expect(page.getByRole('alert').filter({ hasText: 'Список рецептов перечитан' })).toBeVisible();
+    expect(workspaceReads).toBeGreaterThan(0);
+    await expect(card.getByRole('button', { name: 'Отправить на модерацию', exact: true })).toBeEnabled();
+});
+
+test('recipe revision axes keep the active public version while a newer revision is reviewed', async ({ page }) => {
+    test.setTimeout(90_000);
+    await login(page, 'user1@meal-planner.test', '/recipes/new');
+    const title = `Recipe revisions ${test.info().project.name}`;
+    const id = await createRecipe(page, title);
+    const r2 = crypto.randomUUID();
+    const r3 = crypto.randomUUID();
+    await setRecipeRevisionProjection(page, { id, stage: 'published-r1', r2, r3 });
+    await gotoExact(page, '/recipes/mine');
+    const card = page.locator('article').filter({ hasText: title });
+    await expect(card.getByText('Текущая редакция опубликована')).toBeVisible();
+    await expect(card.getByRole('link', { name: 'Публичная карточка' })).toBeVisible();
+    await setRecipeRevisionProjection(page, { id, stage: 'rejected-r2', r2, r3 });
+    await reloadExact(page);
+    await expect(card.getByText('Опубликована предыдущая редакция; текущая редакция остаётся приватной')).toBeVisible();
+    await expect(card.getByText('Причина модерации: Уточните способ приготовления')).toBeVisible();
+    await expect(card.getByRole('button', { name: 'Отправить на модерацию' })).toBeDisabled();
+    await setRecipeRevisionProjection(page, { id, stage: 'published-r3', r2, r3 });
+    await reloadExact(page);
+    await expect(card.getByText('Текущая редакция опубликована')).toBeVisible();
+    await expect(card.getByText('Причина модерации: Уточните способ приготовления')).toHaveCount(0);
+});
+
+test('recipe submit retries a 503 with the exact same idempotency command', async ({ page }) => {
+    test.setTimeout(90_000);
+    await login(page, 'user1@meal-planner.test', '/recipes/new');
+    const title = `Recipe submit exact retry ${test.info().project.name}`;
+    const id = await createRecipe(page, title);
+    await gotoExact(page, '/recipes/mine');
+    await setFault(page, {
+        path: `/api/v1/recipe-workspace/${id}/submit`,
+        method: 'POST',
+        status: 503,
+    });
+    const card = page.locator('article').filter({ hasText: title });
+    await card.getByRole('button', { name: 'Отправить на модерацию', exact: true }).click();
+    await expect(page.getByRole('button', { name: 'Повторить незавершённую команду' })).toBeVisible();
+    await setFault(page, null);
+    await page.getByRole('button', { name: 'Повторить незавершённую команду' }).click();
+    await expect(page.getByRole('status')).toContainText('Редакция отправлена');
+    const commands = await page.evaluate((path) => {
+        const state = (
+            window as typeof window & {
+                __domainQaFault: { requests: Array<{ url: string; method: string; body: string }> };
+            }
+        ).__domainQaFault;
+        return state.requests
+            .filter((request) => request.method === 'POST' && new URL(request.url, location.href).pathname === path)
+            .map((request) => request.body);
+    }, `/api/v1/recipe-workspace/${id}/submit`);
+    expect(commands).toHaveLength(2);
+    expect(commands[1]).toBe(commands[0]);
 });
 
 test('recipe update handles 412 stale recovery, 429 and 503 while preserving author input', async ({ page }) => {

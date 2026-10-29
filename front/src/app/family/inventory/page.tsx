@@ -1,6 +1,5 @@
 import { Suspense } from 'react';
-import { InventoryPage } from '../../../features/inventory/list-page.js';
-import { Loading } from '../../../features/inventory/shared.js';
+import { InventoryPage, Loading } from '../../../features/inventory/client.js';
 export const metadata = { title: 'Семейные запасы', robots: { index: false, follow: false } };
 export default function Page() {
     return (

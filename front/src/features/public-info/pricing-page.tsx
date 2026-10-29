@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { PublicShell } from './public-shell.js';
 import styles from './public-info.module.css';
 
 // Mirrors the current subscription-settings source. The authenticated preview remains the source of the final charge.
@@ -18,7 +17,7 @@ export function PricingPage() {
     const suffix = period === 'month' ? 'в месяц' : 'в год';
     const previewHref = `/settings/subscription?period=${period}`;
     return (
-        <PublicShell current="pricing">
+        <>
             <section className={styles.hero}>
                 <p className={styles.eyebrow}>Планируйте · готовьте · живите вкуснее</p>
                 <h1>Выберите подходящий тариф</h1>
@@ -138,6 +137,6 @@ export function PricingPage() {
                     провайдер пока не подключён: доступный сценарий явно помечен как тестовый.
                 </p>
             </section>
-        </PublicShell>
+        </>
     );
 }

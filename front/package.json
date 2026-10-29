@@ -1,6 +1,6 @@
 {
     "name": "meal-planner-front",
-    "version": "0.0.111",
+    "version": "0.0.146",
     "private": true,
     "type": "module",
     "engines": {
@@ -13,6 +13,7 @@
         "build": "next build --webpack",
         "start": "next start -p 3000",
         "build:mocks": "tsc -p tsconfig.test.json",
+        "architecture:check": "node scripts/check-architecture.mjs",
         "typecheck": "next typegen && tsc -p tsconfig.json --noEmit",
         "test": "npm run build:mocks && node --test dist/test/*.test.js",
         "lint": "eslint . && prettier --check . && npm run lint:css",
@@ -20,7 +21,7 @@
         "format": "prettier --write .",
         "contracts:generate": "node scripts/generate-contracts.mjs",
         "contracts:check": "node scripts/generate-contracts.mjs --check",
-        "check": "npm run contracts:check && npm run typecheck && npm run lint && npm test"
+        "check": "npm run contracts:check && npm run architecture:check && npm run typecheck && npm run lint && npm test"
     },
     "dependencies": {
         "@meal-planner/design-system": "file:../design-system",

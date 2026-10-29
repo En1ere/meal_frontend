@@ -2,11 +2,13 @@
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { useRuntime } from '../../app/providers.js';
-import { InventoryShell, commandError, inventoryBase, type InventoryScope } from '../inventory/shared.js';
+import { useRuntime } from '../../shared/runtime/index.js';
+import { commandError } from '../../shared/api/command-error.js';
+import type { InventoryScope } from '../../entities/inventory/model.js';
+import { inventoryBase } from '../../entities/inventory/routes.js';
 import { scanPreviewSchema, type ReviewRow } from './contracts.js';
 import { IngestReview } from './review.js';
-import { validateImage } from './image-metadata.js';
+import { validateImage } from '../../shared/media/image-validation.js';
 import styles from './ingest.module.css';
 
 function Photo({ file, remove, disabled }: { file: File; remove: () => void; disabled: boolean }) {
@@ -158,169 +160,167 @@ export function ScanPage({ scope = 'private' }: { scope?: InventoryScope }) {
         },
     });
     return (
-        <InventoryShell scope={scope}>
-            <div className={styles.page}>
-                <Link href={inventoryBase(scope)}>← К запасам</Link>
-                <h1>Фото и штрихкод</h1>
-                <p>
-                    Распознавание создаёт черновик. Продукт попадёт в {scope === 'family' ? 'семейные' : 'личные'}
-                    запасы только после вашей проверки.
-                </p>
-                {review ? (
-                    <IngestReview initialRows={review} onBack={() => setReview(null)} scope={scope} />
-                ) : (
-                    <>
-                        <section className={styles.card}>
-                            <h2>Снимите упаковку</h2>
-                            <p>
-                                До 3 фото JPEG, PNG или WebP, каждое до 10 МБ и 20 Мп. Хорошо освещённые название,
-                                состав и штрихкод распознаются точнее.
-                            </p>
-                            <video
-                                ref={video}
-                                className={styles.preview}
-                                autoPlay
-                                playsInline
-                                muted
-                                hidden={!camera}
-                                aria-label="Предпросмотр камеры"
-                            />
-                            <div className={styles.actions}>
-                                {!camera ? (
-                                    <button
-                                        className="button primary"
-                                        disabled={mutation.isPending}
-                                        onClick={() => void start()}
-                                    >
-                                        Разрешить камеру
-                                    </button>
-                                ) : (
-                                    <>
-                                        <button
-                                            className="button primary"
-                                            disabled={files.length >= 3 || mutation.isPending}
-                                            onClick={capture}
-                                        >
-                                            Сделать фото
-                                        </button>
-                                        <button className="button outline" onClick={stop}>
-                                            Остановить камеру
-                                        </button>
-                                    </>
-                                )}
-                                <label>
-                                    Загрузить фото
-                                    <input
-                                        type="file"
-                                        accept="image/jpeg,image/png,image/webp"
-                                        multiple
-                                        disabled={files.length >= 3 || mutation.isPending}
-                                        onChange={(event) => {
-                                            void add(Array.from(event.target.files ?? []));
-                                            event.target.value = '';
-                                        }}
-                                    />
-                                </label>
-                            </div>
-                            {cameraError && (
-                                <p role="alert" className={styles.error}>
-                                    {cameraError}
-                                </p>
-                            )}
-                            <div className={styles.grid}>
-                                {files.map((file, index) => (
-                                    <Photo
-                                        key={`${file.name}-${index}`}
-                                        file={file}
-                                        disabled={mutation.isPending}
-                                        remove={() => {
-                                            if (!mutation.isPending) {
-                                                photoGeneration.current++;
-                                                setFiles(files.filter((_, i) => i !== index));
-                                                mutation.reset();
-                                            }
-                                        }}
-                                    />
-                                ))}
-                            </div>
-                            <button
-                                className="button primary"
-                                disabled={!files.length || !api || mutation.isPending}
-                                onClick={() => mutation.mutate()}
-                            >
-                                {mutation.isPending ? 'Распознаём фото…' : 'Распознать выбранные фото'}
-                            </button>
-                            {mutation.isError && (
-                                <p role="alert" className={styles.error}>
-                                    {commandError(mutation.error)} Можно заполнить данные вручную.
-                                </p>
-                            )}
-                        </section>
-                        <section className={styles.card}>
-                            <h2>Штрихкод или название</h2>
-                            <label>
-                                Введите штрихкод вручную
-                                <input
-                                    value={barcode}
-                                    maxLength={128}
-                                    onChange={(event) => setBarcode(event.target.value)}
-                                />
-                            </label>
-                            <button
-                                className="button outline"
-                                disabled={!barcode.trim()}
-                                onClick={() => {
-                                    stop();
-                                    setReview([draft(barcode.trim(), barcode.trim())]);
-                                }}
-                            >
-                                Найти совпадение и проверить
-                            </button>
-                            <Link href={`${inventoryBase(scope)}/new`}>Добавить продукт вручную</Link>
-                        </section>
-                        {mutation.data && (
-                            <section className={styles.card}>
-                                <h2>Результат распознавания</h2>
-                                {mutation.data.images.map((image) => (
-                                    <p key={image.filename}>
-                                        {image.filename}: уверенность {Math.round(image.confidence)}%
-                                        {image.confidence < 70 ? ' · нужна особенно внимательная проверка' : ''}
-                                    </p>
-                                ))}
-                                {mutation.data.warnings.map((warning) => (
-                                    <p className={styles.notice} key={warning}>
-                                        {warning}
-                                    </p>
-                                ))}
-                                <label>
-                                    Распознанный текст — можно исправить
-                                    <textarea rows={8} value={text} onChange={(event) => setText(event.target.value)} />
-                                </label>
-                                <p>
-                                    Выберите точный товар на следующем шаге. Количество и даты не списываются из текста
-                                    автоматически.
-                                </p>
+        <div className={styles.page}>
+            <Link href={inventoryBase(scope)}>← К запасам</Link>
+            <h1>Фото и штрихкод</h1>
+            <p>
+                Распознавание создаёт черновик. Продукт попадёт в {scope === 'family' ? 'семейные' : 'личные'}
+                запасы только после вашей проверки.
+            </p>
+            {review ? (
+                <IngestReview initialRows={review} onBack={() => setReview(null)} scope={scope} />
+            ) : (
+                <>
+                    <section className={styles.card}>
+                        <h2>Снимите упаковку</h2>
+                        <p>
+                            До 3 фото JPEG, PNG или WebP, каждое до 10 МБ и 20 Мп. Хорошо освещённые название, состав и
+                            штрихкод распознаются точнее.
+                        </p>
+                        <video
+                            ref={video}
+                            className={styles.preview}
+                            autoPlay
+                            playsInline
+                            muted
+                            hidden={!camera}
+                            aria-label="Предпросмотр камеры"
+                        />
+                        <div className={styles.actions}>
+                            {!camera ? (
                                 <button
                                     className="button primary"
-                                    onClick={() =>
-                                        setReview([
-                                            draft(
-                                                text
-                                                    .split('\n')
-                                                    .find((line) => line.trim())
-                                                    ?.trim()
-                                                    .slice(0, 200) ?? '',
-                                            ),
-                                        ])
-                                    }
+                                    disabled={mutation.isPending}
+                                    onClick={() => void start()}
                                 >
-                                    Проверить товар и количество
+                                    Разрешить камеру
                                 </button>
-                            </section>
+                            ) : (
+                                <>
+                                    <button
+                                        className="button primary"
+                                        disabled={files.length >= 3 || mutation.isPending}
+                                        onClick={capture}
+                                    >
+                                        Сделать фото
+                                    </button>
+                                    <button className="button outline" onClick={stop}>
+                                        Остановить камеру
+                                    </button>
+                                </>
+                            )}
+                            <label>
+                                Загрузить фото
+                                <input
+                                    type="file"
+                                    accept="image/jpeg,image/png,image/webp"
+                                    multiple
+                                    disabled={files.length >= 3 || mutation.isPending}
+                                    onChange={(event) => {
+                                        void add(Array.from(event.target.files ?? []));
+                                        event.target.value = '';
+                                    }}
+                                />
+                            </label>
+                        </div>
+                        {cameraError && (
+                            <p role="alert" className={styles.error}>
+                                {cameraError}
+                            </p>
                         )}
-                    </>
-                )}
-            </div>
-        </InventoryShell>
+                        <div className={styles.grid}>
+                            {files.map((file, index) => (
+                                <Photo
+                                    key={`${file.name}-${index}`}
+                                    file={file}
+                                    disabled={mutation.isPending}
+                                    remove={() => {
+                                        if (!mutation.isPending) {
+                                            photoGeneration.current++;
+                                            setFiles(files.filter((_, i) => i !== index));
+                                            mutation.reset();
+                                        }
+                                    }}
+                                />
+                            ))}
+                        </div>
+                        <button
+                            className="button primary"
+                            disabled={!files.length || !api || mutation.isPending}
+                            onClick={() => mutation.mutate()}
+                        >
+                            {mutation.isPending ? 'Распознаём фото…' : 'Распознать выбранные фото'}
+                        </button>
+                        {mutation.isError && (
+                            <p role="alert" className={styles.error}>
+                                {commandError(mutation.error)} Можно заполнить данные вручную.
+                            </p>
+                        )}
+                    </section>
+                    <section className={styles.card}>
+                        <h2>Штрихкод или название</h2>
+                        <label>
+                            Введите штрихкод вручную
+                            <input
+                                value={barcode}
+                                maxLength={128}
+                                onChange={(event) => setBarcode(event.target.value)}
+                            />
+                        </label>
+                        <button
+                            className="button outline"
+                            disabled={!barcode.trim()}
+                            onClick={() => {
+                                stop();
+                                setReview([draft(barcode.trim(), barcode.trim())]);
+                            }}
+                        >
+                            Найти совпадение и проверить
+                        </button>
+                        <Link href={`${inventoryBase(scope)}/new`}>Добавить продукт вручную</Link>
+                    </section>
+                    {mutation.data && (
+                        <section className={styles.card}>
+                            <h2>Результат распознавания</h2>
+                            {mutation.data.images.map((image) => (
+                                <p key={image.filename}>
+                                    {image.filename}: уверенность {Math.round(image.confidence)}%
+                                    {image.confidence < 70 ? ' · нужна особенно внимательная проверка' : ''}
+                                </p>
+                            ))}
+                            {mutation.data.warnings.map((warning) => (
+                                <p className={styles.notice} key={warning}>
+                                    {warning}
+                                </p>
+                            ))}
+                            <label>
+                                Распознанный текст — можно исправить
+                                <textarea rows={8} value={text} onChange={(event) => setText(event.target.value)} />
+                            </label>
+                            <p>
+                                Выберите точный товар на следующем шаге. Количество и даты не списываются из текста
+                                автоматически.
+                            </p>
+                            <button
+                                className="button primary"
+                                onClick={() =>
+                                    setReview([
+                                        draft(
+                                            text
+                                                .split('\n')
+                                                .find((line) => line.trim())
+                                                ?.trim()
+                                                .slice(0, 200) ?? '',
+                                        ),
+                                    ])
+                                }
+                            >
+                                Проверить товар и количество
+                            </button>
+                        </section>
+                    )}
+                </>
+            )}
+        </div>
     );
 }

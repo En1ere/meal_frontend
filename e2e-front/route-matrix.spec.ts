@@ -74,6 +74,91 @@ async function assertRoute(page: Page, route: string, errors: string[]) {
     expect(serverErrors, `${route}: unexpected API 5xx`).toEqual([]);
     await expect(page.locator('body'), route).not.toContainText('Application error');
     await expect(page.locator('body'), route).not.toContainText('Internal Server Error');
+    let audit: { interactiveIssues: string[]; horizontalOverflow: number } | undefined;
+    let auditError: unknown;
+    for (let attempt = 1; attempt <= 3; attempt += 1) {
+        try {
+            audit = await page.locator('html').evaluate((root) => {
+                if (!root.isConnected || !document.body) throw new Error('Route audit document is not stable');
+                const elements = Array.from(
+                    root.querySelectorAll(
+                        'a[href], button, input:not([type="hidden"]), select, textarea, summary, [role="button"], [role="tab"]',
+                    ),
+                );
+                const interactiveIssues = elements.flatMap((element, index) => {
+                    if (!(element instanceof HTMLElement) || !element.checkVisibility()) return [];
+                    const labelledBy = (element.getAttribute('aria-labelledby') ?? '')
+                        .split(/\s+/u)
+                        .filter(Boolean)
+                        .map((id) => document.getElementById(id)?.textContent?.trim() ?? '')
+                        .join(' ')
+                        .trim();
+                    const labels =
+                        element instanceof HTMLInputElement ||
+                        element instanceof HTMLSelectElement ||
+                        element instanceof HTMLTextAreaElement
+                            ? Array.from(element.labels ?? [], (label) => label.textContent?.trim() ?? '')
+                                  .join(' ')
+                                  .trim()
+                            : '';
+                    const imageAlternative = element.querySelector('img[alt]')?.getAttribute('alt')?.trim() ?? '';
+                    const controlName = [
+                        element.getAttribute('aria-label')?.trim(),
+                        labelledBy,
+                        labels,
+                        element.getAttribute('title')?.trim(),
+                        element.textContent?.trim(),
+                        imageAlternative,
+                        element instanceof HTMLInputElement ? element.placeholder.trim() : '',
+                        element instanceof HTMLInputElement && ['button', 'submit', 'reset'].includes(element.type)
+                            ? element.value.trim()
+                            : '',
+                    ].find(Boolean);
+                    const description = `${element.tagName.toLowerCase()}#${index}`;
+                    const issues: string[] = [];
+                    if (!controlName) issues.push(`${description} has no accessible name`);
+                    if (element instanceof HTMLAnchorElement) {
+                        const href = element.getAttribute('href')?.trim() ?? '';
+                        if (!href || /^javascript:/iu.test(href))
+                            issues.push(`${description} has an unsafe or empty href`);
+                    }
+                    return issues;
+                });
+                return {
+                    interactiveIssues,
+                    horizontalOverflow:
+                        Math.max(document.documentElement.scrollWidth, document.body.scrollWidth) - window.innerWidth,
+                };
+            });
+            auditError = undefined;
+            break;
+        } catch (error) {
+            auditError = error;
+            if (
+                !(error instanceof Error) ||
+                (!error.message.includes('Execution context was destroyed') &&
+                    !error.message.includes('Route audit document is not stable')) ||
+                attempt === 3
+            )
+                throw error;
+            await expect(page.getByText('Проверяем сессию', { exact: true }), route).toHaveCount(0, {
+                timeout: 30_000,
+            });
+            await expect(
+                page.locator('h1, main, [role="main"]').first(),
+                `${route}: stable page after service-worker reload`,
+            ).toBeVisible({ timeout: 30_000 });
+        }
+    }
+    if (auditError) throw auditError;
+    expect(audit, `${route}: DOM audit did not complete`).toBeDefined();
+    expect(
+        audit!.interactiveIssues,
+        `${route}: every visible interactive element must be identifiable and actionable`,
+    ).toEqual([]);
+    expect(audit!.horizontalOverflow, `${route}: page must not overflow the viewport horizontally`).toBeLessThanOrEqual(
+        1,
+    );
     page.off('response', collectServerError);
 }
 
@@ -162,7 +247,8 @@ async function loginModerator(page: Page) {
 }
 
 const userRoutes = routes.filter((item) => !item.startsWith('/moderation') && !item.startsWith('/dev'));
-// Keep each dev-server lifetime below the verified RSS guard while preserving
+// The canonical isolated E2E runner starts every case on a fresh dev server,
+// keeping each compiler lifetime below the verified RSS guard while preserving
 // exhaustive coverage of the generated route manifest.
 const chunkSize = 11;
 const routeChunks = Array.from({ length: Math.ceil(userRoutes.length / chunkSize) }, (_, index) =>

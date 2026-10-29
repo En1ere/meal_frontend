@@ -3,32 +3,25 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useRuntime } from '../../app/providers.js';
+import { useRuntime } from '../../shared/runtime/index.js';
 import { ApiError } from '../../shared/api/client.js';
 import type { Success } from '../../shared/api/contracts.generated.js';
-import { useSession } from '../auth/session.js';
-import { useRequestSignal } from '../auth/use-request-signal.js';
+import { setUserSession, useSession } from '../../entities/session/client.js';
+import { useRequestSignal } from '../../shared/api/use-request-signal.js';
 import { InlineLoader as ArcInlineLoader } from '@meal-planner/design-system';
-import {
-    RecipeShell,
-    RecipeImage,
-    RecipeLoading,
-    RecipeError,
-    Rating,
-    recipeUnits,
-    categoryLabels,
-    methodLabels,
-} from './shared.js';
+import { RecipeShell, RecipeLoading, RecipeError } from './shared.js';
+import { RecipeImage, Rating } from '../../entities/recipe/client.js';
+import { recipeUnits, categoryLabels, methodLabels } from '../../entities/recipe/model.js';
 import { detailState, safeCatalogReturn, scaleQuantity } from './url-state.js';
 import { AvailabilityBadge } from './catalog.js';
 import styles from './recipes.module.css';
 import { RecipeCommunity } from './community.js';
-import { PublicComments } from '../community/community.js';
+import { PublicComments } from './public-community.js';
 import { useRecipeCommand } from './use-command.js';
-import { storeRecipeCache, clearBrowserRecipeCache } from './offline-cache.js';
+import { storeRecipeCache, clearBrowserRecipeCache } from '../../entities/recipe-cache/model.js';
 import { SavedRecipesReader } from './offline.js';
 import { RecipeAllergens } from './allergens.js';
-import { CostEstimateBadge } from '../finance/finance-page.js';
+import { CostEstimateBadge } from '../../entities/finance-cost/client.js';
 export type RecipeDetailData = Success<'GET /api/v1/recipes/{id}'>['data']['recipe'];
 type Personal = Success<'GET /api/v1/recipes/{id}/personal'>['data'];
 const tabs = [
@@ -41,7 +34,8 @@ function Author({ login }: { login: string | null }) {
     return login ? <Link href={`/authors/${encodeURIComponent(login)}`}>@{login}</Link> : <span>Автор не указан</span>;
 }
 function Content({ id, initialData }: { id: string; initialData?: RecipeDetailData | undefined }) {
-    const { api, queryClient } = useRuntime();
+    const runtime = useRuntime();
+    const { api, queryClient } = runtime;
     const user = useSession('user');
     const search = useSearchParams();
     const router = useRouter();
@@ -121,7 +115,7 @@ function Content({ id, initialData }: { id: string; initialData?: RecipeDetailDa
             if (!abort.aborted) {
                 if (error instanceof ApiError && error.status === 401) {
                     api.invalidate();
-                    queryClient.setQueryData(['session', 'user'], null);
+                    setUserSession(runtime, null);
                     queryClient.removeQueries({ queryKey: ['recipes', 'personal'] });
                 }
                 setBookmarkError(

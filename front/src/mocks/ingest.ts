@@ -1,5 +1,5 @@
 import { importPreviewSchema, scanPreviewSchema } from '../features/inventory-ingest/contracts.js';
-import { validateImage } from '../features/inventory-ingest/image-metadata.js';
+import { validateImage } from '../shared/media/image-validation.js';
 import type { Worker as OcrWorker } from 'tesseract.js';
 
 let active = false;

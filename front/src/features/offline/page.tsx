@@ -3,9 +3,9 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
-import { useSession } from '../auth/session.js';
+import { useSession } from '../../entities/session/client.js';
 import { Brand } from '../../shared/ui/brand.js';
-import { ThemeControl } from '../../ui/ThemeControl/ThemeControl.js';
+import { ThemeControl } from '../../shared/ui/theme-control.js';
 import { Skeleton as ArcSkeleton } from '@meal-planner/design-system';
 import {
     clearOfflineData,
@@ -13,16 +13,16 @@ import {
     readOfflineSnapshot,
     subscribeOfflineState,
     type OfflineSnapshot,
-} from './offline-store.js';
+} from '../../entities/offline/store.js';
 import styles from './offline.module.css';
-import { useRuntime } from '../../app/providers.js';
+import { useRuntime } from '../../shared/runtime/index.js';
 import {
     discardOfflineItem,
     listOfflineQueue,
     retryOfflineItem,
     syncOfflineQueue,
     type OfflineQueueItem,
-} from './queue.js';
+} from '../../entities/offline/queue.js';
 
 const bytes = (value: number | null) => {
     if (value === null) return 'Недоступно в этом браузере';

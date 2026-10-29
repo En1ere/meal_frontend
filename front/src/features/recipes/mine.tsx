@@ -3,17 +3,24 @@ import Link from 'next/link';
 import { useRef, useState, useSyncExternalStore } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
-import { useRuntime } from '../../app/providers.js';
-import { Guard, useSession } from '../auth/session.js';
+import { useRuntime } from '../../shared/runtime/index.js';
+import { useSession } from '../../entities/session/client.js';
 import { ApiError } from '../../shared/api/client.js';
 import type { Success } from '../../shared/api/contracts.generated.js';
 import { RecipeShell, RecipeLoading, RecipeError } from './shared.js';
-import { recipeStatus, submissionProblems, type WorkspaceRecipe } from './workspace-state.js';
+import {
+    canSubmitCurrentRevision,
+    publicationState,
+    recipeStatus,
+    submissionProblems,
+    type WorkspaceRecipe,
+} from './workspace-state.js';
 import styles from './workspace.module.css';
-import { readOfflineOwner, subscribeOfflineState } from '../offline/offline-store.js';
-import { enqueueOfflineOperation } from '../offline/queue.js';
-import { isConsentRequiredError, useConsent } from '../legal/consent-state.js';
-import { readOfflineSnapshotData, saveOfflineSnapshot } from '../offline/snapshots.js';
+import { readOfflineOwner, subscribeOfflineState } from '../../entities/offline/store.js';
+import { enqueueOfflineOperation } from '../../entities/offline/queue.js';
+import { isConsentRequiredError, useConsent } from '../../entities/consent/client.js';
+import { readOfflineSnapshotData, saveOfflineSnapshot } from '../../entities/offline/snapshots.js';
+import { normalizeCachedWorkspaceList } from '../../entities/recipe/index.js';
 type Command = 'archive' | 'restore' | 'submit' | 'rollback';
 type WorkspaceScope = 'private' | 'family';
 function MineContent({ scope }: { scope: WorkspaceScope }) {
@@ -49,7 +56,7 @@ function MineContent({ scope }: { scope: WorkspaceScope }) {
                     snapshotKey,
                 );
                 if (!cached) throw new Error('Этот список рецептов ещё не сохранён для работы без сети.');
-                return cached;
+                return normalizeCachedWorkspaceList(cached);
             }
             const data = (
                 await api!.request('GET /api/v1/recipe-workspace', undefined, signal, undefined, {
@@ -129,14 +136,26 @@ function MineContent({ scope }: { scope: WorkspaceScope }) {
             );
             await queryClient.invalidateQueries({ queryKey: ['recipe-workspace'] });
         } catch (e) {
-            setError(
-                isConsentRequiredError(e)
-                    ? 'Отправка на публикацию заблокирована: требуется отдельное согласие.'
-                    : e instanceof ApiError
-                      ? e.message
-                      : 'Ответ не получен. Повторите ту же команду.',
-            );
-            if (e instanceof ApiError && e.status < 500) attempt.current = null;
+            const submitConflict = value.command === 'submit' && e instanceof ApiError && [409, 412].includes(e.status);
+            if (submitConflict) {
+                await queryClient.invalidateQueries({ queryKey: ['recipe-workspace'], refetchType: 'none' });
+                const refreshed = await query.refetch();
+                attempt.current = null;
+                setError(
+                    refreshed.error
+                        ? `${e.message}. Перечитать список не удалось; повторите загрузку перед новой отправкой.`
+                        : `${e.message}. Список рецептов перечитан; проверьте актуальную редакцию перед новой отправкой.`,
+                );
+            } else {
+                setError(
+                    isConsentRequiredError(e)
+                        ? 'Отправка на публикацию заблокирована: требуется отдельное согласие.'
+                        : e instanceof ApiError
+                          ? e.message
+                          : 'Ответ не получен. Повторите ту же команду.',
+                );
+                if (e instanceof ApiError && e.status < 500) attempt.current = null;
+            }
         } finally {
             setUnknown(!!attempt.current);
             setPending(false);
@@ -213,82 +232,102 @@ function MineContent({ scope }: { scope: WorkspaceScope }) {
                     {!query.data.items.length && (
                         <p>Рецептов пока нет. Начните с {scope === 'family' ? 'семейного' : 'личного'} черновика.</p>
                     )}
-                    {query.data.items.map((recipe) => (
-                        <article key={recipe.id} className={styles.panel}>
-                            <div className={styles.actions}>
-                                <h2>
-                                    <Link
-                                        href={
-                                            scope === 'family'
-                                                ? recipe.canEdit
-                                                    ? `/family/recipes/${recipe.id}/edit`
-                                                    : `/family/recipes/${recipe.id}`
-                                                : `/recipes/${recipe.id}/edit`
-                                        }
-                                    >
-                                        {recipe.document.title || 'Без названия'}
-                                    </Link>
-                                </h2>
-                                <span>
-                                    {recipeStatus[recipe.status] ?? recipe.status}
-                                    {recipe.baseRecipeId ? ' · Вариант' : ''}
-                                </span>
-                            </div>
-                            <p>{recipe.document.description || 'Описание не добавлено'}</p>
-                            {scope === 'family' && <p>Автор: @{recipe.authorLogin ?? 'профиль недоступен'}</p>}
-                            <p>
-                                {recipe.document.ingredients.length} ингредиентов · {recipe.document.steps.length} шагов
-                                · Редакция {recipe.revision}
-                            </p>
-                            <div className={styles.actions}>
-                                {recipe.canEdit ? (
-                                    <Link
-                                        href={
-                                            scope === 'family'
-                                                ? `/family/recipes/${recipe.id}/edit`
-                                                : `/recipes/${recipe.id}/edit`
-                                        }
-                                    >
-                                        Открыть редактор
-                                    </Link>
-                                ) : (
-                                    <Link href={`/family/recipes/${recipe.id}`}>Открыть рецепт</Link>
-                                )}
-                                {recipe.status === 'published' && (
-                                    <Link href={`/recipes/${recipe.id}`}>Публичная карточка</Link>
-                                )}
-                                {recipe.canEdit && (
-                                    <button
-                                        disabled={pending || unknown}
-                                        onClick={() => void command(recipe, recipe.archived ? 'restore' : 'archive')}
-                                    >
-                                        {recipe.archived ? 'Восстановить' : 'Архивировать'}
-                                    </button>
-                                )}
-                                {recipe.canEdit && !recipe.archived && (
-                                    <>
-                                        <button
-                                            disabled={
-                                                pending ||
-                                                unknown ||
-                                                !publicationConsent.enabled ||
-                                                submissionProblems(recipe.document).length > 0
+                    {query.data.items.map((recipe) => {
+                        const publication = publicationState(recipe);
+                        const currentReview = recipe.review.revisionId === recipe.revisionId;
+                        return (
+                            <article key={recipe.id} className={styles.panel}>
+                                <div className={styles.actions}>
+                                    <h2>
+                                        <Link
+                                            href={
+                                                scope === 'family'
+                                                    ? recipe.canEdit
+                                                        ? `/family/recipes/${recipe.id}/edit`
+                                                        : `/family/recipes/${recipe.id}`
+                                                    : `/recipes/${recipe.id}/edit`
                                             }
-                                            onClick={() => void command(recipe, 'submit')}
                                         >
-                                            Отправить на модерацию
-                                        </button>
-                                        <button
-                                            disabled={pending || unknown || recipe.revision < 2}
-                                            onClick={() => void command(recipe, 'rollback')}
-                                        >
-                                            Откатить предыдущую редакцию
-                                        </button>
-                                    </>
+                                            {recipe.document.title || 'Без названия'}
+                                        </Link>
+                                    </h2>
+                                    <span>
+                                        {recipeStatus[recipe.review.status] ?? recipe.review.status}
+                                        {recipe.baseRecipeId ? ' · Вариант' : ''}
+                                    </span>
+                                </div>
+                                <p>{recipe.document.description || 'Описание не добавлено'}</p>
+                                {scope === 'family' && <p>Автор: @{recipe.authorLogin ?? 'профиль недоступен'}</p>}
+                                <p>
+                                    {recipe.document.ingredients.length} ингредиентов · {recipe.document.steps.length}{' '}
+                                    шагов · Редакция {recipe.revision}
+                                </p>
+                                <p role={publication.mismatch ? 'status' : undefined}>{publication.label}</p>
+                                {!currentReview && (
+                                    <p role="status">
+                                        Статус модерации относится к ранее отправленной редакции; текущая редакция в
+                                        редакторе остаётся отдельной.
+                                    </p>
                                 )}
-                            </div>
-                        </article>
-                    ))}
+                                {recipe.review.publicReason && (
+                                    <p role="alert">Причина модерации: {recipe.review.publicReason}</p>
+                                )}
+                                {currentReview && recipe.review.status !== 'draft' && (
+                                    <p>Чтобы отправить рецепт повторно, сначала создайте новую редакцию.</p>
+                                )}
+                                <div className={styles.actions}>
+                                    {recipe.canEdit ? (
+                                        <Link
+                                            href={
+                                                scope === 'family'
+                                                    ? `/family/recipes/${recipe.id}/edit`
+                                                    : `/recipes/${recipe.id}/edit`
+                                            }
+                                        >
+                                            Открыть редактор
+                                        </Link>
+                                    ) : (
+                                        <Link href={`/family/recipes/${recipe.id}`}>Открыть рецепт</Link>
+                                    )}
+                                    {publication.publicHref && (
+                                        <Link href={publication.publicHref}>Публичная карточка</Link>
+                                    )}
+                                    {recipe.canEdit && (
+                                        <button
+                                            disabled={pending || unknown}
+                                            onClick={() =>
+                                                void command(recipe, recipe.archived ? 'restore' : 'archive')
+                                            }
+                                        >
+                                            {recipe.archived ? 'Восстановить' : 'Архивировать'}
+                                        </button>
+                                    )}
+                                    {recipe.canEdit && !recipe.archived && (
+                                        <>
+                                            <button
+                                                disabled={
+                                                    pending ||
+                                                    unknown ||
+                                                    !publicationConsent.enabled ||
+                                                    submissionProblems(recipe.document).length > 0 ||
+                                                    !canSubmitCurrentRevision(recipe)
+                                                }
+                                                onClick={() => void command(recipe, 'submit')}
+                                            >
+                                                Отправить на модерацию
+                                            </button>
+                                            <button
+                                                disabled={pending || unknown || recipe.revision < 2}
+                                                onClick={() => void command(recipe, 'rollback')}
+                                            >
+                                                Откатить предыдущую редакцию
+                                            </button>
+                                        </>
+                                    )}
+                                </div>
+                            </article>
+                        );
+                    })}
                     <nav className={styles.actions} aria-label="Страницы">
                         {page > 1 && <Link href={href({ page: String(page - 1) })}>Назад</Link>}
                         <span>Страница {page}</span>
@@ -301,10 +340,8 @@ function MineContent({ scope }: { scope: WorkspaceScope }) {
 }
 export function MyRecipes({ scope = 'private' }: { scope?: WorkspaceScope }) {
     return (
-        <Guard context="user" allowOffline>
-            <RecipeShell family={scope === 'family'}>
-                <MineContent scope={scope} />
-            </RecipeShell>
-        </Guard>
+        <RecipeShell family={scope === 'family'}>
+            <MineContent scope={scope} />
+        </RecipeShell>
     );
 }

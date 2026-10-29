@@ -3,10 +3,10 @@ import Link from 'next/link';
 import { useState, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useRuntime } from '../../app/providers.js';
+import { useRuntime } from '../../shared/runtime/index.js';
 import { ApiError } from '../../shared/api/client.js';
-import { useSession } from '../auth/session.js';
-import { useRequestSignal } from '../auth/use-request-signal.js';
+import { useSession } from '../../entities/session/client.js';
+import { useRequestSignal } from '../../shared/api/use-request-signal.js';
 import { InlineLoader as ArcInlineLoader } from '@meal-planner/design-system';
 import { BatchFields, emptyFields, type Fields } from './batch-form.js';
 import {

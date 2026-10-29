@@ -1,21 +1,9 @@
 'use client';
-import { useEffect, type ReactNode } from 'react';
-import { useUi } from '../../app/providers.js';
-import { UserAppShell } from '../../ui/AppShell/UserAppShell.js';
-import { Guard } from '../auth/session.js';
+import type { ReactNode } from 'react';
 import { Skeleton as ArcSkeleton } from '@meal-planner/design-system';
-import styles from './preserves.module.css';
 export function PreserveShell({ children, scope = 'private' }: { children: ReactNode; scope?: 'private' | 'family' }) {
-    const family = scope === 'family';
-    const setScope = useUi((state) => state.setScope);
-    useEffect(() => setScope(family ? 'family' : 'personal'), [family, setScope]);
-    return (
-        <Guard context="user">
-            <UserAppShell scope={family ? 'family' : 'personal'} contentClassName={styles.main}>
-                {children}
-            </UserAppShell>
-        </Guard>
-    );
+    void scope;
+    return children;
 }
 export function PreserveLoading() {
     return <ArcSkeleton variant="lines" lines={6} label="Загружаем заготовки" />;

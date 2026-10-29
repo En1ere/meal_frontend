@@ -2,10 +2,10 @@
 
 import { useState, type FormEvent } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useRuntime } from '../../app/providers.js';
+import { useRuntime } from '../../shared/runtime/index.js';
 import type { Success } from '../../shared/api/contracts.generated.js';
 import { ApiError } from '../../shared/api/client.js';
-import { useSession } from '../auth/session.js';
+import { useSession } from '../../entities/session/client.js';
 import { InlineLoader as ArcInlineLoader } from '@meal-planner/design-system';
 import styles from './plan.module.css';
 

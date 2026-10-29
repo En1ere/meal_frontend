@@ -1,0 +1,20 @@
+.layout {
+    max-width: 78rem;
+    margin: auto;
+    padding: clamp(1.25rem, 4vw, 3rem);
+    display: grid;
+    gap: 2rem;
+}
+
+.columns {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    gap: 1.5rem;
+    align-items: start;
+}
+
+@media (width <= 48rem) {
+    .columns {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}

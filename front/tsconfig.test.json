@@ -10,10 +10,18 @@
     },
     "include": [
         "test/**/*.ts",
+        "src/entities/family/model.ts",
+        "src/entities/inventory/**/*.ts",
+        "src/entities/measurement/model.ts",
+        "src/entities/recipe/model.ts",
+        "src/entities/session/model.ts",
+        "src/entities/workspace-scope/model.ts",
         "src/mocks/**/*.ts",
         "src/shared/api/**/*.ts",
         "src/shared/auth/**/*.ts",
         "src/shared/legal/**/*.ts",
+        "src/shared/lib/**/*.ts",
+        "src/shared/media/**/*.ts",
         "src/shared/telemetry/**/*.ts"
     ],
     "exclude": ["node_modules", "dist", "legacy-mocks"]

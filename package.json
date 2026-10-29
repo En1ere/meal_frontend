@@ -1,6 +1,6 @@
 {
     "name": "meal-frontend",
-    "version": "0.0.2",
+    "version": "0.0.37",
     "private": true,
     "type": "module",
     "workspaces": [
@@ -16,11 +16,18 @@
         "dev": "npm --workspace front run dev",
         "dev:client": "npm --prefix front run dev",
         "start": "npm --workspace front run start",
-        "check": "npm --workspace design-system run check && npm --workspace front run check",
+        "check": "npm --workspace design-system run check && npm --workspace front run check && npm run ops:readiness && npm run test:ops",
         "build": "npm --workspace front run build",
         "test": "npm --workspace design-system test && npm --workspace front test",
-        "test:e2e:front": "playwright test --config playwright.front.config.ts",
-        "test:integration": "node scripts/check-integration.mjs"
+        "test:e2e:front": "node scripts/run-front-e2e-isolated.mjs",
+        "test:e2e:front:raw": "playwright test --config playwright.front.config.ts",
+        "test:e2e:front:production": "npm run build && playwright test --config playwright.front.production.config.ts",
+        "test:performance:budget": "npm run build && node scripts/check-browser-budget.mjs",
+        "test:integration": "node scripts/check-integration.mjs",
+        "ops:readiness": "node scripts/check-production-readiness.mjs",
+        "ops:readiness:require-ready": "node scripts/check-production-readiness.mjs --require-ready",
+        "test:ops": "node --test scripts/check-production-readiness.test.mjs scripts/production-acceptance.test.mjs",
+        "production:acceptance": "node scripts/production-acceptance.mjs"
     },
     "devDependencies": {
         "@playwright/test": "1.63.0",

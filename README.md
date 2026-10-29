@@ -1,6 +1,10 @@
 # Meal frontend
 
+Текущие версии исходников: root `0.0.37`, frontend app `0.0.146`; deployed runtime остаётся root `0.0.28` / app `0.0.137`. Revision-aware контракты соответствуют backend `0.0.128` и schema v29. Read-only desktop/mobile production acceptance прошёл `24/24` без mutation requests и runtime errors.
+
 Самостоятельный клиент Meal Planner: `front/` (Next.js, порт 3000) и локальная `design-system/`. Админка вынесена в независимый `meal_admin` (Vite, порт 3002), сервер и SQL находятся в `meal_backend` (API, порт 3001). Каждый репозиторий устанавливается отдельно, без исходников соседей и без исходного `test-roject`.
+
+Целевая FSD-подобная структура, правила направлений зависимостей и порядок доменной миграции описаны в [ARCHITECTURE.md](ARCHITECTURE.md). Базовые границы проверяются командой `npm --workspace front run architecture:check`.
 
 ## Подготовка
 
@@ -46,12 +50,12 @@ npm run build
 npm run test:e2e:front
 ```
 
-E2E использует Chromium по умолчанию; установить браузер можно командой `npx playwright install chromium`. `QA_OUTPUT_DIR` должен указывать отдельную папку для временных результатов, на Windows — внутри `D:\AITemp`. Полная ручная матрица сохранена в `TESTs.md`; исторические команды монорепозитория в ней требуют выбора соответствующего нового репозитория.
+E2E использует Chromium по умолчанию; установить браузер можно командой `npx playwright install chromium`. `QA_OUTPUT_DIR` должен указывать отдельную папку внутри `D:\Agents\EP Frontend projects\projects\tempFiles`. Актуальная подробная ручная приёмка сохранена в `FRONTEND_TESTING.md`; `TESTs.md` содержит историческую расширенную матрицу и требует выбора соответствующего нового репозитория для старых команд монорепозитория.
 
 Результаты текущих проверок и исторического разделения записаны в начале `TESTs.md`. Тесты админки находятся в `meal_admin`; они не входят в клиентские команды этого репозитория. Полная бизнес-приёмка и весь E2E-набор проверяются отдельно.
 
 Контрактная сверка с явно выбранным backend-артефактом: `node front/scripts/check-backend-contract.mjs ../meal_backend/contracts/openapi.json`. Генерация валидаторов: `npm --workspace front run contracts:generate`. Проверка принимает путь к артефакту явно; соседний checkout не нужен для обычной установки, проверки типов и сборки.
 
-После сборки клиент запускается через `npm start`. Настройки статического hosting админки описаны в отдельном `meal_admin`. Две копии дизайн-системы версионируются локально; общие изменения компонентов нужно явно переносить и проверять в обоих проектах.
+После сборки клиент запускается через `npm start`; production image использует Next standalone output и непривилегированный процесс на порту `3000`. `NEXT_PUBLIC_API_MODE`, `NEXT_PUBLIC_APP_VERSION` и используемый Next rewrites `BACKEND_ORIGIN` фиксируются во время `next build`: production image собирается с `real`, версией app manifest и Docker-origin `http://backend:3001`. Runtime не должен выдавать эти параметры за изменяемую конфигурацию. Настройки статического hosting админки описаны в отдельном `meal_admin`. Две копии дизайн-системы версионируются локально; общие изменения компонентов нужно явно переносить и проверять в обоих проектах.
 
-Тестовый VPS: Ubuntu 24.04, технический домен `abstract-usable-gazebo.ruweb.place`. Этот перенос не разворачивает frontend/backend на VPS. Их дальнейший деплой потребует reverse proxy, TLS и отдельных настроек окружения. Юридические документы остаются draft, внешние провайдеры — отдельными условиями готовности.
+Тестовый production-стенд развёрнут на `https://abstract-usable-gazebo.ruweb.place`. Проверенный live release пока работает как systemd-сервис на loopback; целевой rollout переводит его на immutable GHCR digest в single-host Docker Compose, сохраняя host Nginx/TLS и loopback ingress. Админка доступна отдельно на `https://admin.abstract-usable-gazebo.ruweb.place`. Сборка, immutable release, smoke и rollback клиента описаны в [DEPLOYMENT.md](DEPLOYMENT.md); общая серверная инфраструктура, backup и миграции — в `meal_backend/docs/DEPLOYMENT.md`. Пароли и MFA-секреты в Git не хранятся. Юридические документы остаются draft, внешние провайдеры — отдельными условиями публичной готовности.

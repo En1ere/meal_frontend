@@ -3,13 +3,12 @@ import Link from 'next/link';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
-import { useRuntime } from '../../app/providers.js';
+import { useRuntime } from '../../shared/runtime/index.js';
 import { ApiError } from '../../shared/api/client.js';
 import { safeReturnTo } from '../../shared/auth/routes.js';
-import { Guard, useSession } from '../auth/session.js';
-import { PersonalShell } from '../personalization/shell.js';
+import { useSession } from '../../entities/session/client.js';
 import { getLegalSettings, legalSettingsKey, setConsent, type ConsentKind } from '../../shared/legal/mock-legal.js';
-import styles from '../personalization/personalization.module.css';
+import styles from './privacy.module.css';
 
 const consentCopy: Record<ConsentKind, { title: string; description: string }> = {
     ai_data_access: {
@@ -227,10 +226,8 @@ function Content() {
 }
 export function PrivacyPage() {
     return (
-        <Guard context="user">
-            <PersonalShell>
-                <Content />
-            </PersonalShell>
-        </Guard>
+        <>
+            <Content />
+        </>
     );
 }

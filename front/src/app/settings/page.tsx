@@ -1,5 +1,10 @@
-import { SettingsPage } from '../../features/personalization/settings.js';
+import { SettingsPage } from '../../features/personalization/client.js';
+import { PersonalShell } from '../../widgets/personal-shell/client.js';
 export const metadata = { title: 'Настройки', robots: { index: false, follow: false } };
 export default function Page() {
-    return <SettingsPage />;
+    return (
+        <PersonalShell>
+            <SettingsPage />
+        </PersonalShell>
+    );
 }

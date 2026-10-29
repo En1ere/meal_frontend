@@ -24,6 +24,7 @@ if (
 
 /** @type {import('next').NextConfig} */
 const config = {
+    output: 'standalone',
     poweredByHeader: false,
     outputFileTracingRoot: fileURLToPath(new URL('../', import.meta.url)),
     transpilePackages: ['@meal-planner/design-system'],

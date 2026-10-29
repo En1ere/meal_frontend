@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { leaveRevokedSessions } from './revoked-session-navigation.js';
-import { useRuntime } from '../../app/providers.js';
+import { useRuntime } from '../../shared/runtime/index.js';
 import type { Success } from '../../shared/api/contracts.generated.js';
 import { Skeleton as ArcSkeleton } from '@meal-planner/design-system';
 import {
@@ -16,7 +16,7 @@ import {
     validatePassword,
 } from './form-parts.js';
 import { MockMailLink } from './lifecycle-pages.js';
-import { useSession } from './session.js';
+import { useSession } from '../../entities/session/client.js';
 import styles from './account.module.css';
 
 function PasswordChange() {

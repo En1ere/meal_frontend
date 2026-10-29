@@ -380,8 +380,11 @@ test('community filters are URL-backed, reload-safe and recover from an initial 
     const alert = page.getByRole('alert').filter({ hasText: 'Не удалось загрузить рецепты' });
     await expect(alert).toBeVisible();
     await restoreEndpoint(page, '/api/v1/community');
-    await alert.getByRole('button', { name: 'Повторить' }).evaluate((button: HTMLButtonElement) => button.click());
+    const retry = alert.getByRole('button', { name: 'Повторить' });
+    if (await retry.isVisible().catch(() => false)) await retry.click();
     await expect(page.getByRole('heading', { name: 'Сообщество рецептов' })).toBeVisible();
+    await expect(alert).toHaveCount(0);
+    await expect(page.locator('article').first()).toBeVisible();
     await gotoExact(page, '/community');
     await page.getByPlaceholder('Название или описание рецепта').fill('паста');
     await page.getByText('Дополнительные фильтры').click();

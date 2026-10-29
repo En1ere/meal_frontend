@@ -1,6 +1,5 @@
 import { Suspense } from 'react';
-import { PreservesPage } from '../../features/preserves/list.js';
-import { PreserveLoading } from '../../features/preserves/shared.js';
+import { PreserveLoading, PreservesPage } from '../../features/preserves/client.js';
 export default function Page() {
     return (
         <Suspense fallback={<PreserveLoading />}>

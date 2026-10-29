@@ -1,4 +1,4 @@
-import { DraftDocumentPage } from '../../../features/legal/draft-document-page.js';
+import { DraftDocumentPage } from '../../../features/legal/server.js';
 export const metadata = {
     title: 'Политика конфиденциальности — черновик',
     robots: { index: false, follow: false },

@@ -1,0 +1,25 @@
+.badge {
+    display: grid;
+    gap: 0.35rem;
+    max-width: 32rem;
+    margin-block: 1rem;
+    padding: 1.1rem;
+    border: 1px solid var(--line);
+    border-radius: 1rem;
+    background: var(--soft);
+}
+
+.badge :where(span, small, p) {
+    color: var(--muted);
+}
+
+.badge strong {
+    font:
+        700 1.35rem Georgia,
+        serif;
+}
+
+.badge p {
+    margin: 0.25rem 0 0;
+    font-size: 0.78rem;
+}

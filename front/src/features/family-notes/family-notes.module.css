@@ -108,7 +108,7 @@
 
 .error {
     padding: 0.75rem;
-    border-left: 4px solid #b43232;
+    border-left: 4px solid var(--danger);
     background: var(--surface);
 }
 

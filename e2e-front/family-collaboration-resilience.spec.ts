@@ -309,10 +309,15 @@ test('ownership requests support decline, owner cancel and accept with role chan
 });
 
 test('member leave shows its preview and removes only that membership', async ({ page }) => {
+    await installOneShotFailure(page, '/api/v1/family/leave');
     await login(page, 'plus2');
     await gotoExact(page, '/family/access');
     await expect(page.getByText('Семейные данные останутся семье; ваша запись сохранится в истории.')).toBeVisible();
+    await failNext(page, '/api/v1/family/leave');
     await page.getByRole('button', { name: 'Выйти из семьи' }).click();
+    await expect(page.getByRole('alert').filter({ hasText: 'Результат выхода неизвестен' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Перечитать состав и последствия' })).toBeVisible();
+    await page.getByRole('button', { name: 'Повторить сохранённый выход' }).click();
     await page.waitForURL((url) => url.pathname === '/');
     await gotoExact(page, '/family');
     await expect(page.getByRole('heading', { name: 'Общего дома пока нет' })).toBeVisible();
