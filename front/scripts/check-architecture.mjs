@@ -8,7 +8,7 @@ const productsFeatureRoot = path.join(sourceRoot, 'features', 'products');
 const shoppingFeatureRoot = path.join(sourceRoot, 'features', 'shopping');
 const inventoryIngestFeatureRoot = path.join(sourceRoot, 'features', 'inventory-ingest');
 const sourceExtensions = new Set(['.ts', '.tsx', '.js', '.jsx', '.mjs']);
-const layeredRoots = new Set(['app', 'widgets', 'features', 'entities', 'shared']);
+const layeredRoots = new Set(['app', 'widgets', 'features', 'entities', 'shared', 'mocks']);
 const importPattern = /(?:from\s*|import\s*)['"]([^'"]+)['"]/g;
 const legacyCrossFeatureImports = new Set();
 
@@ -112,12 +112,20 @@ for (const file of await collect(sourceRoot)) {
                 );
         }
         if (
-            sourceLayer === 'app' &&
+            ['app', 'widgets'].includes(sourceLayer) &&
             targetParts[0] === 'features' &&
             !['client.js', 'server.js', 'index.js'].includes(path.basename(target))
         )
             failures.push(
-                `${path.relative(process.cwd(), file)} -> ${specifier}: app routes must use a feature client/server/index public API`,
+                `${path.relative(process.cwd(), file)} -> ${specifier}: upper layers must use a feature client/server/index public API`,
+            );
+        if (sourceLayer === 'mocks' && targetParts[0] === 'features' && path.basename(target) !== 'mock.js')
+            failures.push(
+                `${path.relative(process.cwd(), file)} -> ${specifier}: mock composition must use an explicit feature mock API`,
+            );
+        if (sourceLayer !== 'mocks' && targetParts[0] === 'features' && path.basename(target) === 'mock.js')
+            failures.push(
+                `${path.relative(process.cwd(), file)} -> ${specifier}: feature mock APIs are restricted to mock composition`,
             );
         if (
             !file.startsWith(`${recipesFeatureRoot}${path.sep}`) &&

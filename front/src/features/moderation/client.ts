@@ -1,3 +1,6 @@
 'use client';
 
-export { ModerationItem, ModerationOverview, ModerationQueue, ModerationSupport } from './moderation.js';
+export { ModerationItem } from './item-route.js';
+export { ModerationOverview } from './overview-route.js';
+export { ModerationQueue } from './queue-route.js';
+export { ModerationSupport } from './support-route.js';

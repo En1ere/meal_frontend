@@ -162,7 +162,7 @@ export class MockApi {
             const status = await check();
             if (status !== 200) return fail(status);
             try {
-                const { runIngestUpload } = await import('./ingest.js');
+                const { runIngestUpload } = await import('../features/inventory-ingest/mock.js');
                 const result = await runIngestUpload(path, await request.formData(), request.signal);
                 const current = await check();
                 return current === 200 ? success(result) : fail(current);

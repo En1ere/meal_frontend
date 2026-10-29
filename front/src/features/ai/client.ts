@@ -1,3 +1,6 @@
 'use client';
 
-export { AiBalancePage, AiConversationPage, AiHistoryPage, AiPage } from './ai.js';
+export { AiBalancePage } from './balance-route.js';
+export { AiConversationPage } from './conversation-route.js';
+export { AiHistoryPage } from './history-route.js';
+export { AiPage } from './overview-route.js';

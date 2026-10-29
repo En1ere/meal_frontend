@@ -1,5 +1,7 @@
 # Frontend version-list
 
+0.0.149 - 29.10.2026 | 12:34 - Closed the residual architecture checkpoint without URL, payload, query-key, or behavior changes: inventory-ingest owns its explicit mock adapter, the architecture gate enforces feature public APIs for both app and widgets and restricts mock entrypoints, while finance, AI, and moderation are split into internal route scenarios behind unchanged client barrels.
+
 0.0.148 - 29.10.2026 | 12:06 - Added the public draft legal catalog with 11 allowlisted server-rendered documents, a single `[Тут будут данные]` placeholder, clear non-approved status, catalog/footer navigation, stable routes and unknown-slug 404. Demonstration legal manifests now remain drafts outside explicit mock mode, so real registration and consent mutations cannot be unlocked by test evidence.
 
 0.0.147 - 29.10.2026 | 10:17 - The deployment runbook now records the verified VPS container cutover and starts with a concise operator/agent map covering repository ownership, main-to-GHCR digest delivery, build-time API settings, server helper, loopback/Nginx routing, smoke checks, and UI-only digest rollback; no secrets or application behavior were added.

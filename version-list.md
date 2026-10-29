@@ -1,5 +1,7 @@
 # Meal frontend version-list
 
+0.0.40 - 29.10.2026 | 12:34 - Закрыт остаточный архитектурный checkpoint без изменения URL и контрактов: inventory-ingest mock adapter перенесён в feature-owned boundary, gate теперь защищает public API для app/widgets и изолирует mock API, а multi-route finance, AI и moderation разделены на внутренние route-сценарии с неизменными публичными экспортами.
+
 0.0.39 - 29.10.2026 | 12:06 - Опубликован безопасный каталог 11 предварительных legal-текстов: allowlisted server-side routes, единая заглушка `[Тут будут данные]`, public shell/navigation и 404 для неизвестного slug. Demonstration manifest больше не считается опубликованным вне mock-режима, consent/registration остаются fail-closed; обновлены тесты и инструкции ручной приёмки.
 
 0.0.38 - 29.10.2026 | 10:17 - Deployment runbook получил краткую карту для агента/оператора и фактический container inventory после VPS cutover: границы репозитория, `main`/GHCR digest/helper, build-time env, loopback/Nginx, smoke и UI-only rollback; legacy systemd runtime отключён, секреты не добавлялись.

@@ -84,11 +84,12 @@ Browser budget измеряет не только число файлов. Basel
 
 ## Контролируемый архитектурный долг
 
-Architecture gate не использует открытые allowlist: любой cross-feature import или deep import из `app` немедленно ломает проверку. Route-модули могут входить в feature только через `client.ts`, `server.ts` или `index.ts`, включая узкие доменные subpath API с таким basename.
+Architecture gate не использует открытые allowlist: любой cross-feature import или deep import из `app`/`widgets` немедленно ломает проверку. Route- и widget-модули могут входить в feature только через `client.ts`, `server.ts` или `index.ts`, включая узкие доменные subpath API с таким basename.
 
 - Feature-to-feature imports полностью устранены; baseline в `front/scripts/check-architecture.mjs` пуст и запрещает появление новой междоменной связи.
 - App-to-feature deep imports полностью устранены. Шесть checkpoint убрали все 100 связей: low-coupling маршруты, news/notifications/support/moderation/offline/personalization/achievements, auth/AI/AI appeals, family/family notes, inventory/preserves/shopping и recipes. URL, runtime-семантика и wire-контракты не менялись.
-- Следующий порядок: стабилизация public APIs и измеримая декомпозиция крупных файлов без изменения внешнего поведения.
-- `front/src/mocks/ingest.ts` пока зависит от внутренних contracts/worker inventory-ingest. Mock adapters будут включены в отдельный boundary checkpoint и не считаются production public API.
+- Public APIs стабилизированы для `app` и `widgets`: оба верхних слоя проверяются одним правилом, а client/server/index barrels остаются единственными runtime-входами в feature.
+- Mock inventory-ingest adapter принадлежит самому bounded context в `features/inventory-ingest/mock.ts`. Только `src/mocks` может импортировать этот узкий mock API; production-слои и остальные внутренние feature-файлы закрыты gate.
+- Multi-route модули finance, AI и moderation разделены на внутренние route-сценарии с локальными `shared.tsx`. Публичные `client.ts`, имена экспортов, URL, query keys и wire-контракты не изменены; цельные cooking, meal-plan, recipe editor, diary и subscription workflows намеренно не дробятся по размеру файла.
 
-Проверка `npm --workspace front run architecture:check` блокирует обратные зависимости слоёв, cross-feature imports и любое обращение route-модуля к внутреннему feature-файлу.
+Проверка `npm --workspace front run architecture:check` блокирует обратные зависимости слоёв, cross-feature imports, обращения app/widgets к внутреннему feature-файлу и обход feature-owned mock boundary.

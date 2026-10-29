@@ -1,6 +1,6 @@
-import { importPreviewSchema, scanPreviewSchema } from '../features/inventory-ingest/contracts.js';
-import { validateImage } from '../shared/media/image-validation.js';
+import { validateImage } from '../../shared/media/image-validation.js';
 import type { Worker as OcrWorker } from 'tesseract.js';
+import { importPreviewSchema, scanPreviewSchema } from './contracts.js';
 
 let active = false;
 export async function runIngestUpload(path: string, form: FormData, signal?: AbortSignal): Promise<unknown> {
@@ -20,7 +20,7 @@ export async function runIngestUpload(path: string, form: FormData, signal?: Abo
                 // Webpack emits this worker as a classic bundle that loads its split XLSX chunk via importScripts.
                 // Declaring it as a module makes importScripts unavailable in Firefox and leaves uploads waiting
                 // until the watchdog fires.
-                const worker = new Worker(new URL('../features/inventory-ingest/parser.worker.ts', import.meta.url));
+                const worker = new Worker(new URL('./parser.worker.ts', import.meta.url));
                 const finish = () => {
                     clearTimeout(timer);
                     worker.terminate();
