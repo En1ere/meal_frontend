@@ -21,7 +21,7 @@ test('release report stays blocked only by unresolved manifests while deployment
         if (name !== 'deployment') assert.ok(manifest.blockers.length > 0);
 });
 
-test('deployment manifest requires schema v30, verified runtime and pending custom DNS state', () => {
+test('deployment manifest requires schema v31, verified runtime and pending custom DNS state', () => {
     const valid = {
         version: 2,
         status: 'ready',
@@ -44,10 +44,10 @@ test('deployment manifest requires schema v30, verified runtime and pending cust
         trafficSwitchProvider: 'docker_compose_and_host_nginx',
         rollback: 'previous_verified_digest',
         databaseCompatibilityGate: 'expand_contract_review_required',
-        targetSchemaVersion: 30,
+        targetSchemaVersion: 31,
         preTrafficGates: [
             'immutable_artifact',
-            'database_v30_verified',
+            'database_v31_verified',
             'security_headers_verified',
             'browser_registry_verified',
             'workers_disabled_or_verified',
@@ -55,7 +55,7 @@ test('deployment manifest requires schema v30, verified runtime and pending cust
         ],
     };
     assert.equal(manifestSchemas.deployment.safeParse(valid).success, true);
-    assert.equal(manifestSchemas.deployment.safeParse({ ...valid, targetSchemaVersion: 29 }).success, false);
+    assert.equal(manifestSchemas.deployment.safeParse({ ...valid, targetSchemaVersion: 30 }).success, false);
     assert.equal(manifestSchemas.deployment.safeParse({ ...valid, status: 'blocked' }).success, false);
     assert.equal(
         manifestSchemas.deployment.safeParse({

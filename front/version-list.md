@@ -1,5 +1,7 @@
 # Frontend version-list
 
+0.0.151 - 29.10.2026 | 18:05 - Full OpenAPI 0.0.61 metadata synchronized with backend 0.0.151 and additive schema v31. Generated contracts, package/lock and release documentation were updated; wire paths, payloads and frontend runtime behavior are unchanged.
+
 0.0.150 - 29.10.2026 | 16:52 - Production release metadata and the full OpenAPI 0.0.61 snapshot now reflect backend `0.0.149` and schema v30. Verified Docker runtime, deploy-helper and digest rollback are no longer false deployment blockers; technical origins remain active while the two royalexander custom origins are explicitly pending DNS. Runtime behavior and wire contracts are unchanged.
 
 0.0.149 - 29.10.2026 | 12:34 - Closed the residual architecture checkpoint without URL, payload, query-key, or behavior changes: inventory-ingest owns its explicit mock adapter, the architecture gate enforces feature public APIs for both app and widgets and restricts mock entrypoints, while finance, AI, and moderation are split into internal route scenarios behind unchanged client barrels.

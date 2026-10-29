@@ -43,10 +43,10 @@ const deploymentSchema = z.strictObject({
     trafficSwitchProvider: z.literal('docker_compose_and_host_nginx'),
     rollback: z.literal('previous_verified_digest'),
     databaseCompatibilityGate: z.literal('expand_contract_review_required'),
-    targetSchemaVersion: z.literal(30),
+    targetSchemaVersion: z.literal(31),
     preTrafficGates: z.tuple([
         z.literal('immutable_artifact'),
-        z.literal('database_v30_verified'),
+        z.literal('database_v31_verified'),
         z.literal('security_headers_verified'),
         z.literal('browser_registry_verified'),
         z.literal('workers_disabled_or_verified'),

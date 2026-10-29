@@ -1,4 +1,4 @@
-// Generated from contracts/openapi.json. Do not edit. SHA256: aa2c8a940fbfd15fd5cb463c9cfb6b05eb96f3115e822f622a5dc42f3ad428c6
+// Generated from contracts/openapi.json. Do not edit. SHA256: 2e00cda90933b9f56c82392f5b220765b68c23f01e15cdbc71fa274949da2425
 import { z } from 'zod';
 export const contractVersion = '0.0.61';
 export const contracts = {

@@ -20,8 +20,8 @@
 | Admin origin                  | `https://admin.abstract-usable-gazebo.ruweb.place`              |
 | Backend health                | `/health/live`, `/health/ready`                                 |
 | Установленный release         | Immutable digest из `/srv/meal/deployment/images.env`           |
-| Установленная root/app версия | `0.0.40` / `0.0.149`                                            |
-| Связанные runtime-компоненты  | backend `0.0.149` / schema v30; admin `0.0.125`                 |
+| Целевая root/app версия       | `0.0.42` / `0.0.151`                                            |
+| Связанные runtime-компоненты  | backend `0.0.151` / schema v31; admin `0.0.127`                 |
 | Runtime                       | Node.js 24, Docker Compose, loopback `127.0.0.1:3000`           |
 | Traffic                       | Nginx завершает TLS; `/api/` проксируется в backend на loopback |
 
@@ -58,7 +58,7 @@ Container runtime, helper, digest inventory, PostgreSQL restore и общий po
 
 1. `npm ci`, `npm run check`, `npm run build` и `npm run test:performance:budget` завершились успешно на Node/npm из `package.json`.
 2. `npm run ops:readiness` подтвердил структуру provider-neutral manifests. Статус `blocked` ожидаем, пока внешние решения не приняты; `npm run ops:readiness:require-ready` обязан завершаться ненулевым кодом при открытых blockers.
-3. Backend `/health/live` и `/health/ready` отвечают `200`, а backend runbook подтверждает schema v30 и backup/restore evidence.
+3. Backend `/health/live` и `/health/ready` отвечают `200`, а backend runbook подтверждает schema v31 и backup/restore evidence.
 4. GHCR artifact адресуется digest, содержит standalone server, `.next/static`, `public` и runtime legal documents. `.env*`, QA-output, test traces и secrets не входят в image.
 5. `NEXT_PUBLIC_API_MODE=real`, `NEXT_PUBLIC_APP_VERSION` совпадает с `front/package.json`, а `BACKEND_ORIGIN=http://backend:3001`. Все три значения заданы при build: public variables встраиваются в browser bundle, а rewrite destination сериализуется Next config в standalone server.
 6. Юридический gate `draft_blocked` остаётся явным blocker публичного коммерческого запуска. Revision-aware moderation contract реализован и развёрнут, но его live mutation-приёмка требует доступного admin TOTP либо отдельно согласованного re-enrollment.

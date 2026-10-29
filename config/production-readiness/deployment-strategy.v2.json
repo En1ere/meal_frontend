@@ -20,10 +20,10 @@
     "trafficSwitchProvider": "docker_compose_and_host_nginx",
     "rollback": "previous_verified_digest",
     "databaseCompatibilityGate": "expand_contract_review_required",
-    "targetSchemaVersion": 30,
+    "targetSchemaVersion": 31,
     "preTrafficGates": [
         "immutable_artifact",
-        "database_v30_verified",
+        "database_v31_verified",
         "security_headers_verified",
         "browser_registry_verified",
         "workers_disabled_or_verified",

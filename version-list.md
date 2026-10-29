@@ -1,5 +1,7 @@
 # Meal frontend version-list
 
+0.0.42 - 29.10.2026 | 18:05 - Production readiness и полный OpenAPI snapshot 0.0.61 синхронизированы с backend 0.0.151 / additive schema v31; wire paths и payload не менялись. Target gate повышен до `database_v31_verified`, technical origins остаются активными, custom origins — `pending_dns`.
+
 0.0.41 - 29.10.2026 | 16:52 - Синхронизированы production readiness и полный OpenAPI snapshot 0.0.61 с фактическим VPS: Docker runtime, immutable deploy-helper и digest rollback больше не считаются открытыми blockers, target обновлён до schema v30, а будущие custom origins явно остаются `pending_dns`; runtime и wire-контракты не менялись.
 
 0.0.40 - 29.10.2026 | 12:34 - Закрыт остаточный архитектурный checkpoint без изменения URL и контрактов: inventory-ingest mock adapter перенесён в feature-owned boundary, gate теперь защищает public API для app/widgets и изолирует mock API, а multi-route finance, AI и moderation разделены на внутренние route-сценарии с неизменными публичными экспортами.
