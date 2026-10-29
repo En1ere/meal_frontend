@@ -1,8 +1,8 @@
 {
     "version": 2,
-    "status": "blocked",
+    "status": "ready",
     "strategy": "immutable_digest_rolling",
-    "blockers": ["docker_runtime_evidence", "server_deploy_helper_evidence", "digest_rollback_evidence"],
+    "blockers": [],
     "deploymentPlatform": "docker_compose_single_host",
     "artifactRegistry": "ghcr",
     "ingressProvider": "host_nginx",
@@ -10,15 +10,20 @@
         "public": "https://abstract-usable-gazebo.ruweb.place",
         "admin": "https://admin.abstract-usable-gazebo.ruweb.place"
     },
+    "pendingCustomOrigins": {
+        "status": "pending_dns",
+        "public": "https://meal.royalexander.online",
+        "admin": "https://admin.meal.royalexander.online"
+    },
     "frontendReadinessPath": "/healthz",
     "dependencyReadinessPaths": ["/health/live", "/health/ready"],
     "trafficSwitchProvider": "docker_compose_and_host_nginx",
     "rollback": "previous_verified_digest",
     "databaseCompatibilityGate": "expand_contract_review_required",
-    "targetSchemaVersion": 29,
+    "targetSchemaVersion": 30,
     "preTrafficGates": [
         "immutable_artifact",
-        "database_v29_verified",
+        "database_v30_verified",
         "security_headers_verified",
         "browser_registry_verified",
         "workers_disabled_or_verified",

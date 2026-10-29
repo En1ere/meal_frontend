@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { checkProductionReadiness, manifestSchemas } from './check-production-readiness.mjs';
 
-test('release manifests remain explicitly blocked until deployment evidence and external decisions exist', async () => {
+test('release report stays blocked only by unresolved manifests while deployment evidence is ready', async () => {
     const report = await checkProductionReadiness();
     assert.equal(report.status, 'blocked');
     assert.equal(report.scope, 'frontend_release_manifests');
@@ -16,15 +16,17 @@ test('release manifests remain explicitly blocked until deployment evidence and 
         'paymentMethods',
     ]);
     assert.equal(report.manifests.deployment.version, 2);
-    for (const manifest of Object.values(report.manifests)) assert.ok(manifest.blockers.length > 0);
+    assert.deepEqual(report.manifests.deployment.blockers, []);
+    for (const [name, manifest] of Object.entries(report.manifests))
+        if (name !== 'deployment') assert.ok(manifest.blockers.length > 0);
 });
 
-test('deployment manifest requires schema v29 and the matching evidence gate', () => {
+test('deployment manifest requires schema v30, verified runtime and pending custom DNS state', () => {
     const valid = {
         version: 2,
-        status: 'blocked',
+        status: 'ready',
         strategy: 'immutable_digest_rolling',
-        blockers: ['docker_runtime_evidence'],
+        blockers: [],
         deploymentPlatform: 'docker_compose_single_host',
         artifactRegistry: 'ghcr',
         ingressProvider: 'host_nginx',
@@ -32,15 +34,20 @@ test('deployment manifest requires schema v29 and the matching evidence gate', (
             public: 'https://abstract-usable-gazebo.ruweb.place',
             admin: 'https://admin.abstract-usable-gazebo.ruweb.place',
         },
+        pendingCustomOrigins: {
+            status: 'pending_dns',
+            public: 'https://meal.royalexander.online',
+            admin: 'https://admin.meal.royalexander.online',
+        },
         frontendReadinessPath: '/healthz',
         dependencyReadinessPaths: ['/health/live', '/health/ready'],
         trafficSwitchProvider: 'docker_compose_and_host_nginx',
         rollback: 'previous_verified_digest',
         databaseCompatibilityGate: 'expand_contract_review_required',
-        targetSchemaVersion: 29,
+        targetSchemaVersion: 30,
         preTrafficGates: [
             'immutable_artifact',
-            'database_v29_verified',
+            'database_v30_verified',
             'security_headers_verified',
             'browser_registry_verified',
             'workers_disabled_or_verified',
@@ -48,7 +55,15 @@ test('deployment manifest requires schema v29 and the matching evidence gate', (
         ],
     };
     assert.equal(manifestSchemas.deployment.safeParse(valid).success, true);
-    assert.equal(manifestSchemas.deployment.safeParse({ ...valid, targetSchemaVersion: 26 }).success, false);
+    assert.equal(manifestSchemas.deployment.safeParse({ ...valid, targetSchemaVersion: 29 }).success, false);
+    assert.equal(manifestSchemas.deployment.safeParse({ ...valid, status: 'blocked' }).success, false);
+    assert.equal(
+        manifestSchemas.deployment.safeParse({
+            ...valid,
+            pendingCustomOrigins: { ...valid.pendingCustomOrigins, status: 'ready' },
+        }).success,
+        false,
+    );
 });
 
 test('readiness boundaries reject unsafe or falsely ready variants', () => {

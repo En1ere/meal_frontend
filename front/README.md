@@ -1,6 +1,6 @@
 # Meal Planner frontend
 
-Клиентское Next.js-приложение для публичных, пользовательских и модераторских сценариев. Текущая package-версия — `0.0.146`; deployed runtime остаётся `0.0.137`. Read-only desktop/mobile production acceptance прошёл `24/24` без mutation requests и runtime errors.
+Клиентское Next.js-приложение для публичных, пользовательских и модераторских сценариев. Текущая package-версия — `0.0.150`; последний проверенный deployed runtime — `0.0.149`. Контейнерный runtime, immutable deploy-helper и rollback подтверждены; custom-domain cutover ожидает DNS.
 
 Административный интерфейс вынесен в независимый `meal_admin`; его исходники и установка для запуска клиента не нужны. Backend находится в `meal_backend`.
 

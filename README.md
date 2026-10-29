@@ -1,6 +1,6 @@
 # Meal frontend
 
-Текущие версии исходников: root `0.0.37`, frontend app `0.0.146`; deployed runtime остаётся root `0.0.28` / app `0.0.137`. Revision-aware контракты соответствуют backend `0.0.128` и schema v29. Read-only desktop/mobile production acceptance прошёл `24/24` без mutation requests и runtime errors.
+Текущие версии исходников: root `0.0.41`, frontend app `0.0.150`; последний проверенный deployed runtime — root `0.0.40` / app `0.0.149`. Контракты соответствуют backend `0.0.149` и schema v30. Docker Compose, immutable digest deploy-helper и rollback подтверждены на VPS; технические HTTPS origins остаются активными до появления DNS для `meal.royalexander.online` и `admin.meal.royalexander.online`.
 
 Самостоятельный клиент Meal Planner: `front/` (Next.js, порт 3000) и локальная `design-system/`. Админка вынесена в независимый `meal_admin` (Vite, порт 3002), сервер и SQL находятся в `meal_backend` (API, порт 3001). Каждый репозиторий устанавливается отдельно, без исходников соседей и без исходного `test-roject`.
 
