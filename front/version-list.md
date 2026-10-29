@@ -1,5 +1,7 @@
 # Frontend version-list
 
+0.0.147 - 29.10.2026 | 10:17 - The deployment runbook now records the verified VPS container cutover and starts with a concise operator/agent map covering repository ownership, main-to-GHCR digest delivery, build-time API settings, server helper, loopback/Nginx routing, smoke checks, and UI-only digest rollback; no secrets or application behavior were added.
+
 0.0.146 - 28.10.2026 | 17:54 - The production build now emits a digest-pinned Next standalone server with a frontend-only, non-cacheable `/healthz` endpoint. The GHCR pipeline rejects stale main SHAs before build and deploy, publishes only a commit tag plus immutable digest, pins every Action by commit SHA, and runs through the allowlisted server helper. The container is non-root with a read-only-compatible runtime layout; build-time API mode, app version and backend rewrite origin are documented explicitly. No deployment was performed, and the deployed app remains `0.0.137`.
 
 0.0.145 - 28.10.2026 | 17:31 - The moderator recovery harness now has an explicit sticky fault-control mode: concurrent matching requests keep receiving the configured failure until the cookie is cleared, while all existing controls remain one-shot by default. The recovery E2E clears the control only after observing the error UI and then uses the existing Retry action; runtime and wire contracts are unchanged, and the deployed app remains `0.0.137`.

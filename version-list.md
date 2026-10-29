@@ -1,5 +1,7 @@
 # Meal frontend version-list
 
+0.0.38 - 29.10.2026 | 10:17 - Deployment runbook получил краткую карту для агента/оператора и фактический container inventory после VPS cutover: границы репозитория, `main`/GHCR digest/helper, build-time env, loopback/Nginx, smoke и UI-only rollback; legacy systemd runtime отключён, секреты не добавлялись.
+
 0.0.37 - 28.10.2026 | 17:54 - Подготовлен container release path без фактического деплоя: digest-pinned Next standalone image запускается непривилегированно с frontend-only `/healthz`, GHCR workflow дважды блокирует stale SHA, публикует commit tag и immutable digest без `latest`/semver tags и передаёт его ограниченному server helper; все Actions закреплены по commit SHA. Документация фиксирует build-time семантику `NEXT_PUBLIC_*` и `BACKEND_ORIGIN`, read-only/tmpfs hardening и rollback. Deployment readiness отражает Docker Compose/GHCR/host Nginx решения, но остаётся blocked до runtime/helper/rollback evidence; deployed runtime остаётся root/app `0.0.28` / `0.0.137`.
 
 0.0.36 - 28.10.2026 | 17:31 - Детерминированный moderator recovery harness получил явный sticky fault-control: параллельные совпадающие запросы продолжают получать заданную ошибку до удаления cookie, тогда как существующие fault-controls остаются одноразовыми. Recovery E2E очищает control только после появления error UI и затем использует штатный Retry; runtime и wire-контракты не менялись, deployed runtime остаётся root/app `0.0.28` / `0.0.137`.

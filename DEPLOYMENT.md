@@ -2,22 +2,32 @@
 
 Этот документ описывает воспроизводимый выпуск клиентского Next.js-приложения на тестовый production-стенд. Backend и admin выпускаются из собственных репозиториев; исходники соседних репозиториев не копируются в artifact frontend.
 
+## Быстрая карта деплоя
+
+1. В `meal_frontend` заливаются Next.js client, его design-system и frontend-тесты. Backend/admin и shared Compose остаются в своих репозиториях.
+2. Push в `main` запускает `.github/workflows/deploy.yml`: full quality/build gates → standalone image `ghcr.io/en1ere/meal_frontend:sha-<full-sha>` → immutable digest → Environment `test`.
+3. `NEXT_PUBLIC_APP_VERSION`, `NEXT_PUBLIC_API_MODE=real` и `BACKEND_ORIGIN=http://backend:3001` фиксируются на image build; их runtime-изменение без нового image не сработает.
+4. CI вызывает `sudo /usr/local/sbin/meal-deploy frontend <image@digest> <git-sha>`; source, `.next` и `node_modules` на VPS вручную не копируются.
+5. Container слушает `3000`, на host доступен только `127.0.0.1:3000`; Nginx отдаёт public HTTPS, а `/api/` на том же origin идёт на backend `3001`.
+6. Smoke: local `/healthz`, public `/`, `/recipes`, `/legal/terms`, login/logout, authenticated read и все темы с reload.
+7. Frontend rollout не ходит в БД и не запускает migrations; при verify failure helper возвращает previous frontend digest.
+
 ## Текущий inventory
 
-| Компонент                     | Значение                                                               |
-| ----------------------------- | ---------------------------------------------------------------------- |
-| Public origin                 | `https://abstract-usable-gazebo.ruweb.place`                           |
-| Admin origin                  | `https://admin.abstract-usable-gazebo.ruweb.place`                     |
-| Backend health                | `/health/live`, `/health/ready`                                        |
-| Установленный release         | `/srv/meal/frontend/releases/20261028-0735-0.0.28-0.0.137`             |
-| Установленная root/app версия | `0.0.28` / `0.0.137`                                                   |
-| Связанные runtime-компоненты  | backend `0.0.128` / schema v29; admin `0.0.117`                        |
-| Runtime                       | Node.js 24, systemd `meal-frontend.service`, loopback `127.0.0.1:3000` |
-| Traffic                       | Nginx завершает TLS; `/api/` проксируется в backend на loopback        |
+| Компонент                     | Значение                                                        |
+| ----------------------------- | --------------------------------------------------------------- |
+| Public origin                 | `https://abstract-usable-gazebo.ruweb.place`                    |
+| Admin origin                  | `https://admin.abstract-usable-gazebo.ruweb.place`              |
+| Backend health                | `/health/live`, `/health/ready`                                 |
+| Установленный release         | `ghcr.io/en1ere/meal_frontend@sha256:746c23…75e7b8e`            |
+| Установленная root/app версия | `0.0.37` / `0.0.146`                                            |
+| Связанные runtime-компоненты  | backend `0.0.137+` / schema v29; admin `0.0.121`                |
+| Runtime                       | Node.js 24, Docker Compose, loopback `127.0.0.1:3000`           |
+| Traffic                       | Nginx завершает TLS; `/api/` проксируется в backend на loopback |
 
 Inventory фиксирует проверенное состояние, а не автоматически обновляемый source of truth. Перед выпуском повторно получить версии из package manifests и разрешённые значения с сервера. Пароли, TOTP secret/recovery codes, root credentials, DB URL и содержимое environment-файлов в Git не записываются.
 
-### Целевая container-архитектура
+### Развёрнутая container-архитектура
 
 - GitHub Actions собирает Linux image из `main`, публикует его в GHCR без `latest` и передаёт deploy-helper только immutable digest через GitHub Environment `test` production-like технического стенда.
 - Single-host Docker Compose запускает frontend непривилегированным пользователем; host Nginx сохраняет TLS и проксирует на loopback `127.0.0.1:3000`.
@@ -25,7 +35,7 @@ Inventory фиксирует проверенное состояние, а не 
 - Runtime root filesystem read-only; временные `/tmp` и `/app/front/.next/cache` предоставляются ограниченными tmpfs. Persistent frontend volume не требуется.
 - Server helper `/usr/local/sbin/meal-deploy` обязан сериализовать общий rollout lock, хранить предыдущий проверенный digest, ждать health/smoke и возвращать digest при неуспехе. Workflow не содержит SSH-ключей, host keys или иных значений secrets.
 
-Пока container runtime, helper и rollback не дали evidence, live inventory выше остаётся фактической истиной, а новый путь — подготовленным, но не развёрнутым target.
+Container runtime, helper, digest inventory, PostgreSQL restore и общий post-deploy verify подтверждены на VPS 29 октября 2026 года. Legacy `meal-frontend.service` отключён и не стартует после reboot.
 
 ### Evidence выпуска 28 октября 2026 года
 
