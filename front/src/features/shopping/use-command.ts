@@ -2,7 +2,7 @@
 import { useRef, useState } from 'react';
 import { useRuntime } from '../../shared/runtime/index.js';
 import { ApiError } from '../../shared/api/client.js';
-import { contracts, type Route, type Success } from '../../shared/api/contracts.generated.js';
+import { contracts, type JsonRoute, type JsonSuccess } from '../../shared/api/contracts.generated.js';
 import { setUserSession } from '../../entities/session/client.js';
 import { useRequestSignal } from '../../shared/api/use-request-signal.js';
 import { useShoppingScope } from './shared.js';
@@ -15,14 +15,14 @@ export function useShoppingCommand() {
         [error, setError] = useState(''),
         [conflict, setConflict] = useState(false);
     const pendingRef = useRef(false);
-    const frozen = useRef<{ route: Route; body: Record<string, unknown>; params?: Record<string, string> } | null>(
+    const frozen = useRef<{ route: JsonRoute; body: Record<string, unknown>; params?: Record<string, string> } | null>(
         null,
     );
-    async function run<R extends Route>(
+    async function run<R extends JsonRoute>(
         route: R,
         body: Record<string, unknown>,
         params?: Record<string, string>,
-    ): Promise<Success<R>['data'] | undefined> {
+    ): Promise<JsonSuccess<R>['data'] | undefined> {
         if (!api || pendingRef.current) return;
         frozen.current ??= {
             route,

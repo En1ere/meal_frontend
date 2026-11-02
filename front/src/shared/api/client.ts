@@ -1,4 +1,12 @@
-import { contracts, errorSchema, type Route, type Success } from './contracts.generated.js';
+import {
+    contracts,
+    errorSchema,
+    type BinaryRoute,
+    type JsonRoute,
+    type JsonSuccess,
+    type Route,
+    type Success,
+} from './contracts.generated.js';
 
 export interface ApiResponseCompatibility {
     normalize(route: Route, value: unknown): { value: unknown; commit?: () => void };
@@ -50,6 +58,27 @@ export class ApiClient {
             if (this.csrfRequest === pending) this.csrfRequest = undefined;
         }
     }
+    async request<R extends JsonRoute>(
+        route: R,
+        body?: unknown,
+        signal?: AbortSignal,
+        params?: Record<string, string>,
+        options?: { query?: Record<string, string>; ifMatch?: number },
+    ): Promise<JsonSuccess<R>>;
+    async request<R extends BinaryRoute>(
+        route: R,
+        body?: unknown,
+        signal?: AbortSignal,
+        params?: Record<string, string>,
+        options?: { query?: Record<string, string>; ifMatch?: number },
+    ): Promise<Success<R>>;
+    async request<R extends Route>(
+        route: R,
+        body?: unknown,
+        signal?: AbortSignal,
+        params?: Record<string, string>,
+        options?: { query?: Record<string, string>; ifMatch?: number },
+    ): Promise<Success<R>>;
     async request<R extends Route>(
         route: R,
         body?: unknown,
@@ -90,7 +119,7 @@ export class ApiClient {
             signal: signal ? AbortSignal.any([signal, contextSignal]) : contextSignal,
             ...(body !== undefined ? { body: multipart ? body : JSON.stringify(body) } : {}),
         });
-        const value: unknown = await response.json();
+        const value: unknown = response.ok && schema.binary ? await response.blob() : await response.json();
         if (epoch !== this.epoch || contextSignal.aborted || signal?.aborted)
             throw new DOMException('Stale API response', 'AbortError');
         if (!response.ok) {
@@ -99,12 +128,12 @@ export class ApiClient {
         }
         this.onSuccessfulRequest?.();
         // Runtime schema is selected by the same route key as the generic response type.
-        const compatible = this.compatibility?.normalize(route, value) ?? { value };
+        const compatible = schema.binary ? { value } : (this.compatibility?.normalize(route, value) ?? { value });
         const result = schema.success.parse(compatible.value) as Success<R>;
         compatible.commit?.();
         return result;
     }
-    upload<R extends Route>(route: R, body: FormData, signal?: AbortSignal): Promise<Success<R>> {
+    upload<R extends JsonRoute>(route: R, body: FormData, signal?: AbortSignal): Promise<JsonSuccess<R>> {
         if (!route.startsWith('POST /api/v1/inventory/ingest/')) throw new TypeError('Unsupported upload route');
         return this.request(route, body, signal);
     }

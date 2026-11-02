@@ -1,10 +1,11 @@
-// Generated from contracts/openapi.json. Do not edit. SHA256: 2e00cda90933b9f56c82392f5b220765b68c23f01e15cdbc71fa274949da2425
+// Generated from contracts/openapi.json. Do not edit. SHA256: 50572e87f8fb6d96dea45b5209caf5bde000fc067b10bfda7d72f3e4cff5f92c
 import { z } from 'zod';
-export const contractVersion = '0.0.61';
+export const contractVersion = '0.0.63';
 export const contracts = {
     'GET /api/v1/recipe-policy': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 version: z.number().int().gt(0).max(9007199254740991),
@@ -28,6 +29,7 @@ export const contracts = {
     'GET /api/v1/recipe-workspace/reports/{id}': {
         params: z.strictObject({ id: z.string().pipe(z.uuid()) }),
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 id: z
@@ -69,6 +71,7 @@ export const contracts = {
     'GET /api/v1/recipe-workspace/reports': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 items: z.array(
@@ -116,6 +119,7 @@ export const contracts = {
     'GET /api/v1/recipe-workspace': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 items: z.array(
@@ -437,6 +441,7 @@ export const contracts = {
                     .optional(),
             }),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 recipe: z.strictObject({
@@ -648,6 +653,7 @@ export const contracts = {
     'GET /api/v1/recipe-workspace/{id}': {
         params: z.strictObject({ id: z.string().pipe(z.uuid()) }),
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 recipe: z.strictObject({
@@ -958,6 +964,7 @@ export const contracts = {
                     .optional(),
             }),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 recipe: z.strictObject({
@@ -1180,6 +1187,7 @@ export const contracts = {
                 .pipe(z.uuid()),
             expectedVersion: z.number().int().gt(0).max(9007199254740991),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 recipe: z.strictObject({
@@ -1402,6 +1410,7 @@ export const contracts = {
                 .pipe(z.uuid()),
             expectedVersion: z.number().int().gt(0).max(9007199254740991),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 recipe: z.strictObject({
@@ -1624,6 +1633,7 @@ export const contracts = {
                 .pipe(z.uuid()),
             expectedVersion: z.number().int().gt(0).max(9007199254740991),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 recipe: z.strictObject({
@@ -1846,6 +1856,7 @@ export const contracts = {
                 .pipe(z.uuid()),
             expectedVersion: z.number().int().gt(0).max(9007199254740991),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 recipe: z.strictObject({
@@ -2067,6 +2078,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 recipe: z.strictObject({
@@ -2278,6 +2290,7 @@ export const contracts = {
     'GET /api/v1/recipe-workspace/{id}/community': {
         params: z.strictObject({ id: z.string().pipe(z.uuid()) }),
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 attemptId: z
@@ -2374,6 +2387,7 @@ export const contracts = {
             value: z.number().int().min(1).max(5),
             confirmed: z.literal(true),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 id: z
@@ -2434,6 +2448,7 @@ export const contracts = {
                 .default(null)
                 .optional(),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 id: z
@@ -2474,6 +2489,7 @@ export const contracts = {
             expectedVersion: z.number().int().gt(0).max(9007199254740991),
             body: z.string().min(1).max(5000),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 id: z
@@ -2513,6 +2529,7 @@ export const contracts = {
                 .pipe(z.uuid()),
             expectedVersion: z.number().int().gt(0).max(9007199254740991),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 id: z
@@ -2573,6 +2590,7 @@ export const contracts = {
                 .default(null)
                 .optional(),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 id: z
@@ -2601,6 +2619,7 @@ export const contracts = {
     'GET /api/v1/cooking-attempts': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 items: z.array(
@@ -2805,6 +2824,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 id: z
@@ -2937,6 +2957,7 @@ export const contracts = {
     'GET /api/v1/cooking-attempts/reminder-preferences': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 enabled: z.boolean(),
@@ -2971,6 +2992,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 enabled: z.boolean(),
@@ -2993,6 +3015,7 @@ export const contracts = {
     'GET /api/v1/cooking-attempts/stock-options': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 items: z.array(
@@ -3092,6 +3115,7 @@ export const contracts = {
     'GET /api/v1/cooking-attempts/{id}': {
         params: z.strictObject({ id: z.string().pipe(z.uuid()) }),
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 id: z
@@ -3267,6 +3291,7 @@ export const contracts = {
                 })
                 .nullable(),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 id: z
@@ -3474,6 +3499,7 @@ export const contracts = {
                 )
                 .max(50),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 id: z
@@ -3606,6 +3632,7 @@ export const contracts = {
     'GET /api/v1/recipes/{id}/cooking-statistics': {
         params: z.strictObject({ id: z.string().pipe(z.uuid()) }),
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 recipeId: z
@@ -3669,6 +3696,7 @@ export const contracts = {
             title: z.string().min(1).max(200).optional(),
             scope: z.union([z.literal('private'), z.literal('family')]).optional(),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 id: z
@@ -3835,6 +3863,7 @@ export const contracts = {
                 .max(1000),
             scope: z.union([z.literal('private'), z.literal('family')]).optional(),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 id: z
@@ -4079,6 +4108,7 @@ export const contracts = {
                 .max(200),
             scope: z.union([z.literal('private'), z.literal('family')]).optional(),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 previewToken: z.string(),
@@ -4235,6 +4265,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 purchaseId: z
@@ -4285,6 +4316,7 @@ export const contracts = {
     'GET /api/v1/shopping-lists': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 items: z.array(
@@ -4352,6 +4384,7 @@ export const contracts = {
                 .pipe(z.uuid()),
             scope: z.union([z.literal('private'), z.literal('family')]).optional(),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 id: z
@@ -4493,6 +4526,7 @@ export const contracts = {
     'GET /api/v1/shopping-lists/recipe-preview': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 recipeId: z
@@ -4577,6 +4611,7 @@ export const contracts = {
     'GET /api/v1/shopping-lists/{id}/history': {
         params: z.strictObject({ id: z.string() }),
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 items: z.array(
@@ -4630,6 +4665,7 @@ export const contracts = {
     'GET /api/v1/shopping-lists/{id}': {
         params: z.strictObject({ id: z.string().pipe(z.uuid()) }),
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 id: z
@@ -4848,6 +4884,7 @@ export const contracts = {
                 .max(200),
             scope: z.union([z.literal('private'), z.literal('family')]).optional(),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 id: z
@@ -5052,6 +5089,7 @@ export const contracts = {
             }),
             scope: z.union([z.literal('private'), z.literal('family')]).optional(),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 id: z
@@ -5193,6 +5231,7 @@ export const contracts = {
     'GET /api/v1/receipts/capabilities': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 photo: z.literal(true),
@@ -5217,6 +5256,7 @@ export const contracts = {
     'GET /api/v1/receipts/{id}': {
         params: z.strictObject({ id: z.string() }),
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 receipt: z.strictObject({
@@ -5587,6 +5627,7 @@ export const contracts = {
                 .optional(),
             scope: z.union([z.literal('private'), z.literal('family')]).optional(),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 receipt: z.strictObject({
@@ -5928,6 +5969,7 @@ export const contracts = {
                 .optional(),
             scope: z.union([z.literal('private'), z.literal('family')]).optional(),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 receipt: z.strictObject({
@@ -6241,6 +6283,7 @@ export const contracts = {
                 .max(200),
             scope: z.union([z.literal('private'), z.literal('family')]).optional(),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 previewToken: z.string(),
@@ -6397,6 +6440,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 receipt: z.strictObject({
@@ -6607,6 +6651,7 @@ export const contracts = {
     'GET /api/v1/receipts/{id}/duplicates': {
         params: z.strictObject({ id: z.string() }),
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 items: z.array(
@@ -6672,6 +6717,7 @@ export const contracts = {
                 .pipe(z.uuid()),
             scope: z.union([z.literal('private'), z.literal('family')]).optional(),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 receipt: z.strictObject({
@@ -6882,6 +6928,7 @@ export const contracts = {
     'GET /api/v1/purchases/{id}': {
         params: z.strictObject({ id: z.string() }),
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 purchaseId: z
@@ -7078,6 +7125,7 @@ export const contracts = {
             }),
             scope: z.union([z.literal('private'), z.literal('family')]).optional(),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 previewToken: z.string(),
@@ -7203,6 +7251,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 purchaseId: z
@@ -7327,6 +7376,7 @@ export const contracts = {
     'GET /api/v1/meal-plan': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 scope: z.union([z.literal('private'), z.literal('family')]),
@@ -7676,6 +7726,7 @@ export const contracts = {
                         ].filter((branch) => branch.safeParse(value).success).length === 1,
                 ),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 previewToken: z.string(),
@@ -8037,6 +8088,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 scope: z.union([z.literal('private'), z.literal('family')]),
@@ -8206,6 +8258,7 @@ export const contracts = {
                 timezone: z.string().min(1).max(100).regex(new RegExp('^(?![+-])', 'u')),
             }),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 previewToken: z.string(),
@@ -8309,6 +8362,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 listId: z
@@ -8445,6 +8499,7 @@ export const contracts = {
                 conflictPolicy: z.literal('skip-existing'),
             }),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 previewToken: z.string(),
@@ -8780,6 +8835,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 scope: z.union([z.literal('private'), z.literal('family')]),
@@ -8917,6 +8973,7 @@ export const contracts = {
     'GET /api/v1/portions': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 scope: z.union([z.literal('private'), z.literal('family')]),
@@ -9081,6 +9138,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 scope: z.union([z.literal('private'), z.literal('family')]),
@@ -9227,6 +9285,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 scope: z.union([z.literal('private'), z.literal('family')]),
@@ -9357,6 +9416,7 @@ export const contracts = {
     'GET /api/v1/family/notes': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 items: z.array(
@@ -9496,6 +9556,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 id: z
@@ -9601,6 +9662,7 @@ export const contracts = {
     'GET /api/v1/family/notes/{id}': {
         params: z.strictObject({ id: z.string() }),
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 id: z
@@ -9737,6 +9799,7 @@ export const contracts = {
                 .pipe(z.uuid()),
             expectedVersion: z.number().int().gt(0).max(9007199254740991),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 id: z
@@ -9842,6 +9905,7 @@ export const contracts = {
     'GET /api/v1/family/notes/{id}/history': {
         params: z.strictObject({ id: z.string() }),
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 items: z.array(
@@ -9929,6 +9993,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 id: z
@@ -10047,6 +10112,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 id: z
@@ -10152,6 +10218,7 @@ export const contracts = {
     'GET /api/v1/family/chat': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 threadId: z
@@ -10479,6 +10546,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 message: z
@@ -10637,6 +10705,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 message: z
@@ -10779,6 +10848,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 message: z
@@ -10920,6 +10990,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 message: z
@@ -11063,6 +11134,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 message: z
@@ -11205,6 +11277,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 message: z
@@ -11348,6 +11421,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({ body: z.string(), version: z.number().int().gt(0).max(9007199254740991) }),
             meta: z.strictObject({
@@ -11385,6 +11459,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 message: z
@@ -11516,6 +11591,7 @@ export const contracts = {
     'GET /api/v1/home': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 recommendations: z
@@ -11719,6 +11795,7 @@ export const contracts = {
     'GET /api/v1/personalization': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 onboarding: z.strictObject({
@@ -11784,6 +11861,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 flow: z.union([z.literal('quick'), z.literal('detailed'), z.literal('demo')]).nullable(),
@@ -11830,6 +11908,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 diets: z.array(z.string().min(1).max(50)).max(20),
@@ -11856,6 +11935,7 @@ export const contracts = {
     'GET /api/v1/notifications': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 items: z.array(
@@ -11962,6 +12042,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({ updated: z.number().int().min(0).max(9007199254740991) }),
             meta: z.strictObject({
@@ -11991,6 +12072,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({ updated: z.number().int().min(0).max(9007199254740991) }),
             meta: z.strictObject({
@@ -12009,6 +12091,7 @@ export const contracts = {
     'GET /api/v1/notification-preferences': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 categories: z
@@ -12101,6 +12184,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 categories: z
@@ -12152,6 +12236,7 @@ export const contracts = {
     'GET /api/v1/support/meta': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 categories: z.array(
@@ -12192,6 +12277,7 @@ export const contracts = {
     'GET /api/v1/support': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 items: z.array(
@@ -12305,6 +12391,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 ticket: z.strictObject({
@@ -12426,6 +12513,7 @@ export const contracts = {
     'GET /api/v1/support/{id}': {
         params: z.strictObject({ id: z.string().pipe(z.uuid()) }),
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 ticket: z.strictObject({
@@ -12579,6 +12667,7 @@ export const contracts = {
                 .pipe(z.uuid()),
             expectedVersion: z.number().int().gt(0).max(9007199254740991),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 ticket: z.strictObject({
@@ -12713,6 +12802,7 @@ export const contracts = {
                 .pipe(z.uuid()),
             expectedVersion: z.number().int().gt(0).max(9007199254740991),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 ticket: z.strictObject({
@@ -12845,6 +12935,7 @@ export const contracts = {
                 .pipe(z.uuid()),
             expectedVersion: z.number().int().gt(0).max(9007199254740991),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 ticket: z.strictObject({
@@ -12977,6 +13068,7 @@ export const contracts = {
                 .pipe(z.uuid()),
             expectedVersion: z.number().int().gt(0).max(9007199254740991),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 ticket: z.strictObject({
@@ -13098,6 +13190,7 @@ export const contracts = {
     'GET /api/v1/ai/capabilities': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 provider: z.strictObject({
@@ -13183,6 +13276,7 @@ export const contracts = {
     'GET /api/v1/ai/balance': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 buckets: z.array(
@@ -13255,6 +13349,7 @@ export const contracts = {
     'GET /api/v1/ai/history': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 items: z.array(
@@ -13342,6 +13437,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 item: z.strictObject({
@@ -13413,6 +13509,7 @@ export const contracts = {
     'GET /api/v1/ai/family-sharing': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 members: z.array(
@@ -13518,6 +13615,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 transfer: z.strictObject({
@@ -13597,6 +13695,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 transfer: z.strictObject({
@@ -13664,6 +13763,7 @@ export const contracts = {
     'GET /api/v1/ai/tasks/{id}': {
         params: z.strictObject({ id: z.string().pipe(z.uuid()) }),
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 item: z.strictObject({
@@ -13799,6 +13899,7 @@ export const contracts = {
             usePersonalData: z.boolean(),
             agreementAccepted: z.literal(true),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 previewId: z
@@ -13913,6 +14014,7 @@ export const contracts = {
                 .pipe(z.uuid()),
             familyReserveAccepted: z.boolean(),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 item: z.strictObject({
@@ -13996,6 +14098,7 @@ export const contracts = {
                 .pipe(z.uuid()),
             familyReserveAccepted: z.boolean(),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 item: z.strictObject({
@@ -14118,6 +14221,7 @@ export const contracts = {
                 .pipe(z.uuid()),
             acceptedAmountMinor: z.literal(19900),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 status: z.union([z.literal('unavailable'), z.literal('simulated'), z.literal('completed')]),
@@ -14193,6 +14297,7 @@ export const contracts = {
     'GET /api/v1/recipes': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 items: z.array(
@@ -14266,6 +14371,7 @@ export const contracts = {
     'GET /api/v1/recipes/{id}': {
         params: z.strictObject({ id: z.string().pipe(z.uuid()) }),
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 recipe: z.strictObject({
@@ -14632,6 +14738,7 @@ export const contracts = {
     'GET /api/v1/recipes/{id}/personal': {
         params: z.strictObject({ id: z.string().pipe(z.uuid()) }),
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 recipeId: z
@@ -14705,6 +14812,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 recipeId: z
@@ -14734,6 +14842,7 @@ export const contracts = {
     'GET /api/v1/preserves': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 items: z.array(
@@ -15081,6 +15190,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 preserve: z.strictObject({
@@ -15300,6 +15410,7 @@ export const contracts = {
     'GET /api/v1/preserves/{id}': {
         params: z.strictObject({ id: z.string().pipe(z.uuid()) }),
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 preserve: z.strictObject({
@@ -15519,6 +15630,7 @@ export const contracts = {
     'GET /api/v1/preserves/{id}/qr-label': {
         params: z.strictObject({ id: z.string().pipe(z.uuid()) }),
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 label: z
@@ -15631,6 +15743,7 @@ export const contracts = {
                 .default('private')
                 .optional(),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 label: z
@@ -15834,6 +15947,7 @@ export const contracts = {
                 imageUrl: z.string().max(2000).nullable(),
             }),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 preserve: z.strictObject({
@@ -16068,6 +16182,7 @@ export const contracts = {
                 .default('private')
                 .optional(),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 preserve: z.strictObject({
@@ -16302,6 +16417,7 @@ export const contracts = {
                 .default('private')
                 .optional(),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 preserve: z.strictObject({
@@ -16547,6 +16663,7 @@ export const contracts = {
                 .pipe(z.iso.datetime()),
             timezone: z.string().min(1).max(100),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 preserve: z.strictObject({
@@ -16783,6 +16900,7 @@ export const contracts = {
             containerVersion: z.number().int().gt(0).max(9007199254740991),
             quantity: z.string().regex(new RegExp('^(0|[1-9]\\d{0,15})(\\.\\d{1,8})?$', 'u')).nullable(),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 preserve: z.strictObject({
@@ -17019,6 +17137,7 @@ export const contracts = {
                 .default('private')
                 .optional(),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 preserveId: z
@@ -17095,6 +17214,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 preserve: z.strictObject({
@@ -17329,6 +17449,7 @@ export const contracts = {
                 .default('private')
                 .optional(),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 recipeId: z
@@ -17366,6 +17487,7 @@ export const contracts = {
     'GET /api/v1/preserves/{id}/history': {
         params: z.strictObject({ id: z.string().pipe(z.uuid()) }),
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 items: z.array(
@@ -17484,6 +17606,7 @@ export const contracts = {
     'GET /api/v1/inventory': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 items: z.array(
@@ -17705,6 +17828,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 batch: z.strictObject({
@@ -17831,6 +17955,7 @@ export const contracts = {
     'GET /api/v1/inventory-locations': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 items: z.array(
@@ -17969,6 +18094,7 @@ export const contracts = {
                         }),
                     ].filter((branch) => branch.safeParse(value).success).length === 1,
             ),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 location: z.strictObject({
@@ -18008,6 +18134,7 @@ export const contracts = {
     'GET /api/v1/inventory-history': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 total: z.number().int().min(0).max(9007199254740991),
@@ -18303,6 +18430,7 @@ export const contracts = {
     'GET /api/v1/inventory/{id}': {
         params: z.strictObject({ id: z.string().pipe(z.uuid()) }),
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 batch: z.strictObject({
@@ -18537,6 +18665,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 items: z.array(
@@ -18954,6 +19083,7 @@ export const contracts = {
                         }),
                     ].filter((branch) => branch.safeParse(value).success).length === 1,
             ),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 batch: z.strictObject({
@@ -19080,6 +19210,7 @@ export const contracts = {
     'POST /api/v1/inventory/ingest/import': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 filename: z.string(),
@@ -19102,6 +19233,7 @@ export const contracts = {
     'POST /api/v1/inventory/ingest/scan': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 images: z.array(z.strictObject({ filename: z.string(), text: z.string(), confidence: z.number() })),
@@ -19123,6 +19255,7 @@ export const contracts = {
     'GET /api/v1/products': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 items: z.array(
@@ -19171,6 +19304,7 @@ export const contracts = {
     'GET /api/v1/products/reference': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 categories: z.array(
@@ -19206,6 +19340,7 @@ export const contracts = {
     'GET /api/v1/products/{id}': {
         params: z.strictObject({ id: z.string().pipe(z.uuid()) }),
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 product: z.strictObject({
@@ -19447,6 +19582,7 @@ export const contracts = {
                 .optional(),
             sourceText: z.string().max(20000).nullable().default(null).optional(),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 product: z.strictObject({
@@ -19637,6 +19773,7 @@ export const contracts = {
     'GET /api/v1/entitlements': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 plan: z.union([z.literal('free'), z.literal('plus'), z.literal('pro')]),
@@ -19716,6 +19853,7 @@ export const contracts = {
     'GET /api/v1/settings/subscription': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 version: z.number().int().gt(0).max(9007199254740991),
@@ -20003,6 +20141,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 version: z.number().int().gt(0).max(9007199254740991),
@@ -20291,6 +20430,7 @@ export const contracts = {
                 .pipe(z.uuid()),
             period: z.union([z.literal('month'), z.literal('year')]),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 previewId: z
@@ -20372,6 +20512,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 version: z.number().int().gt(0).max(9007199254740991),
@@ -20674,6 +20815,7 @@ export const contracts = {
                 .default(null)
                 .optional(),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 previewId: z
@@ -20780,6 +20922,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 version: z.number().int().gt(0).max(9007199254740991),
@@ -21068,6 +21211,7 @@ export const contracts = {
                 .pipe(z.uuid()),
             enabled: z.boolean(),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 previewId: z
@@ -21149,6 +21293,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 version: z.number().int().gt(0).max(9007199254740991),
@@ -21454,6 +21599,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 previewId: z
@@ -21626,6 +21772,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 status: z.union([z.literal('consent_pending'), z.literal('applied')]),
@@ -21960,6 +22107,7 @@ export const contracts = {
                 .default('free')
                 .optional(),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 previewId: z
@@ -22052,6 +22200,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 version: z.number().int().gt(0).max(9007199254740991),
@@ -22328,6 +22477,7 @@ export const contracts = {
     'GET /api/v1/pro/overview': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 access: z.strictObject({
@@ -22472,6 +22622,7 @@ export const contracts = {
     'GET /api/v1/diary': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 access: z.strictObject({
@@ -22914,6 +23065,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 entry: z.strictObject({
@@ -23071,6 +23223,7 @@ export const contracts = {
     'GET /api/v1/diary/sources': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 items: z.array(
@@ -23132,6 +23285,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 proposal: z.strictObject({
@@ -23246,6 +23400,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 mode: z.literal('unavailable'),
@@ -23299,6 +23454,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 entry: z.strictObject({
@@ -23468,6 +23624,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 entry: z.strictObject({
@@ -23625,6 +23782,7 @@ export const contracts = {
     'GET /api/v1/nutrition/settings': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 access: z.strictObject({
@@ -23836,6 +23994,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 access: z.strictObject({
@@ -24055,6 +24214,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 access: z.strictObject({
@@ -24249,6 +24409,7 @@ export const contracts = {
     'GET /api/v1/nutrition/analytics': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 access: z.strictObject({
@@ -24429,6 +24590,7 @@ export const contracts = {
     'GET /api/v1/finance/overview': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 access: z.strictObject({
@@ -24549,6 +24711,7 @@ export const contracts = {
     'GET /api/v1/finance/analytics': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 access: z.strictObject({
@@ -24671,6 +24834,7 @@ export const contracts = {
     'GET /api/v1/finance/expenses': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 access: z.strictObject({
@@ -24834,6 +24998,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 access: z.strictObject({
@@ -24924,6 +25089,7 @@ export const contracts = {
     'GET /api/v1/finance/expenses/{id}': {
         params: z.strictObject({ id: z.string().pipe(z.uuid()) }),
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 access: z.strictObject({
@@ -25043,6 +25209,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 access: z.strictObject({
@@ -25133,6 +25300,7 @@ export const contracts = {
     'GET /api/v1/finance/budgets': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 access: z.strictObject({
@@ -25249,6 +25417,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 budget: z.strictObject({
@@ -25341,6 +25510,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 budget: z.strictObject({
@@ -25402,6 +25572,7 @@ export const contracts = {
     'GET /api/v1/finance/prices/catalog': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 access: z.strictObject({
@@ -25457,6 +25628,7 @@ export const contracts = {
     'GET /api/v1/finance/prices': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 access: z.strictObject({
@@ -25624,6 +25796,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 access: z.strictObject({
@@ -25752,6 +25925,7 @@ export const contracts = {
     'GET /api/v1/finance/costs/recipes/{id}': {
         params: z.strictObject({ id: z.string().pipe(z.uuid()) }),
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 access: z.strictObject({
@@ -25873,6 +26047,7 @@ export const contracts = {
     'GET /api/v1/finance/costs/shopping-lists/{id}': {
         params: z.strictObject({ id: z.string().pipe(z.uuid()) }),
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 access: z.strictObject({
@@ -25994,6 +26169,7 @@ export const contracts = {
     'GET /api/v1/finance/costs/meal-plans/{id}': {
         params: z.strictObject({ id: z.string().pipe(z.uuid()) }),
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 access: z.strictObject({
@@ -26115,6 +26291,7 @@ export const contracts = {
     'GET /api/v1/recommendations': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 algorithm: z.literal('personalized-v1'),
@@ -26566,6 +26743,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({ accepted: z.literal(true) }),
             meta: z.strictObject({
@@ -26595,6 +26773,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({ username: z.string(), following: z.boolean() }),
             meta: z.strictObject({
@@ -26613,6 +26792,7 @@ export const contracts = {
     'GET /api/v1/authors/{username}/follow': {
         params: z.strictObject({ username: z.string().min(1).max(256) }),
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({ username: z.string(), following: z.boolean() }),
             meta: z.strictObject({
@@ -26631,6 +26811,7 @@ export const contracts = {
     'GET /api/v1/profile/following': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 items: z.array(
@@ -26659,6 +26840,7 @@ export const contracts = {
     'GET /api/v1/community': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 items: z.array(
@@ -26721,6 +26903,7 @@ export const contracts = {
     'GET /api/v1/community/recipes/{id}/comments': {
         params: z.strictObject({ id: z.string().pipe(z.uuid()) }),
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 items: z.array(
@@ -26819,6 +27002,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 ticketId: z
@@ -26848,6 +27032,7 @@ export const contracts = {
     'GET /api/v1/family': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 state: z.union([z.literal('none'), z.literal('active'), z.literal('blocked')]),
@@ -26995,6 +27180,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 state: z.union([z.literal('none'), z.literal('active'), z.literal('blocked')]),
@@ -27131,6 +27317,7 @@ export const contracts = {
     'GET /api/v1/family/leave-preview': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 familyId: z
@@ -27247,6 +27434,7 @@ export const contracts = {
                 .pipe(z.uuid())
                 .nullable(),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 familyId: z
@@ -27306,6 +27494,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 state: z.union([z.literal('none'), z.literal('active'), z.literal('blocked')]),
@@ -27442,6 +27631,7 @@ export const contracts = {
     'GET /api/v1/family/ownership-notice': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 notice: z
@@ -27506,6 +27696,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({ dismissed: z.boolean() }),
             meta: z.strictObject({
@@ -27524,6 +27715,7 @@ export const contracts = {
     'GET /api/v1/family/ownership': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 familyId: z
@@ -27744,6 +27936,7 @@ export const contracts = {
                 .pipe(z.uuid()),
             expectedFamilyVersion: z.number().int().gt(0).max(9007199254740991),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 familyId: z
@@ -27873,6 +28066,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 request: z.strictObject({
@@ -28102,6 +28296,7 @@ export const contracts = {
     'GET /api/v1/family/ownership/requests/{token}': {
         params: z.strictObject({ token: z.string().pipe(z.uuid()) }),
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 request: z.strictObject({
@@ -28343,6 +28538,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 request: z.strictObject({
@@ -28612,6 +28808,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 request: z.strictObject({
@@ -28881,6 +29078,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 request: z.strictObject({
@@ -29138,6 +29336,7 @@ export const contracts = {
     'GET /api/v1/family/invitations': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 items: z
@@ -29213,6 +29412,7 @@ export const contracts = {
                 .pipe(z.uuid()),
             login: z.string().min(3).max(30).regex(new RegExp('^[A-Za-z0-9_]+$', 'u')),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 invitation: z.strictObject({
@@ -29284,6 +29484,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 invitation: z.strictObject({
@@ -29355,6 +29556,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 invitation: z.strictObject({
@@ -29415,6 +29617,7 @@ export const contracts = {
     'GET /api/v1/family/invitation-preview': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 familyName: z.string(),
@@ -29485,6 +29688,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 state: z.union([z.literal('none'), z.literal('active'), z.literal('blocked')]),
@@ -29621,6 +29825,7 @@ export const contracts = {
     'GET /api/v1/news': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 items: z.array(
@@ -29667,6 +29872,7 @@ export const contracts = {
     'GET /api/v1/news/{id}': {
         params: z.strictObject({ id: z.string().pipe(z.uuid()) }),
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 id: z
@@ -29769,6 +29975,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 id: z
@@ -29806,6 +30013,7 @@ export const contracts = {
     'GET /api/v1/search': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z
                 .union([
@@ -30005,6 +30213,7 @@ export const contracts = {
     'GET /api/v1/settings/privacy': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 version: z.number().int().min(0).max(9007199254740991),
@@ -30055,6 +30264,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 version: z.number().int().min(0).max(9007199254740991),
@@ -30091,6 +30301,7 @@ export const contracts = {
     'GET /api/v1/legal/manifest': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 contractVersion: z.literal(1),
@@ -30172,6 +30383,7 @@ export const contracts = {
     'GET /api/v1/settings/legal-consents': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 contractVersion: z.literal(1),
@@ -30253,6 +30465,7 @@ export const contracts = {
     'GET /api/v1/settings/legal-consents/history': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 events: z
@@ -30380,6 +30593,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 contractVersion: z.literal(1),
@@ -30472,6 +30686,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 contractVersion: z.literal(1),
@@ -30553,6 +30768,7 @@ export const contracts = {
     'GET /api/v1/exports': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 items: z.array(
@@ -30816,6 +31032,7 @@ export const contracts = {
                 .pipe(z.uuid()),
             reauthToken: z.string().regex(new RegExp('^[A-Za-z0-9_-]{43}$', 'u')),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 job: z.strictObject({
@@ -31086,6 +31303,7 @@ export const contracts = {
                 .pipe(z.iso.date())
                 .nullable(),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 previewId: z
@@ -31303,6 +31521,7 @@ export const contracts = {
     'GET /api/v1/exports/{id}/download-content': {
         params: z.strictObject({ id: z.string().pipe(z.uuid()) }),
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 fileName: z.string().min(1).max(200),
@@ -31338,6 +31557,7 @@ export const contracts = {
                 })
                 .nullable(),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 reauthToken: z.string().regex(new RegExp('^[A-Za-z0-9_-]{43}$', 'u')),
@@ -31368,6 +31588,7 @@ export const contracts = {
     'GET /api/v1/account/lifecycle': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 archived: z.boolean(),
@@ -31492,6 +31713,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({ archived: z.literal(true) }),
             meta: z.strictObject({
@@ -31510,6 +31732,7 @@ export const contracts = {
     'GET /api/v1/account/deletion/preview': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 canRequest: z.literal(true),
@@ -31574,6 +31797,7 @@ export const contracts = {
                 .pipe(z.uuid()),
             acknowledgement: z.literal(true),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 id: z
@@ -31685,6 +31909,7 @@ export const contracts = {
             reauthToken: z.string().regex(new RegExp('^[A-Za-z0-9_-]{43}$', 'u')),
             expectedVersion: z.number().int().gt(0).max(9007199254740991),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 id: z
@@ -31796,6 +32021,7 @@ export const contracts = {
             reauthToken: z.string().regex(new RegExp('^[A-Za-z0-9_-]{43}$', 'u')),
             expectedVersion: z.number().int().gt(0).max(9007199254740991),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 id: z
@@ -31904,6 +32130,7 @@ export const contracts = {
     'GET /api/v1/ai/appeals': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 restriction: z
@@ -32077,6 +32304,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 restriction: z.strictObject({
@@ -32278,6 +32506,7 @@ export const contracts = {
     'GET /api/v1/ai/appeals/{id}': {
         params: z.strictObject({ id: z.string().pipe(z.uuid()) }),
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 restriction: z.strictObject({
@@ -32479,6 +32708,7 @@ export const contracts = {
     'GET /api/v1/reputation/levels': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 items: z
@@ -32508,6 +32738,7 @@ export const contracts = {
     'GET /api/v1/authors/{username}/achievements': {
         params: z.strictObject({ username: z.string() }),
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 profile: z.strictObject({ username: z.string(), avatarUrl: z.string().nullable() }),
@@ -32572,6 +32803,7 @@ export const contracts = {
     'GET /api/v1/authors/{username}/reputation': {
         params: z.strictObject({ username: z.string() }),
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 profile: z.strictObject({ username: z.string(), avatarUrl: z.string().nullable() }),
@@ -32629,6 +32861,7 @@ export const contracts = {
     'GET /api/v1/moderator/overview': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 queues: z.array(
@@ -32706,6 +32939,7 @@ export const contracts = {
     'GET /api/v1/moderator/queues/{queue}': {
         params: z.strictObject({ queue: z.string() }),
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 queue: z.union([
@@ -32774,6 +33008,7 @@ export const contracts = {
     'GET /api/v1/moderator/items/{id}': {
         params: z.strictObject({ id: z.string() }),
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 id: z
@@ -32852,6 +33087,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 id: z
@@ -32930,6 +33166,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 id: z
@@ -33018,6 +33255,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 id: z
@@ -33085,6 +33323,7 @@ export const contracts = {
     'GET /api/v1/moderator/support/{id}': {
         params: z.strictObject({ id: z.string() }),
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 id: z
@@ -33172,6 +33411,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 id: z
@@ -33258,6 +33498,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 id: z
@@ -33358,6 +33599,7 @@ export const contracts = {
             acceptTerms: z.literal(true),
             acceptPrivacy: z.literal(true),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({ accepted: z.literal(true) }),
             meta: z.strictObject({
@@ -33469,6 +33711,7 @@ export const contracts = {
                 }),
             }),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({ accepted: z.literal(true) }),
             meta: z.strictObject({
@@ -33487,6 +33730,7 @@ export const contracts = {
     'POST /api/v1/auth/email/verify': {
         params: null,
         request: z.strictObject({ token: z.string().regex(new RegExp('^[A-Za-z0-9_-]{43}$', 'u')) }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({ verified: z.literal(true) }),
             meta: z.strictObject({
@@ -33516,6 +33760,7 @@ export const contracts = {
                 )
                 .pipe(z.email()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({ accepted: z.literal(true) }),
             meta: z.strictObject({
@@ -33545,6 +33790,7 @@ export const contracts = {
                 )
                 .pipe(z.email()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({ accepted: z.literal(true) }),
             meta: z.strictObject({
@@ -33563,6 +33809,7 @@ export const contracts = {
     'POST /api/v1/auth/password/reset/check': {
         params: null,
         request: z.strictObject({ token: z.string().regex(new RegExp('^[A-Za-z0-9_-]{43}$', 'u')) }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({ valid: z.literal(true) }),
             meta: z.strictObject({
@@ -33593,6 +33840,7 @@ export const contracts = {
                     ),
                 ),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({ changed: z.literal(true) }),
             meta: z.strictObject({
@@ -33623,6 +33871,7 @@ export const contracts = {
                     ),
                 ),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({ changed: z.literal(true) }),
             meta: z.strictObject({
@@ -33653,6 +33902,7 @@ export const contracts = {
                 )
                 .pipe(z.email()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({ accepted: z.literal(true) }),
             meta: z.strictObject({
@@ -33671,6 +33921,7 @@ export const contracts = {
     'POST /api/v1/auth/email/change/confirm': {
         params: null,
         request: z.strictObject({ token: z.string().regex(new RegExp('^[A-Za-z0-9_-]{43}$', 'u')) }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({ confirmed: z.literal(true), effectiveAt: z.string() }),
             meta: z.strictObject({
@@ -33689,6 +33940,7 @@ export const contracts = {
     'POST /api/v1/auth/email/change/cancel': {
         params: null,
         request: z.strictObject({ token: z.string().regex(new RegExp('^[A-Za-z0-9_-]{43}$', 'u')) }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({ cancelled: z.literal(true) }),
             meta: z.strictObject({
@@ -33719,6 +33971,7 @@ export const contracts = {
                 .pipe(z.email()),
             code: z.string().regex(new RegExp('^\\d{6}$', 'u')),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 user: z.strictObject({
@@ -33772,6 +34025,7 @@ export const contracts = {
             password: z.string().min(1).max(1024),
             pin: z.string().regex(new RegExp('^\\d{6}$', 'u')),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({ enabled: z.literal(true) }),
             meta: z.strictObject({
@@ -33790,6 +34044,7 @@ export const contracts = {
     'POST /api/v1/auth/pin/login': {
         params: null,
         request: z.strictObject({ pin: z.string().regex(new RegExp('^\\d{6}$', 'u')) }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 user: z.strictObject({
@@ -33840,6 +34095,7 @@ export const contracts = {
     'POST /api/v1/auth/pin/revoke': {
         params: null,
         request: z.strictObject({}),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({ revoked: z.literal(true) }),
             meta: z.strictObject({
@@ -33858,6 +34114,7 @@ export const contracts = {
     'GET /api/v1/auth/security': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 authenticatorEnabled: z.boolean(),
@@ -33890,6 +34147,7 @@ export const contracts = {
                 })
                 .optional(),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 challenge: z.string().regex(new RegExp('^[A-Za-z0-9_-]{43}$', 'u')),
@@ -33915,6 +34173,7 @@ export const contracts = {
             challenge: z.string().regex(new RegExp('^[A-Za-z0-9_-]{43}$', 'u')),
             code: z.string().regex(new RegExp('^\\d{6}$', 'u')),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({ enabled: z.literal(true), recoveryCodes: z.array(z.string()) }),
             meta: z.strictObject({
@@ -33939,6 +34198,7 @@ export const contracts = {
                 code: z.string().min(6).max(64),
             }),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({ recoveryCodes: z.array(z.string()) }),
             meta: z.strictObject({
@@ -33968,6 +34228,7 @@ export const contracts = {
                 )
                 .pipe(z.email()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 messages: z.array(
@@ -34001,6 +34262,7 @@ export const contracts = {
     'GET /health/live': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({ status: z.literal('ok') }),
             meta: z.strictObject({
@@ -34019,6 +34281,7 @@ export const contracts = {
     'GET /health/ready': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({ status: z.literal('ok') }),
             meta: z.strictObject({
@@ -34037,6 +34300,7 @@ export const contracts = {
     'GET /api/v1/auth/csrf': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({ token: z.string() }),
             meta: z.strictObject({
@@ -34067,6 +34331,7 @@ export const contracts = {
                 .pipe(z.email()),
             password: z.string().min(1).max(1024),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 user: z.strictObject({
@@ -34117,6 +34382,7 @@ export const contracts = {
     'GET /api/v1/auth/me': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 user: z.strictObject({
@@ -34167,6 +34433,7 @@ export const contracts = {
     'GET /api/v1/auth/sessions': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 sessions: z.array(
@@ -34219,6 +34486,7 @@ export const contracts = {
     'POST /api/v1/auth/sessions/revoke-others': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({ revokedCount: z.number().int().min(0).max(9007199254740991) }),
             meta: z.strictObject({
@@ -34237,6 +34505,7 @@ export const contracts = {
     'POST /api/v1/auth/logout': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({ loggedOut: z.literal(true) }),
             meta: z.strictObject({
@@ -34268,6 +34537,7 @@ export const contracts = {
             password: z.string().min(1).max(1024),
             context: z.union([z.literal('admin'), z.literal('moderator')]),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 status: z.literal('mfa_required'),
@@ -34303,6 +34573,7 @@ export const contracts = {
             code: z.string().min(6).max(64),
             method: z.union([z.literal('totp'), z.literal('recovery')]),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 user: z.strictObject({
@@ -34354,6 +34625,7 @@ export const contracts = {
     'GET /api/v1/staff/auth/me': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 user: z.strictObject({
@@ -34404,6 +34676,7 @@ export const contracts = {
     'GET /api/v1/staff/auth/sessions': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 sessions: z.array(
@@ -34456,6 +34729,7 @@ export const contracts = {
     'POST /api/v1/staff/auth/sessions/revoke-others': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({ revokedCount: z.number().int().min(0).max(9007199254740991) }),
             meta: z.strictObject({
@@ -34474,6 +34748,7 @@ export const contracts = {
     'POST /api/v1/staff/auth/logout': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({ loggedOut: z.literal(true) }),
             meta: z.strictObject({
@@ -34492,6 +34767,7 @@ export const contracts = {
     'GET /api/v1/profile': {
         params: null,
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 profile: z.strictObject({
@@ -34552,6 +34828,7 @@ export const contracts = {
                 )
                 .pipe(z.uuid()),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 profile: z.strictObject({
@@ -34597,6 +34874,7 @@ export const contracts = {
     'GET /api/v1/authors/{username}': {
         params: z.strictObject({ username: z.string().min(1).max(256) }),
         request: null,
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({
                 profile: z.strictObject({
@@ -34636,8 +34914,832 @@ export const contracts = {
                 .regex(new RegExp('^\\d+\\.\\d+\\.\\d+(?:[-+][0-9A-Za-z.-]+)?$', 'u'))
                 .nullable(),
         }),
+        binary: false,
         success: z.strictObject({
             data: z.strictObject({ accepted: z.literal(true) }),
+            meta: z.strictObject({
+                requestId: z
+                    .string()
+                    .regex(
+                        new RegExp(
+                            '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$',
+                            'u',
+                        ),
+                    )
+                    .pipe(z.uuid()),
+            }),
+        }),
+    },
+    'POST /api/v1/media/intakes': {
+        params: null,
+        request: z.strictObject({
+            kind: z.union([z.literal('inventory_scan'), z.literal('receipt_photo')]),
+            scopeId: z
+                .string()
+                .regex(
+                    new RegExp(
+                        '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$',
+                        'u',
+                    ),
+                )
+                .pipe(z.uuid())
+                .nullable(),
+            idempotencyKey: z
+                .string()
+                .regex(
+                    new RegExp(
+                        '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$',
+                        'u',
+                    ),
+                )
+                .pipe(z.uuid()),
+        }),
+        binary: false,
+        success: z.strictObject({
+            data: z.strictObject({
+                intake: z.strictObject({
+                    intakeId: z
+                        .string()
+                        .regex(
+                            new RegExp(
+                                '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$',
+                                'u',
+                            ),
+                        )
+                        .pipe(z.uuid()),
+                    kind: z.union([z.literal('inventory_scan'), z.literal('receipt_photo')]),
+                    scopeId: z
+                        .string()
+                        .regex(
+                            new RegExp(
+                                '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$',
+                                'u',
+                            ),
+                        )
+                        .pipe(z.uuid())
+                        .nullable(),
+                    status: z.union([
+                        z.literal('awaiting_upload'),
+                        z.literal('processing'),
+                        z.literal('review_required'),
+                        z.literal('completed'),
+                        z.literal('cancelled'),
+                        z.literal('failed'),
+                    ]),
+                    requiresReview: z.literal(true),
+                }),
+            }),
+            meta: z.strictObject({
+                requestId: z
+                    .string()
+                    .regex(
+                        new RegExp(
+                            '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$',
+                            'u',
+                        ),
+                    )
+                    .pipe(z.uuid()),
+            }),
+        }),
+    },
+    'POST /api/v1/media/reservations': {
+        params: null,
+        request: z.strictObject({
+            purpose: z.union([
+                z.literal('diary_photo'),
+                z.literal('support_attachment'),
+                z.literal('allergen_icon'),
+                z.literal('inventory_source'),
+                z.literal('receipt_source'),
+                z.literal('export_file'),
+                z.literal('billing_document'),
+                z.literal('community_media'),
+                z.literal('profile_avatar'),
+            ]),
+            target: z
+                .union([
+                    z.strictObject({
+                        kind: z.literal('intake'),
+                        intakeId: z
+                            .string()
+                            .regex(
+                                new RegExp(
+                                    '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$',
+                                    'u',
+                                ),
+                            )
+                            .pipe(z.uuid()),
+                    }),
+                    z.strictObject({
+                        kind: z.literal('diary_entry'),
+                        diaryEntryId: z
+                            .string()
+                            .regex(
+                                new RegExp(
+                                    '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$',
+                                    'u',
+                                ),
+                            )
+                            .pipe(z.uuid()),
+                    }),
+                    z.strictObject({
+                        kind: z.literal('support_message'),
+                        supportMessageId: z
+                            .string()
+                            .regex(
+                                new RegExp(
+                                    '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$',
+                                    'u',
+                                ),
+                            )
+                            .pipe(z.uuid()),
+                    }),
+                    z.strictObject({
+                        kind: z.literal('profile_avatar'),
+                        userId: z
+                            .string()
+                            .regex(
+                                new RegExp(
+                                    '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$',
+                                    'u',
+                                ),
+                            )
+                            .pipe(z.uuid()),
+                    }),
+                ])
+                .refine(
+                    (value) =>
+                        [
+                            z.strictObject({
+                                kind: z.literal('intake'),
+                                intakeId: z
+                                    .string()
+                                    .regex(
+                                        new RegExp(
+                                            '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$',
+                                            'u',
+                                        ),
+                                    )
+                                    .pipe(z.uuid()),
+                            }),
+                            z.strictObject({
+                                kind: z.literal('diary_entry'),
+                                diaryEntryId: z
+                                    .string()
+                                    .regex(
+                                        new RegExp(
+                                            '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$',
+                                            'u',
+                                        ),
+                                    )
+                                    .pipe(z.uuid()),
+                            }),
+                            z.strictObject({
+                                kind: z.literal('support_message'),
+                                supportMessageId: z
+                                    .string()
+                                    .regex(
+                                        new RegExp(
+                                            '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$',
+                                            'u',
+                                        ),
+                                    )
+                                    .pipe(z.uuid()),
+                            }),
+                            z.strictObject({
+                                kind: z.literal('profile_avatar'),
+                                userId: z
+                                    .string()
+                                    .regex(
+                                        new RegExp(
+                                            '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$',
+                                            'u',
+                                        ),
+                                    )
+                                    .pipe(z.uuid()),
+                            }),
+                        ].filter((branch) => branch.safeParse(value).success).length === 1,
+                ),
+            position: z.number().int().min(0).max(2),
+            fileName: z.string().min(1).max(255).regex(new RegExp('^[^\\u0000-\\u001f\\u007f\\\\/]+$', 'u')),
+            mimeType: z.string().min(1).max(200),
+            sizeBytes: z.number().int().gt(0).max(10485760),
+            idempotencyKey: z
+                .string()
+                .regex(
+                    new RegExp(
+                        '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$',
+                        'u',
+                    ),
+                )
+                .pipe(z.uuid()),
+        }),
+        binary: false,
+        success: z.strictObject({
+            data: z.strictObject({
+                asset: z.strictObject({
+                    assetId: z
+                        .string()
+                        .regex(
+                            new RegExp(
+                                '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$',
+                                'u',
+                            ),
+                        )
+                        .pipe(z.uuid()),
+                    purpose: z.union([
+                        z.literal('diary_photo'),
+                        z.literal('support_attachment'),
+                        z.literal('allergen_icon'),
+                        z.literal('inventory_source'),
+                        z.literal('receipt_source'),
+                        z.literal('export_file'),
+                        z.literal('billing_document'),
+                        z.literal('community_media'),
+                        z.literal('profile_avatar'),
+                    ]),
+                    target: z
+                        .union([
+                            z.strictObject({
+                                kind: z.literal('intake'),
+                                intakeId: z
+                                    .string()
+                                    .regex(
+                                        new RegExp(
+                                            '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$',
+                                            'u',
+                                        ),
+                                    )
+                                    .pipe(z.uuid()),
+                            }),
+                            z.strictObject({
+                                kind: z.literal('diary_entry'),
+                                diaryEntryId: z
+                                    .string()
+                                    .regex(
+                                        new RegExp(
+                                            '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$',
+                                            'u',
+                                        ),
+                                    )
+                                    .pipe(z.uuid()),
+                            }),
+                            z.strictObject({
+                                kind: z.literal('support_message'),
+                                supportMessageId: z
+                                    .string()
+                                    .regex(
+                                        new RegExp(
+                                            '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$',
+                                            'u',
+                                        ),
+                                    )
+                                    .pipe(z.uuid()),
+                            }),
+                            z.strictObject({
+                                kind: z.literal('profile_avatar'),
+                                userId: z
+                                    .string()
+                                    .regex(
+                                        new RegExp(
+                                            '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$',
+                                            'u',
+                                        ),
+                                    )
+                                    .pipe(z.uuid()),
+                            }),
+                        ])
+                        .refine(
+                            (value) =>
+                                [
+                                    z.strictObject({
+                                        kind: z.literal('intake'),
+                                        intakeId: z
+                                            .string()
+                                            .regex(
+                                                new RegExp(
+                                                    '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$',
+                                                    'u',
+                                                ),
+                                            )
+                                            .pipe(z.uuid()),
+                                    }),
+                                    z.strictObject({
+                                        kind: z.literal('diary_entry'),
+                                        diaryEntryId: z
+                                            .string()
+                                            .regex(
+                                                new RegExp(
+                                                    '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$',
+                                                    'u',
+                                                ),
+                                            )
+                                            .pipe(z.uuid()),
+                                    }),
+                                    z.strictObject({
+                                        kind: z.literal('support_message'),
+                                        supportMessageId: z
+                                            .string()
+                                            .regex(
+                                                new RegExp(
+                                                    '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$',
+                                                    'u',
+                                                ),
+                                            )
+                                            .pipe(z.uuid()),
+                                    }),
+                                    z.strictObject({
+                                        kind: z.literal('profile_avatar'),
+                                        userId: z
+                                            .string()
+                                            .regex(
+                                                new RegExp(
+                                                    '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$',
+                                                    'u',
+                                                ),
+                                            )
+                                            .pipe(z.uuid()),
+                                    }),
+                                ].filter((branch) => branch.safeParse(value).success).length === 1,
+                        ),
+                    position: z.number().int().min(0).max(2),
+                    state: z.union([
+                        z.literal('reserved'),
+                        z.literal('uploading'),
+                        z.literal('quarantined'),
+                        z.literal('scanning'),
+                        z.literal('clean'),
+                        z.literal('ready'),
+                        z.literal('infected'),
+                        z.literal('failed'),
+                        z.literal('expired'),
+                        z.literal('deleted'),
+                    ]),
+                    mimeType: z.string(),
+                    sizeBytes: z.number().int().gt(0).max(9007199254740991),
+                    checksum: z.string().regex(new RegExp('^sha256:[a-f0-9]{64}$', 'u')).nullable(),
+                    failureCode: z.string().nullable(),
+                    publicationAllowed: z.literal(false),
+                    downloadAllowed: z.boolean(),
+                    upload: z
+                        .strictObject({
+                            method: z.literal('PUT'),
+                            uploadUrl: z.string().pipe(z.url()),
+                            expiresAt: z
+                                .string()
+                                .regex(
+                                    new RegExp(
+                                        '^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$',
+                                        'u',
+                                    ),
+                                )
+                                .pipe(z.iso.datetime()),
+                            fieldName: z.literal('file'),
+                            requiredHeaders: z
+                                .array(
+                                    z.strictObject({
+                                        name: z.string().min(1).max(100),
+                                        value: z.string().min(1).max(2000),
+                                    }),
+                                )
+                                .min(1)
+                                .max(10),
+                        })
+                        .nullable(),
+                }),
+            }),
+            meta: z.strictObject({
+                requestId: z
+                    .string()
+                    .regex(
+                        new RegExp(
+                            '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$',
+                            'u',
+                        ),
+                    )
+                    .pipe(z.uuid()),
+            }),
+        }),
+    },
+    'GET /api/v1/media/assets/{id}': {
+        params: z.strictObject({ id: z.string().pipe(z.uuid()) }),
+        request: null,
+        binary: false,
+        success: z.strictObject({
+            data: z.strictObject({
+                asset: z.strictObject({
+                    assetId: z
+                        .string()
+                        .regex(
+                            new RegExp(
+                                '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$',
+                                'u',
+                            ),
+                        )
+                        .pipe(z.uuid()),
+                    purpose: z.union([
+                        z.literal('diary_photo'),
+                        z.literal('support_attachment'),
+                        z.literal('allergen_icon'),
+                        z.literal('inventory_source'),
+                        z.literal('receipt_source'),
+                        z.literal('export_file'),
+                        z.literal('billing_document'),
+                        z.literal('community_media'),
+                        z.literal('profile_avatar'),
+                    ]),
+                    target: z
+                        .union([
+                            z.strictObject({
+                                kind: z.literal('intake'),
+                                intakeId: z
+                                    .string()
+                                    .regex(
+                                        new RegExp(
+                                            '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$',
+                                            'u',
+                                        ),
+                                    )
+                                    .pipe(z.uuid()),
+                            }),
+                            z.strictObject({
+                                kind: z.literal('diary_entry'),
+                                diaryEntryId: z
+                                    .string()
+                                    .regex(
+                                        new RegExp(
+                                            '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$',
+                                            'u',
+                                        ),
+                                    )
+                                    .pipe(z.uuid()),
+                            }),
+                            z.strictObject({
+                                kind: z.literal('support_message'),
+                                supportMessageId: z
+                                    .string()
+                                    .regex(
+                                        new RegExp(
+                                            '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$',
+                                            'u',
+                                        ),
+                                    )
+                                    .pipe(z.uuid()),
+                            }),
+                            z.strictObject({
+                                kind: z.literal('profile_avatar'),
+                                userId: z
+                                    .string()
+                                    .regex(
+                                        new RegExp(
+                                            '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$',
+                                            'u',
+                                        ),
+                                    )
+                                    .pipe(z.uuid()),
+                            }),
+                        ])
+                        .refine(
+                            (value) =>
+                                [
+                                    z.strictObject({
+                                        kind: z.literal('intake'),
+                                        intakeId: z
+                                            .string()
+                                            .regex(
+                                                new RegExp(
+                                                    '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$',
+                                                    'u',
+                                                ),
+                                            )
+                                            .pipe(z.uuid()),
+                                    }),
+                                    z.strictObject({
+                                        kind: z.literal('diary_entry'),
+                                        diaryEntryId: z
+                                            .string()
+                                            .regex(
+                                                new RegExp(
+                                                    '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$',
+                                                    'u',
+                                                ),
+                                            )
+                                            .pipe(z.uuid()),
+                                    }),
+                                    z.strictObject({
+                                        kind: z.literal('support_message'),
+                                        supportMessageId: z
+                                            .string()
+                                            .regex(
+                                                new RegExp(
+                                                    '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$',
+                                                    'u',
+                                                ),
+                                            )
+                                            .pipe(z.uuid()),
+                                    }),
+                                    z.strictObject({
+                                        kind: z.literal('profile_avatar'),
+                                        userId: z
+                                            .string()
+                                            .regex(
+                                                new RegExp(
+                                                    '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$',
+                                                    'u',
+                                                ),
+                                            )
+                                            .pipe(z.uuid()),
+                                    }),
+                                ].filter((branch) => branch.safeParse(value).success).length === 1,
+                        ),
+                    position: z.number().int().min(0).max(2),
+                    state: z.union([
+                        z.literal('reserved'),
+                        z.literal('uploading'),
+                        z.literal('quarantined'),
+                        z.literal('scanning'),
+                        z.literal('clean'),
+                        z.literal('ready'),
+                        z.literal('infected'),
+                        z.literal('failed'),
+                        z.literal('expired'),
+                        z.literal('deleted'),
+                    ]),
+                    mimeType: z.string(),
+                    sizeBytes: z.number().int().gt(0).max(9007199254740991),
+                    checksum: z.string().regex(new RegExp('^sha256:[a-f0-9]{64}$', 'u')).nullable(),
+                    failureCode: z.string().nullable(),
+                    publicationAllowed: z.literal(false),
+                    downloadAllowed: z.boolean(),
+                    upload: z
+                        .strictObject({
+                            method: z.literal('PUT'),
+                            uploadUrl: z.string().pipe(z.url()),
+                            expiresAt: z
+                                .string()
+                                .regex(
+                                    new RegExp(
+                                        '^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$',
+                                        'u',
+                                    ),
+                                )
+                                .pipe(z.iso.datetime()),
+                            fieldName: z.literal('file'),
+                            requiredHeaders: z
+                                .array(
+                                    z.strictObject({
+                                        name: z.string().min(1).max(100),
+                                        value: z.string().min(1).max(2000),
+                                    }),
+                                )
+                                .min(1)
+                                .max(10),
+                        })
+                        .nullable(),
+                }),
+            }),
+            meta: z.strictObject({
+                requestId: z
+                    .string()
+                    .regex(
+                        new RegExp(
+                            '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$',
+                            'u',
+                        ),
+                    )
+                    .pipe(z.uuid()),
+            }),
+        }),
+    },
+    'PUT /api/v1/media/assets/{id}/content': {
+        params: z.strictObject({ id: z.string().pipe(z.uuid()) }),
+        request: null,
+        binary: false,
+        success: z.strictObject({
+            data: z.strictObject({
+                asset: z.strictObject({
+                    assetId: z
+                        .string()
+                        .regex(
+                            new RegExp(
+                                '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$',
+                                'u',
+                            ),
+                        )
+                        .pipe(z.uuid()),
+                    purpose: z.union([
+                        z.literal('diary_photo'),
+                        z.literal('support_attachment'),
+                        z.literal('allergen_icon'),
+                        z.literal('inventory_source'),
+                        z.literal('receipt_source'),
+                        z.literal('export_file'),
+                        z.literal('billing_document'),
+                        z.literal('community_media'),
+                        z.literal('profile_avatar'),
+                    ]),
+                    target: z
+                        .union([
+                            z.strictObject({
+                                kind: z.literal('intake'),
+                                intakeId: z
+                                    .string()
+                                    .regex(
+                                        new RegExp(
+                                            '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$',
+                                            'u',
+                                        ),
+                                    )
+                                    .pipe(z.uuid()),
+                            }),
+                            z.strictObject({
+                                kind: z.literal('diary_entry'),
+                                diaryEntryId: z
+                                    .string()
+                                    .regex(
+                                        new RegExp(
+                                            '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$',
+                                            'u',
+                                        ),
+                                    )
+                                    .pipe(z.uuid()),
+                            }),
+                            z.strictObject({
+                                kind: z.literal('support_message'),
+                                supportMessageId: z
+                                    .string()
+                                    .regex(
+                                        new RegExp(
+                                            '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$',
+                                            'u',
+                                        ),
+                                    )
+                                    .pipe(z.uuid()),
+                            }),
+                            z.strictObject({
+                                kind: z.literal('profile_avatar'),
+                                userId: z
+                                    .string()
+                                    .regex(
+                                        new RegExp(
+                                            '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$',
+                                            'u',
+                                        ),
+                                    )
+                                    .pipe(z.uuid()),
+                            }),
+                        ])
+                        .refine(
+                            (value) =>
+                                [
+                                    z.strictObject({
+                                        kind: z.literal('intake'),
+                                        intakeId: z
+                                            .string()
+                                            .regex(
+                                                new RegExp(
+                                                    '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$',
+                                                    'u',
+                                                ),
+                                            )
+                                            .pipe(z.uuid()),
+                                    }),
+                                    z.strictObject({
+                                        kind: z.literal('diary_entry'),
+                                        diaryEntryId: z
+                                            .string()
+                                            .regex(
+                                                new RegExp(
+                                                    '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$',
+                                                    'u',
+                                                ),
+                                            )
+                                            .pipe(z.uuid()),
+                                    }),
+                                    z.strictObject({
+                                        kind: z.literal('support_message'),
+                                        supportMessageId: z
+                                            .string()
+                                            .regex(
+                                                new RegExp(
+                                                    '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$',
+                                                    'u',
+                                                ),
+                                            )
+                                            .pipe(z.uuid()),
+                                    }),
+                                    z.strictObject({
+                                        kind: z.literal('profile_avatar'),
+                                        userId: z
+                                            .string()
+                                            .regex(
+                                                new RegExp(
+                                                    '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$',
+                                                    'u',
+                                                ),
+                                            )
+                                            .pipe(z.uuid()),
+                                    }),
+                                ].filter((branch) => branch.safeParse(value).success).length === 1,
+                        ),
+                    position: z.number().int().min(0).max(2),
+                    state: z.union([
+                        z.literal('reserved'),
+                        z.literal('uploading'),
+                        z.literal('quarantined'),
+                        z.literal('scanning'),
+                        z.literal('clean'),
+                        z.literal('ready'),
+                        z.literal('infected'),
+                        z.literal('failed'),
+                        z.literal('expired'),
+                        z.literal('deleted'),
+                    ]),
+                    mimeType: z.string(),
+                    sizeBytes: z.number().int().gt(0).max(9007199254740991),
+                    checksum: z.string().regex(new RegExp('^sha256:[a-f0-9]{64}$', 'u')).nullable(),
+                    failureCode: z.string().nullable(),
+                    publicationAllowed: z.literal(false),
+                    downloadAllowed: z.boolean(),
+                    upload: z
+                        .strictObject({
+                            method: z.literal('PUT'),
+                            uploadUrl: z.string().pipe(z.url()),
+                            expiresAt: z
+                                .string()
+                                .regex(
+                                    new RegExp(
+                                        '^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$',
+                                        'u',
+                                    ),
+                                )
+                                .pipe(z.iso.datetime()),
+                            fieldName: z.literal('file'),
+                            requiredHeaders: z
+                                .array(
+                                    z.strictObject({
+                                        name: z.string().min(1).max(100),
+                                        value: z.string().min(1).max(2000),
+                                    }),
+                                )
+                                .min(1)
+                                .max(10),
+                        })
+                        .nullable(),
+                }),
+            }),
+            meta: z.strictObject({
+                requestId: z
+                    .string()
+                    .regex(
+                        new RegExp(
+                            '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$',
+                            'u',
+                        ),
+                    )
+                    .pipe(z.uuid()),
+            }),
+        }),
+    },
+    'GET /api/v1/media/assets/{id}/content': {
+        params: z.strictObject({ id: z.string().pipe(z.uuid()) }),
+        request: null,
+        binary: true,
+        success: z.instanceof(Blob),
+    },
+    'POST /api/v1/media/assets/{id}/download-target': {
+        params: z.strictObject({ id: z.string().pipe(z.uuid()) }),
+        request: null,
+        binary: false,
+        success: z.strictObject({
+            data: z.strictObject({
+                assetId: z
+                    .string()
+                    .regex(
+                        new RegExp(
+                            '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$',
+                            'u',
+                        ),
+                    )
+                    .pipe(z.uuid()),
+                target: z.strictObject({
+                    method: z.literal('GET'),
+                    downloadUrl: z.string().pipe(z.url()),
+                    expiresAt: z
+                        .string()
+                        .regex(
+                            new RegExp(
+                                '^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$',
+                                'u',
+                            ),
+                        )
+                        .pipe(z.iso.datetime()),
+                    requiredHeaders: z
+                        .array(z.strictObject({ name: z.string().min(1).max(100), value: z.string().min(1).max(2000) }))
+                        .min(1)
+                        .max(10),
+                }),
+            }),
             meta: z.strictObject({
                 requestId: z
                     .string()
@@ -34672,4 +35774,7 @@ export const errorSchema = z.strictObject({
 });
 export type Route = keyof typeof contracts;
 export type Success<R extends Route> = z.infer<(typeof contracts)[R]['success']>;
+export type BinaryRoute = { [R in Route]: Success<R> extends Blob ? R : never }[Route];
+export type JsonRoute = Exclude<Route, BinaryRoute>;
+export type JsonSuccess<R extends JsonRoute> = Extract<Success<R>, { data: unknown; meta: unknown }>;
 export type Principal = Success<'GET /api/v1/auth/me'>['data']['user'];

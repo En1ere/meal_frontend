@@ -365,3 +365,5 @@ Auth lifecycle на моках: регистрация/verify/resend, recovery/r
 0.0.108 - 10.21.2026 | 17:41 - Исправлены double-submit и transient draft состояния inventory/preserves/recipes/family chat; CSV/TSV Worker больше не блокируется на XLSX chunk в Firefox/MSW, а dynamic-route проверки ждут завершения RSC navigation.
 
 0.0.109 - 10.22.2026 | 13:47 - Frontend-документация очищена и актуализирована: оставлены краткие README/AGENTS, OCR provenance и единая ссылка на TESTs.md; устаревшие iteration/design QA и legacy mock-документы удалены без изменения runtime.
+
+0.0.154 - 11.02.2026 | 14:24 - OpenAPI/HTTP snapshots и generated client синхронизированы с backend 0.0.160, OpenAPI 0.0.63 и schema v33: 285 public/user/moderator операций. Generator получил строгую поддержку `format: binary` через `Blob` и регрессию, multipart upload остаётся transport-specific, а пользовательская media-функция не включена до capacity/OOM drill.

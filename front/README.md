@@ -1,6 +1,6 @@
 # Meal Planner frontend
 
-Клиентское Next.js-приложение для публичных, пользовательских и модераторских сценариев. Текущая package-версия — `0.0.153`; контракт синхронизирован с backend `0.0.152`, OpenAPI `0.0.61` и additive schema v31. Контейнерный runtime, immutable deploy-helper и rollback подтверждены; custom-domain cutover ожидает DNS.
+Клиентское Next.js-приложение для публичных, пользовательских и модераторских сценариев. Текущая package-версия — `0.0.154`; source-контракт синхронизирован с backend `0.0.160`, OpenAPI `0.0.63` и additive schema v33. Generated client проверяет 285 неадминистративных операций; binary media response представлен `Blob`, а multipart upload не маскируется под JSON. Публичная загрузка и media processor остаются выключены до отдельного VPS capacity/OOM drill. Контейнерный runtime, immutable deploy-helper и rollback подтверждены; custom-domain cutover ожидает DNS.
 
 Административный интерфейс вынесен в независимый `meal_admin`; его исходники и установка для запуска клиента не нужны. Backend находится в `meal_backend`.
 

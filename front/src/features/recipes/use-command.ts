@@ -2,7 +2,7 @@
 import { useRef, useState } from 'react';
 import { useRuntime } from '../../shared/runtime/index.js';
 import { ApiError } from '../../shared/api/client.js';
-import { contracts, type Route, type Success } from '../../shared/api/contracts.generated.js';
+import { contracts, type JsonRoute, type JsonSuccess } from '../../shared/api/contracts.generated.js';
 import { setUserSession } from '../../entities/session/client.js';
 import { useRequestSignal } from '../../shared/api/use-request-signal.js';
 import { readOfflineOwner } from '../../entities/offline/store.js';
@@ -16,15 +16,15 @@ export function useRecipeCommand() {
         [offlineQueued, setOfflineQueued] = useState(false);
     const queuedRef = useRef(false);
     const attempt = useRef<{
-        route: Route;
+        route: JsonRoute;
         body: Record<string, unknown>;
         params: Record<string, string> | undefined;
     } | null>(null);
-    async function run<R extends Route>(
+    async function run<R extends JsonRoute>(
         route: R,
         body: Record<string, unknown>,
         params?: Record<string, string>,
-    ): Promise<Success<R>['data'] | undefined> {
+    ): Promise<JsonSuccess<R>['data'] | undefined> {
         if (!api || pending) return;
         attempt.current ??= { route, body: { ...structuredClone(body), idempotencyKey: crypto.randomUUID() }, params };
         const parsed = contracts[attempt.current.route].request?.safeParse(attempt.current.body);

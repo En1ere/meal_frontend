@@ -1,5 +1,13 @@
 # Полная программа ручной приёмки Meal Planner
 
+## Синхронизация backend media-контракта — root 0.0.45 / front 0.0.154 — 02.11.2026
+
+1. `front/contracts/openapi.json` и `http-cases.json` должны совпадать с backend `0.0.160`; generator обязан сообщить OpenAPI `0.0.63` и 285 public/user/moderator операций.
+2. `GET /api/v1/media/assets/{id}/content` валидируется как `Blob`: строка и JSON-объект должны отклоняться. Клиент при будущей реализации обязан читать `response.blob()`, а не `response.json()`.
+3. Multipart `PUT /api/v1/media/assets/{id}/content` остаётся transport-specific (`request: null`) до отдельного typed upload adapter; generator не должен придумывать JSON payload.
+4. Появление media routes в generated contract не включает UI и не доказывает доступность provider: до VPS capacity/OOM drill пользовательская загрузка должна оставаться скрытой/fail-closed.
+5. `POST /api/v1/media/intakes` и reservation target должны использовать только backend-defined kind/slot/position; нельзя создавать локальные доменные идентификаторы или обходить consent/scope/quota checks.
+
 ## Три независимых репозитория — 24.10.2026
 
 Актуальная структура: клиент `meal_frontend` (Next.js 3000), админка `meal_admin` (Vite 3002), API и SQL `meal_backend` (3001). Админские исходники, E2E и команда их запуска удалены из клиентского репозитория после переноса без потерь. У обоих интерфейсов собственная локальная дизайн-система и независимый lock-файл; импорты исходников соседей запрещены. Общая интеграционная команда `npm run test:integration` здесь проверяет уже запущенные приложения по HTTP и не является зависимостью от их исходников.

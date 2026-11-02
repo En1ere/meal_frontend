@@ -4,7 +4,7 @@ import { generateSync } from 'otplib';
 import { indexedDB } from 'fake-indexeddb';
 import fixture from '../contracts/dev-users.json' with { type: 'json' };
 import cases from '../contracts/http-cases.json' with { type: 'json' };
-import { contracts, errorSchema, type Route } from '../src/shared/api/contracts.generated.js';
+import { contracts, errorSchema, type JsonRoute } from '../src/shared/api/contracts.generated.js';
 import { ApiClient } from '../src/shared/api/client.js';
 import { MockApi } from '../src/mocks/api.js';
 import { MemoryRepository, IndexedDbRepository } from '../src/mocks/repository.js';
@@ -40,7 +40,7 @@ class Browser {
         }
         return response;
     }
-    async ok<R extends Route>(route: R, body?: unknown) {
+    async ok<R extends JsonRoute>(route: R, body?: unknown) {
         const response = await this.send(route, body);
         assert.equal(response.status, 200, await response.clone().text());
         const parsed = contracts[route].success.parse(await response.json());

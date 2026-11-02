@@ -66,8 +66,9 @@ function schema(s) {
         if (s.minLength !== undefined) result += `.min(${s.minLength})`;
         if (s.maxLength !== undefined) result += `.max(${s.maxLength})`;
         if (s.pattern) result += `.regex(new RegExp(${JSON.stringify(s.pattern)}, 'u'))`;
-        if (s.format && !['email', 'date-time', 'date', 'uuid', 'uri'].includes(s.format))
+        if (s.format && !['email', 'date-time', 'date', 'uuid', 'uri', 'binary'].includes(s.format))
             throw Error('Unsupported string format');
+        if (s.format === 'binary') result = 'z.instanceof(Blob)';
         if (s.format === 'date') result += '.pipe(z.iso.date())';
         if (s.format === 'uri') result += '.pipe(z.url())';
         if (s.format === 'email') result += '.pipe(z.email())';
@@ -92,12 +93,13 @@ for (const [path, item] of Object.entries(document.paths))
             throw Error('Review new HTTP method before generating mocks');
         if (!includedPath(path)) continue;
         const request = operation.requestBody?.content['application/json']?.schema;
+        const success = (operation.responses['200'] ?? operation.responses['201']).content['application/json'].schema;
         const pathParameters = operation.parameters?.filter((parameter) => parameter.in === 'path') ?? [];
         const params = pathParameters.length
             ? `z.strictObject({${pathParameters.map((parameter) => `${JSON.stringify(parameter.name)}:${schema(parameter.schema)}`).join(',')}})`
             : 'null';
         entries.push(
-            `${JSON.stringify(`${method.toUpperCase()} ${path}`)}:{params:${params},request:${request ? schema(request) : 'null'},success:${schema((operation.responses['200'] ?? operation.responses['201']).content['application/json'].schema)}}`,
+            `${JSON.stringify(`${method.toUpperCase()} ${path}`)}:{params:${params},request:${request ? schema(request) : 'null'},binary:${success.type === 'string' && success.format === 'binary'},success:${schema(success)}}`,
         );
     }
 const error = Object.values(document.paths)
@@ -112,6 +114,9 @@ export const contracts = {${entries.join(',')}};
 export const errorSchema = ${schema(error)};
 export type Route = keyof typeof contracts;
 export type Success<R extends Route> = z.infer<(typeof contracts)[R]['success']>;
+export type BinaryRoute = { [R in Route]: Success<R> extends Blob ? R : never }[Route];
+export type JsonRoute = Exclude<Route, BinaryRoute>;
+export type JsonSuccess<R extends JsonRoute> = Extract<Success<R>, { data: unknown; meta: unknown }>;
 export type Principal = Success<'GET /api/v1/auth/me'>['data']['user'];
 `,
     { parser: 'typescript', ...JSON.parse(fs.readFileSync(new URL('.prettierrc.json', root), 'utf8')) },
