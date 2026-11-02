@@ -86,3 +86,61 @@ self.addEventListener('fetch', (event) => {
         );
     }
 });
+
+const PUSH_ROUTES = ['/notifications', '/settings/notifications', '/inventory', '/meal-plan', '/support'];
+const safePushHref = (value) => {
+    if (typeof value !== 'string' || !value.startsWith('/') || value.startsWith('//')) return '/notifications';
+    try {
+        const url = new URL(value, self.location.origin);
+        return url.origin === self.location.origin &&
+            PUSH_ROUTES.some((route) => url.pathname === route || url.pathname.startsWith(`${route}/`))
+            ? `${url.pathname}${url.search}`
+            : '/notifications';
+    } catch {
+        return '/notifications';
+    }
+};
+
+self.addEventListener('push', (event) => {
+    event.waitUntil(
+        (async () => {
+            let payload = {};
+            try {
+                payload = event.data?.json() ?? {};
+            } catch {
+                payload = {};
+            }
+            const title =
+                typeof payload.title === 'string' && payload.title.length <= 120 ? payload.title : 'Meal Planner';
+            const body =
+                typeof payload.body === 'string' && payload.body.length <= 300
+                    ? payload.body
+                    : 'Откройте приложение, чтобы посмотреть уведомление.';
+            await self.registration.showNotification(title, {
+                body,
+                tag:
+                    typeof payload.topic === 'string' && /^[a-zA-Z0-9_-]{1,64}$/.test(payload.topic)
+                        ? payload.topic
+                        : undefined,
+                data: { href: safePushHref(payload.href) },
+            });
+        })(),
+    );
+});
+
+self.addEventListener('notificationclick', (event) => {
+    event.notification.close();
+    event.waitUntil(
+        (async () => {
+            const href = safePushHref(event.notification.data?.href);
+            const target = new URL(href, self.location.origin).href;
+            const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+            const existing = windows.find((client) => new URL(client.url).origin === self.location.origin);
+            if (existing) {
+                await existing.navigate(target);
+                return existing.focus();
+            }
+            return self.clients.openWindow(target);
+        })(),
+    );
+});

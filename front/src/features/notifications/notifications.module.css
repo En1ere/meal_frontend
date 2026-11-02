@@ -70,6 +70,26 @@
     background: var(--surface);
 }
 
+.push-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem;
+    border: 1px solid var(--line);
+    border-radius: 1rem;
+    background: var(--surface);
+}
+
+.push-card p {
+    color: var(--muted);
+}
+
+.push-error {
+    grid-column: 1 / -1;
+    color: var(--danger);
+}
+
 .item > * + * {
     margin-top: 0;
 }
@@ -186,6 +206,10 @@
     }
 
     .grid {
+        grid-template-columns: 1fr;
+    }
+
+    .push-card {
         grid-template-columns: 1fr;
     }
 }

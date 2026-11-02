@@ -904,3 +904,14 @@
 4. Повторить production APM/RUM/cardinality проверки на реальной инфраструктуре и данных; локальные synthetic budgets не объявлять production SLO.
 
 Первичный статический аудит от 13.10.2026 находил прямые route references только для 196/347 operations. Он перекрыт общим исполняемым defensive runner на 1 269 HTTP-запросов и точной исполняемой классификацией: все 339 локально исполнимых операций имеют operation-specific live-PG `2xx` с отдельным evidence, локальных pending нет, 5 provider-dependent операций проверяются как честный fail-closed boundary, 3 требуют внешнего AI provider для success. Только operation-specific пакеты повышают операцию до exact; generic sweep этого не делает.
+
+## Web Push
+
+1. Открыть `/settings/notifications` в поддерживаемом браузере: permission не запрашивается до нажатия «Подключить».
+2. Разрешить уведомления: создаётся одна browser subscription, UI показывает «Подключено», повторный вход не создаёт дубликат.
+3. Отклонить permission: UI показывает инструктивное состояние «Запрещено в настройках браузера», повторный prompt не запускается.
+4. Нажать «Отключить»: server binding отзывается до browser unsubscribe; после reload устройство остаётся отключённым.
+5. Получить push с корректным payload: отображаются только bounded title/body, click открывает allowlisted same-origin route.
+6. Передать внешний, protocol-relative или неизвестный href, malformed JSON и oversized fields: worker использует `/notifications` и безопасные fallback-тексты.
+7. Проверить logout/switch account, две вкладки, rotation subscription, offline/reconnect и 404/410 cleanup: подписка другого аккаунта не используется, private payload не кэшируется.
+8. Повторить в Chrome, Firefox и установленном iOS PWA; проверить четыре темы, mobile layout и клавиатурный focus.

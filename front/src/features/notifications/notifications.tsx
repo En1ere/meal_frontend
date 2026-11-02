@@ -8,6 +8,13 @@ import type { Success } from '../../shared/api/contracts.generated.js';
 import { useSession } from '../../entities/session/client.js';
 import styles from './notifications.module.css';
 import { useConsent } from '../../entities/consent/client.js';
+import {
+    browserWebPushState,
+    connectWebPush,
+    disconnectWebPush,
+    loadWebPushConfig,
+    type PushTransport,
+} from './web-push.js';
 
 const categories = [
     ['all', 'Все'],
@@ -189,6 +196,7 @@ function SettingsContent() {
     const { api, queryClient } = useRuntime();
     const session = useSession('user');
     const marketingConsent = useConsent('marketing');
+    const pushTransport: PushTransport | null = api;
     const query = useQuery({
         queryKey: ['notification-preferences', session.data?.id],
         enabled: !!api && !!session.data,
@@ -196,6 +204,27 @@ function SettingsContent() {
             (await api!.request('GET /api/v1/notification-preferences', undefined, signal)).data,
     });
     const [draft, setDraft] = useState<Preferences | null>(null);
+    const [pushRevision, setPushRevision] = useState(0);
+    const pushConfig = useQuery({
+        queryKey: ['notification-push-config', session.data?.id],
+        enabled: !!pushTransport && !!session.data,
+        queryFn: ({ signal }) => loadWebPushConfig(pushTransport!, signal),
+    });
+    const pushState = session.data
+        ? browserWebPushState(pushConfig.data?.available ?? false, session.data.id)
+        : 'unavailable';
+    const pushMutation = useMutation({
+        mutationFn: async (action: 'connect' | 'disconnect') => {
+            if (!pushTransport || !session.data) throw new Error('session_unavailable');
+            if (action === 'connect') {
+                const publicKey = pushConfig.data?.vapidPublicKey;
+                if (!publicKey) throw new Error('provider_unavailable');
+                await connectWebPush(pushTransport, session.data.id, publicKey);
+            } else await disconnectWebPush(pushTransport, session.data.id);
+        },
+        onSuccess: () => setPushRevision((value) => value + 1),
+    });
+    void pushRevision;
     const refresh = useCallback(() => {
         setDraft(null);
         void queryClient.invalidateQueries({ queryKey: ['notification-preferences', session.data?.id] });
@@ -250,6 +279,52 @@ function SettingsContent() {
                 <Link href="/settings/privacy?consent=marketing&returnTo=/settings/notifications">
                     Управлять согласием
                 </Link>
+            </section>
+            <section className={styles['push-card']} aria-labelledby="web-push-heading">
+                <div>
+                    <h2 id="web-push-heading">Web Push на этом устройстве</h2>
+                    <p>
+                        Разрешение запрашивается только после нажатия кнопки. Подписка связана с текущим аккаунтом и
+                        браузерной сессией.
+                    </p>
+                    <strong>
+                        {pushConfig.isPending
+                            ? 'Проверяем доступность…'
+                            : pushState === 'connected'
+                              ? 'Подключено'
+                              : pushState === 'denied'
+                                ? 'Запрещено в настройках браузера'
+                                : pushState === 'unsupported'
+                                  ? 'Браузер не поддерживает Web Push'
+                                  : pushState === 'unavailable'
+                                    ? 'Провайдер пока недоступен'
+                                    : 'Не подключено'}
+                    </strong>
+                </div>
+                {pushState === 'connected' ? (
+                    <button
+                        type="button"
+                        className="button outline"
+                        disabled={pushMutation.isPending}
+                        onClick={() => pushMutation.mutate('disconnect')}
+                    >
+                        Отключить
+                    </button>
+                ) : (
+                    <button
+                        type="button"
+                        className="button primary"
+                        disabled={pushMutation.isPending || !['default', 'ready'].includes(pushState)}
+                        onClick={() => pushMutation.mutate('connect')}
+                    >
+                        Подключить
+                    </button>
+                )}
+                {pushMutation.isError && (
+                    <p className={styles['push-error']} role="alert">
+                        Не удалось изменить подписку. Проверьте разрешение браузера и повторите попытку.
+                    </p>
+                )}
             </section>
             {(!value.deliveryAvailable.push || !value.deliveryAvailable.email) && (
                 <section className={styles.notice}>

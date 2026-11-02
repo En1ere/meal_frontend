@@ -12,6 +12,7 @@ import { useSession } from '../../entities/session/client.js';
 import { useRequestSignal } from '../../shared/api/use-request-signal.js';
 import { Skeleton as ArcSkeleton } from '@meal-planner/design-system';
 import { InlineLoader as ArcInlineLoader } from '@meal-planner/design-system';
+import { forgetBrowserWebPush } from '../../shared/browser/web-push.js';
 
 export function SessionsPanel({ context }: { context: AuthContext }) {
     const runtime = useRuntime();
@@ -22,6 +23,7 @@ export function SessionsPanel({ context }: { context: AuthContext }) {
     const locked = useRef(false);
     const beginRequest = useRequestSignal();
     const kind = context === 'user' ? 'user' : 'staff';
+    const principal = useSession(context);
     const sessions = useQuery({
         queryKey: ['sessions', kind],
         enabled: !!runtime.api,
@@ -51,6 +53,8 @@ export function SessionsPanel({ context }: { context: AuthContext }) {
                     signal,
                 );
                 signal.throwIfAborted();
+                if (kind === 'user' && principal.data)
+                    await forgetBrowserWebPush(principal.data.id).catch(() => undefined);
                 runtime.reset();
                 runtime.broadcast();
                 router.replace(authRoutes[context].login);

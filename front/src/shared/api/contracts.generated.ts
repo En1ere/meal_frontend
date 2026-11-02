@@ -1,6 +1,6 @@
-// Generated from contracts/openapi.json. Do not edit. SHA256: f9a62975e9e6906a61dffbc88cb90d4ffecda76501f1f0cac6a6d9924f10a622
+// Generated from contracts/openapi.json. Do not edit. SHA256: a270bdec5e34d7a7ff03a667631fff9e52e73f0e38d2f4e8b398d43e048e5589
 import { z } from 'zod';
-export const contractVersion = '0.0.63';
+export const contractVersion = '0.0.64';
 export const contracts = {
     'GET /api/v1/recipe-policy': {
         params: null,
@@ -35741,6 +35741,104 @@ export const contracts = {
                         .max(10),
                 }),
             }),
+            meta: z.strictObject({
+                requestId: z
+                    .string()
+                    .regex(
+                        new RegExp(
+                            '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$',
+                            'u',
+                        ),
+                    )
+                    .pipe(z.uuid()),
+            }),
+        }),
+    },
+    'GET /api/v1/notification-push/config': {
+        params: null,
+        request: null,
+        binary: false,
+        success: z.strictObject({
+            data: z.strictObject({
+                available: z.boolean(),
+                vapidPublicKey: z.string().regex(new RegExp('^[A-Za-z0-9_-]{87}$', 'u')).nullable(),
+            }),
+            meta: z.strictObject({
+                requestId: z
+                    .string()
+                    .regex(
+                        new RegExp(
+                            '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$',
+                            'u',
+                        ),
+                    )
+                    .pipe(z.uuid()),
+            }),
+        }),
+    },
+    'POST /api/v1/notification-push/subscriptions': {
+        params: null,
+        request: z.strictObject({
+            endpoint: z.string().max(2048).pipe(z.url()),
+            keys: z.strictObject({
+                p256dh: z.string().regex(new RegExp('^[A-Za-z0-9_-]{16,256}$', 'u')),
+                auth: z.string().regex(new RegExp('^[A-Za-z0-9_-]{16,256}$', 'u')),
+            }),
+            expirationTime: z.number().int().gt(0).max(9007199254740991).nullable(),
+            idempotencyKey: z
+                .string()
+                .regex(
+                    new RegExp(
+                        '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$',
+                        'u',
+                    ),
+                )
+                .pipe(z.uuid()),
+        }),
+        binary: false,
+        success: z.strictObject({
+            data: z.strictObject({
+                id: z
+                    .string()
+                    .regex(
+                        new RegExp(
+                            '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$',
+                            'u',
+                        ),
+                    )
+                    .pipe(z.uuid()),
+                version: z.number().int().gt(0).max(9007199254740991),
+            }),
+            meta: z.strictObject({
+                requestId: z
+                    .string()
+                    .regex(
+                        new RegExp(
+                            '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$',
+                            'u',
+                        ),
+                    )
+                    .pipe(z.uuid()),
+            }),
+        }),
+    },
+    'DELETE /api/v1/notification-push/subscriptions/{id}': {
+        params: z.strictObject({ id: z.string().pipe(z.uuid()) }),
+        request: z.strictObject({
+            expectedVersion: z.number().int().gt(0).max(9007199254740991),
+            idempotencyKey: z
+                .string()
+                .regex(
+                    new RegExp(
+                        '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$',
+                        'u',
+                    ),
+                )
+                .pipe(z.uuid()),
+        }),
+        binary: false,
+        success: z.strictObject({
+            data: z.strictObject({ revoked: z.literal(true) }),
             meta: z.strictObject({
                 requestId: z
                     .string()

@@ -34,6 +34,7 @@ export const notificationsStateSchema = z.object({
     preferences: z.record(z.string(), preferencesSchema),
     seeded: z.array(z.string()),
     replay: z.record(z.string(), z.object({ input: z.string(), result: z.unknown() })),
+    pushBindings: z.record(z.string(), z.array(z.object({ id: z.uuid(), version: z.number().int().positive() }))),
 });
 export type NotificationsState = z.infer<typeof notificationsStateSchema>;
 export const createNotificationsState = (): NotificationsState => ({
@@ -41,6 +42,7 @@ export const createNotificationsState = (): NotificationsState => ({
     preferences: {},
     seeded: [],
     replay: {},
+    pushBindings: {},
 });
 const categories = [
     'security',
@@ -78,7 +80,7 @@ const defaults = () =>
         timezone: 'Europe/Moscow',
         urgentFoodRisk: false,
         version: 1,
-        deliveryAvailable: { push: false, email: false },
+        deliveryAvailable: { push: true, email: false },
     });
 function seed(state: MockState, userId: string, now: number) {
     if (state.notifications.seeded.includes(userId)) return;
@@ -131,9 +133,42 @@ export function notificationsHandle(c: {
     fail: (status: number) => Response;
 }): Response | null {
     const { state, userId, path, params, method, query, input, now, success, fail } = c;
-    if (!path.startsWith('/api/v1/notifications') && path !== '/api/v1/notification-preferences') return null;
+    if (
+        !path.startsWith('/api/v1/notifications') &&
+        path !== '/api/v1/notification-preferences' &&
+        !path.startsWith('/api/v1/notification-push/')
+    )
+        return null;
     if (!userId) return fail(401);
     seed(state, userId, now);
+    if (path === '/api/v1/notification-push/config' && method === 'GET')
+        return success({ available: true, vapidPublicKey: `B${'A'.repeat(86)}` });
+    if (path === '/api/v1/notification-push/subscriptions' && method === 'POST') {
+        const body = z
+            .strictObject({
+                endpoint: z.url(),
+                keys: z.strictObject({ p256dh: z.string().min(16), auth: z.string().min(16) }),
+                expirationTime: z.number().nullable(),
+                idempotencyKey: z.uuid(),
+            })
+            .parse(input);
+        void body;
+        const binding = { id: crypto.randomUUID(), version: 1 };
+        (state.notifications.pushBindings[userId] ??= []).push(binding);
+        return success(binding);
+    }
+    const pushDelete = /^\/api\/v1\/notification-push\/subscriptions\/([^/]+)$/.exec(path);
+    if (pushDelete && method === 'DELETE') {
+        const body = z
+            .strictObject({ expectedVersion: z.number().int().positive(), idempotencyKey: z.uuid() })
+            .parse(input);
+        const bindings = (state.notifications.pushBindings[userId] ??= []);
+        const index = bindings.findIndex((entry) => entry.id === pushDelete[1]);
+        if (index < 0) return fail(404);
+        if (bindings[index]!.version !== body.expectedVersion) return fail(412);
+        bindings.splice(index, 1);
+        return success({ revoked: true });
+    }
     if (path === '/api/v1/notifications' && method === 'GET') {
         const parsed = querySchema.safeParse(Object.fromEntries(query));
         if (!parsed.success) return fail(400);
@@ -164,7 +199,7 @@ export function notificationsHandle(c: {
             const next = preferencesSchema.parse({
                 ...body,
                 version: current.version + 1,
-                deliveryAvailable: { push: false, email: false },
+                deliveryAvailable: { push: true, email: false },
             });
             state.notifications.preferences[userId] = next;
             return next;
