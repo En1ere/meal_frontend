@@ -4,8 +4,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { useSession } from '../../entities/session/client.js';
-import { Brand } from '../../shared/ui/brand.js';
-import { ThemeControl } from '../../shared/ui/theme-control.js';
 import { Skeleton as ArcSkeleton } from '@meal-planner/design-system';
 import {
     clearOfflineData,
@@ -120,7 +118,7 @@ function Content() {
     }
     if (!owner) {
         return (
-            <main id="main" className={styles.page}>
+            <div className={styles.page}>
                 <section className={styles.panel} role={session.isError ? 'alert' : 'status'}>
                     <h1>{!online ? 'Локальные данные недоступны' : 'Проверяем вход…'}</h1>
                     <p>
@@ -132,16 +130,11 @@ function Content() {
                     </p>
                     {session.isError && <button onClick={() => void session.refetch()}>Повторить</button>}
                 </section>
-            </main>
+            </div>
         );
     }
     return (
-        <main id="main" className={styles.page}>
-            <header className={styles.header}>
-                <Brand />
-                <ThemeControl />
-                <Link href="/settings/account">Аккаунт и безопасность</Link>
-            </header>
+        <div className={styles.page}>
             <nav className={styles.breadcrumbs} aria-label="Навигация по настройкам">
                 <Link href="/profile">Профиль</Link>
                 <span>→</span>
@@ -306,7 +299,7 @@ function Content() {
                     </button>
                 </div>
             </dialog>
-        </main>
+        </div>
     );
 }
 

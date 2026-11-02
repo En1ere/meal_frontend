@@ -48,7 +48,7 @@
     border: 1px solid var(--mp-color-warning-text);
     border-radius: 1rem;
     padding: 1rem 1.25rem;
-    background: var(--surface) 8df;
+    background: var(--mp-color-warning-surface);
 }
 
 .datebar {

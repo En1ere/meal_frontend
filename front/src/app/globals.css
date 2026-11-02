@@ -159,7 +159,7 @@ img {
 }
 
 .primary {
-    color: white;
+    color: var(--mp-color-on-primary);
     background: var(--accent);
 }
 
@@ -372,7 +372,7 @@ img {
     margin-top: 16px;
     color: var(--danger);
     padding: 10px 12px;
-    background: var(--surface) 1ee;
+    background: var(--mp-color-danger-surface);
     border-radius: 6px;
 }
 
@@ -466,6 +466,19 @@ img {
     width: 20px;
     height: 20px;
     min-height: 0;
+    flex: 0 0 auto;
+    margin: 0;
+    cursor: pointer;
+}
+
+.checkbox-label input:disabled {
+    cursor: not-allowed;
+}
+
+.auth-content .checkbox-label label {
+    display: inline;
+    margin: 0;
+    cursor: pointer;
 }
 
 .back-link {

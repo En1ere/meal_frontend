@@ -53,7 +53,7 @@
 
 .tabs span[aria-current='page'],
 .filters button[aria-pressed='true'] {
-    color: white;
+    color: var(--mp-color-on-primary);
     border-color: var(--accent);
     background: var(--accent);
 }
@@ -241,7 +241,7 @@
 }
 
 .levels .current {
-    color: white;
+    color: var(--mp-color-on-primary);
     border-color: var(--accent);
     background: var(--accent);
 }

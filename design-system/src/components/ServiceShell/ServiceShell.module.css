@@ -4,7 +4,6 @@
     grid-template-columns: 292px minmax(0, 1fr);
     color: var(--ink);
     background: var(--background);
-    color-scheme: dark;
 }
 
 .sidebar {
@@ -36,14 +35,12 @@
 .group h2 {
     margin: 0 8px 8px;
     color: var(--muted);
-    font:
-        600 14px Arial,
-        sans-serif;
+    font: 600 14px var(--mp-font-sans);
 }
 
 .link {
     display: block;
-    min-height: 36px;
+    min-height: 44px;
     padding: 8px 12px;
     border-radius: 8px;
     color: var(--ink);
@@ -132,7 +129,7 @@
     }
 
     .scrim::backdrop {
-        background: #000b;
+        background: var(--mp-color-overlay);
     }
 
     .drawer {

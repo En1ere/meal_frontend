@@ -1,6 +1,6 @@
 # Meal Planner frontend
 
-Клиентское Next.js-приложение для публичных, пользовательских и модераторских сценариев. Текущая package-версия — `0.0.152`; контракт синхронизирован с backend `0.0.152`, OpenAPI `0.0.61` и additive schema v31. Контейнерный runtime, immutable deploy-helper и rollback подтверждены; custom-domain cutover ожидает DNS.
+Клиентское Next.js-приложение для публичных, пользовательских и модераторских сценариев. Текущая package-версия — `0.0.153`; контракт синхронизирован с backend `0.0.152`, OpenAPI `0.0.61` и additive schema v31. Контейнерный runtime, immutable deploy-helper и rollback подтверждены; custom-domain cutover ожидает DNS.
 
 Административный интерфейс вынесен в независимый `meal_admin`; его исходники и установка для запуска клиента не нужны. Backend находится в `meal_backend`.
 
@@ -17,6 +17,8 @@ npm run build
 ```
 
 Локальный dev-сервер использует порт `3000`. Production-like запуск: `npm run build`, затем `npm run start`. Container build создаёт Next standalone output; собственный frontend-only liveness endpoint доступен на `/healthz`, а публичные `/health/live` и `/health/ready` по-прежнему отражают backend.
+
+Legal evidence выбирается только во время сборки: `NEXT_PUBLIC_LEGAL_EVIDENCE_MODE=approved` является fail-closed значением по умолчанию, а `demonstration` допустим только для технического стенда с таким же режимом backend. Ошибка или обновление manifest немедленно блокирует старые document refs и требует повторно отметить обе галочки после успешной загрузки актуальной версии.
 
 ## Архитектурные границы
 

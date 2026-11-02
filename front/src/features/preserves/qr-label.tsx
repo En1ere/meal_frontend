@@ -1,5 +1,6 @@
 'use client';
 import { BrowserQRCodeSvgWriter } from '@zxing/browser';
+import Link from 'next/link';
 import { useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useRuntime } from '../../shared/runtime/index.js';
@@ -81,10 +82,12 @@ export function PreserveQrLabel({ preserve, scope = 'private' }: { preserve: Pre
         );
     if (!result.data?.capability.available)
         return (
-            <>
+            <section className={styles.notice} role="note" aria-label="Доступность QR-этикеток">
                 <p>Этикетки и QR-коды доступны на тарифах Plus и Pro.</p>
-                <button disabled>Создать этикетку · Plus / Pro</button>
-            </>
+                <Link className="button outline" href="/pricing">
+                    Сравнить тарифы
+                </Link>
+            </section>
         );
     return (
         <>

@@ -15,6 +15,7 @@ env:
     REGISTRY: ghcr.io
     IMAGE_NAME: ${{ github.repository_owner }}/meal_frontend
     BACKEND_ORIGIN: http://backend:3001
+    LEGAL_EVIDENCE_MODE: demonstration
 
 jobs:
     quality:
@@ -38,6 +39,7 @@ jobs:
               env:
                   NODE_ENV: production
                   NEXT_PUBLIC_API_MODE: real
+                  NEXT_PUBLIC_LEGAL_EVIDENCE_MODE: ${{ env.LEGAL_EVIDENCE_MODE }}
                   NEXT_PUBLIC_APP_VERSION: ${{ steps.version.outputs.app }}
                   BACKEND_ORIGIN: ${{ env.BACKEND_ORIGIN }}
               run: npm run build
@@ -103,6 +105,7 @@ jobs:
                   build-args: |
                       NEXT_PUBLIC_APP_VERSION=${{ steps.version.outputs.app }}
                       NEXT_PUBLIC_API_MODE=real
+                      NEXT_PUBLIC_LEGAL_EVIDENCE_MODE=${{ env.LEGAL_EVIDENCE_MODE }}
                       BACKEND_ORIGIN=${{ env.BACKEND_ORIGIN }}
                   tags: ${{ steps.metadata.outputs.tags }}
                   labels: ${{ steps.metadata.outputs.labels }}

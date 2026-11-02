@@ -120,12 +120,11 @@ function OwnProfileForm({
                     placeholder="Europe/Moscow"
                 />
             </label>
-            <label>
-                Язык
-                <select value="ru" disabled>
-                    <option value="ru">Русский</option>
-                </select>
-            </label>
+            <div className={styles['readonly-field']} aria-label="Язык интерфейса">
+                <span>Язык</span>
+                <strong>Русский</strong>
+                <small>Смена языка пока не поддерживается.</small>
+            </div>
             <ThemeSwitcher value={theme} onChange={setThemeValue} />
             <p className={styles.note}>Логин задаётся при регистрации. Email меняется в разделе безопасности.</p>
             {mutation.isError && <p role="alert">Не удалось сохранить профиль. Обновите страницу и повторите.</p>}

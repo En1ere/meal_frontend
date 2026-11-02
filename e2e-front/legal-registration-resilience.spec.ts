@@ -73,9 +73,9 @@ async function prewarmRegistrationLegalPages(page: Page) {
     await page.getByText('Тестовые аккаунты', { exact: true }).waitFor();
     await ensureServiceWorker(page);
     await gotoSettled(page, '/legal/terms');
-    await expect(page.getByText('Черновик — не опубликованная редакция')).toBeVisible();
+    await expect(page.getByText('Предварительный текст — не утверждённая редакция')).toBeVisible();
     await gotoSettled(page, '/legal/privacy');
-    await expect(page.getByText('Черновик — не опубликованная редакция')).toBeVisible();
+    await expect(page.getByText('Предварительный текст — не утверждённая редакция')).toBeVisible();
 }
 
 async function acceptRegistrationDocuments(page: Page) {
@@ -114,6 +114,31 @@ async function installRegistrationFaults(page: Page) {
                         { status, headers: { 'content-type': 'application/json' } },
                     );
                 }
+            }
+            return nativeFetch(input, init);
+        };
+    });
+}
+
+async function installLegalManifest503Once(page: Page) {
+    await page.addInitScript(() => {
+        const nativeFetch = window.fetch.bind(window);
+        window.fetch = async (input, init) => {
+            const request = input instanceof Request ? input : null;
+            const url = new URL(request?.url ?? String(input), window.location.origin);
+            const method = (init?.method ?? request?.method ?? 'GET').toUpperCase();
+            const scope = window as typeof window & { __legalManifestCalls?: number };
+            if (url.pathname === '/api/v1/legal/manifest' && method === 'GET') {
+                scope.__legalManifestCalls = (scope.__legalManifestCalls ?? 0) + 1;
+                if (scope.__legalManifestCalls === 1)
+                    return new Response(
+                        JSON.stringify({
+                            error: { code: 'UNAVAILABLE', message: 'Legal manifest unavailable', details: null },
+                            meta: { requestId: crypto.randomUUID() },
+                        }),
+                        { status: 503, headers: { 'content-type': 'application/json' } },
+                    );
+                if (scope.__legalManifestCalls === 2) await new Promise((resolve) => setTimeout(resolve, 250));
             }
             return nativeFetch(input, init);
         };
@@ -159,30 +184,62 @@ test('registration requires each legal checkbox and opens marked drafts without 
     const submit = page.getByRole('button', { name: 'Создать аккаунт' });
     await expect(submit).toBeDisabled();
 
-    await page.getByLabel('Я принимаю').check();
+    await page.getByText('Я принимаю условия использования.', { exact: true }).click();
+    await expect(page.getByLabel('Я принимаю условия использования.')).toBeChecked();
     await expect(submit).toBeDisabled();
-    await page.getByLabel('Я принимаю').uncheck();
-    await page.getByLabel('Я ознакомился с').check();
+    await page.getByLabel('Я принимаю условия использования.').uncheck();
+    await page.getByText('Я ознакомился с политикой конфиденциальности.', { exact: true }).click();
+    await expect(page.getByLabel('Я ознакомился с политикой конфиденциальности.')).toBeChecked();
     await expect(submit).toBeDisabled();
 
     const termsPromise = page.waitForEvent('popup');
     await page.getByRole('link', { name: 'Условия использования (откроются в новой вкладке)' }).click();
     const terms = await termsPromise;
-    await expect(terms.getByText('Черновик — не опубликованная редакция')).toBeVisible();
-    await expect(terms.getByText('[УКАЗАТЬ', { exact: false }).first()).toBeVisible();
+    await expect(terms.getByText('Предварительный текст — не утверждённая редакция')).toBeVisible();
+    await expect(terms.getByText('[Тут будут данные]', { exact: true }).first()).toBeVisible();
     await terms.close();
 
     const privacyPromise = page.waitForEvent('popup');
     await page.getByRole('link', { name: 'Политика конфиденциальности (откроется в новой вкладке)' }).click();
     const privacy = await privacyPromise;
-    await expect(privacy.getByText('Черновик — не опубликованная редакция')).toBeVisible();
-    await expect(privacy.getByText('[УКАЗАТЬ', { exact: false }).first()).toBeVisible();
+    await expect(privacy.getByText('Предварительный текст — не утверждённая редакция')).toBeVisible();
+    await expect(privacy.getByText('[Тут будут данные]', { exact: true }).first()).toBeVisible();
     await privacy.close();
 
     await expect(page.getByLabel('Публичный логин')).toHaveValue('legal_checkboxes');
     await expect(page.getByLabel('Пароль', { exact: true })).toHaveValue(password);
-    await page.getByLabel('Я принимаю').check();
+    await page.getByLabel('Я принимаю условия использования.').check();
     await expect(submit).toBeEnabled();
+});
+
+test('registration fails closed on legal manifest 503 and recovers only after an explicit retry', async ({ page }) => {
+    await gotoSettled(page, '/auth');
+    await page.getByText('Тестовые аккаунты', { exact: true }).waitFor();
+    await ensureServiceWorker(page);
+    await installLegalManifest503Once(page);
+    await openRegistration(page, 'manifest-retry');
+
+    const terms = page.getByLabel('Я принимаю условия использования.');
+    const privacy = page.getByLabel('Я ознакомился с политикой конфиденциальности.');
+    const submit = page.getByRole('button', { name: 'Создать аккаунт' });
+    const legalAlert = page.locator('#registration-legal-status');
+    await expect(legalAlert).toHaveAttribute('role', 'alert');
+    await expect(legalAlert).toContainText('Документы недоступны');
+    await expect(terms).toBeDisabled();
+    await expect(privacy).toBeDisabled();
+    await expect(submit).toBeDisabled();
+
+    const retry = page.getByRole('button', { name: 'Загрузить документы снова' });
+    await retry.click();
+    await expect(legalAlert).toHaveAttribute('role', 'status');
+    await expect(legalAlert).toHaveAttribute('aria-busy', 'true');
+    await expect(page.getByRole('button', { name: 'Загружаем…' })).toHaveAttribute('aria-busy', 'true');
+    await expect(terms).toBeEnabled();
+    await expect(privacy).toBeEnabled();
+    await expect(
+        page.getByText('Тестовый контур: регистрация фиксирует демонстрационные версии документов.'),
+    ).toBeVisible();
+    await expect(submit).toBeDisabled();
 });
 
 test('registration suppresses a double submit and creates one verification message', async ({ page }) => {

@@ -6,7 +6,7 @@
 
 1. В `meal_frontend` заливаются Next.js client, его design-system и frontend-тесты. Backend/admin и shared Compose остаются в своих репозиториях.
 2. Push в `main` запускает `.github/workflows/deploy.yml`: full quality/build gates → standalone image `ghcr.io/en1ere/meal_frontend:sha-<full-sha>` → immutable digest → Environment `test`.
-3. `NEXT_PUBLIC_APP_VERSION`, `NEXT_PUBLIC_API_MODE=real` и `BACKEND_ORIGIN=http://backend:3001` фиксируются на image build; их runtime-изменение без нового image не сработает.
+3. `NEXT_PUBLIC_APP_VERSION`, `NEXT_PUBLIC_API_MODE=real`, `NEXT_PUBLIC_LEGAL_EVIDENCE_MODE` и `BACKEND_ORIGIN=http://backend:3001` фиксируются на image build; их runtime-изменение без нового image не сработает.
 4. CI вызывает `sudo /usr/local/sbin/meal-deploy frontend <image@digest> <git-sha>`; source, `.next` и `node_modules` на VPS вручную не копируются.
 5. Container слушает `3000`, на host доступен только `127.0.0.1:3000`; Nginx отдаёт public HTTPS, а `/api/` на том же origin идёт на backend `3001`.
 6. Smoke: local `/healthz`, public `/`, `/recipes`, каталог `/legal`, все 11 allowlisted legal routes, неизвестный legal slug с 404, login/logout, authenticated read и все темы с reload.
@@ -20,7 +20,7 @@
 | Admin origin                  | `https://admin.abstract-usable-gazebo.ruweb.place`              |
 | Backend health                | `/health/live`, `/health/ready`                                 |
 | Установленный release         | Immutable digest из `/srv/meal/deployment/images.env`           |
-| Целевая root/app версия       | `0.0.43` / `0.0.152`                                            |
+| Целевая root/app версия       | `0.0.44` / `0.0.153`                                            |
 | Связанные runtime-компоненты  | backend `0.0.152` / schema v31; admin `0.0.128`                 |
 | Runtime                       | Node.js 24, Docker Compose, loopback `127.0.0.1:3000`           |
 | Traffic                       | Nginx завершает TLS; `/api/` проксируется в backend на loopback |
@@ -60,7 +60,7 @@ Container runtime, helper, digest inventory, PostgreSQL restore и общий po
 2. `npm run ops:readiness` подтвердил структуру provider-neutral manifests. Статус `blocked` ожидаем, пока внешние решения не приняты; `npm run ops:readiness:require-ready` обязан завершаться ненулевым кодом при открытых blockers.
 3. Backend `/health/live` и `/health/ready` отвечают `200`, а backend runbook подтверждает schema v31 и backup/restore evidence.
 4. GHCR artifact адресуется digest, содержит standalone server, `.next/static`, `public` и runtime legal documents. `.env*`, QA-output, test traces и secrets не входят в image.
-5. `NEXT_PUBLIC_API_MODE=real`, `NEXT_PUBLIC_APP_VERSION` совпадает с `front/package.json`, а `BACKEND_ORIGIN=http://backend:3001`. Все три значения заданы при build: public variables встраиваются в browser bundle, а rewrite destination сериализуется Next config в standalone server.
+5. `NEXT_PUBLIC_API_MODE=real`, `NEXT_PUBLIC_APP_VERSION` совпадает с `front/package.json`, `BACKEND_ORIGIN=http://backend:3001`, а legal evidence mode явно совпадает с backend. Все значения заданы при build: public variables встраиваются в browser bundle, а rewrite destination сериализуется Next config в standalone server.
 6. Юридический gate `draft_blocked` остаётся явным blocker публичного коммерческого запуска. Revision-aware moderation contract реализован и развёрнут, но его live mutation-приёмка требует доступного admin TOTP либо отдельно согласованного re-enrollment.
 
 ## Build-time и runtime interface
@@ -68,6 +68,7 @@ Container runtime, helper, digest inventory, PostgreSQL restore и общий po
 Build args production image:
 
 - `NEXT_PUBLIC_API_MODE=real`;
+- `NEXT_PUBLIC_LEGAL_EVIDENCE_MODE=approved|demonstration` (технический test-стенд использует `demonstration`; публичный production по умолчанию fail-closed `approved`);
 - `NEXT_PUBLIC_APP_VERSION=<front/package.json version>`;
 - `BACKEND_ORIGIN=http://backend:3001`.
 
@@ -98,6 +99,7 @@ Image собирается BuildKit из корня:
 docker build \
   --build-arg NEXT_PUBLIC_APP_VERSION=<front-version> \
   --build-arg NEXT_PUBLIC_API_MODE=real \
+  --build-arg NEXT_PUBLIC_LEGAL_EVIDENCE_MODE=demonstration \
   --build-arg BACKEND_ORIGIN=http://backend:3001 \
   -t <registry>/<repository>:sha-<revision> .
 ```

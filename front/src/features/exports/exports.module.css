@@ -167,7 +167,7 @@
 .formats label:has(input:checked) {
     border-color: var(--accent);
     background: var(--accent);
-    color: var(--accent-contrast, white);
+    color: var(--mp-color-on-primary);
 }
 
 .formats label:has(input:disabled) {

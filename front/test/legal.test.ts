@@ -4,7 +4,11 @@ import path from 'node:path';
 import { test } from 'node:test';
 import type { ApiClient } from '../src/shared/api/client.js';
 import { draftLegalDocuments } from '../src/shared/legal/draft-documents.js';
-import { getPublicLegalManifest, hasPublishedRegistrationDocuments } from '../src/shared/legal/mock-legal.js';
+import {
+    getPublicLegalManifest,
+    hasPublishedRegistrationDocuments,
+    hasReviewableRegistrationDocuments,
+} from '../src/shared/legal/mock-legal.js';
 import { legalHandle, legalSettings, mockLegalManifest, type LegalMockState } from '../src/mocks/legal.js';
 
 const userId = 'user-demo';
@@ -104,8 +108,30 @@ void test('demonstration documents stay readable drafts and cannot unlock real r
         request: () => Promise.resolve({ data: mockLegalManifest }),
     } as unknown as ApiClient;
     const documents = await getPublicLegalManifest(api);
-    assert.ok(documents.every((document) => document.status === 'draft'));
-    assert.ok(documents.every((document) => document.href?.startsWith('/legal/')));
+    assert.equal(documents.status, 'demonstration');
+    assert.ok(documents.documents.every((document) => document.status === 'draft'));
+    assert.ok(documents.documents.every((document) => document.href?.startsWith('/legal/')));
+    assert.equal(hasReviewableRegistrationDocuments(documents), true);
     assert.equal(hasPublishedRegistrationDocuments(documents), false);
     assert.equal(hasPublishedRegistrationDocuments(documents, { allowDemonstration: true }), true);
+});
+
+void test('registration legal gate rejects unavailable and mixed manifests in every evidence mode', async () => {
+    const api = {
+        request: () => Promise.resolve({ data: mockLegalManifest }),
+    } as unknown as ApiClient;
+    const demonstration = await getPublicLegalManifest(api);
+    const unavailable = { ...demonstration, status: 'unavailable' as const };
+    assert.equal(hasReviewableRegistrationDocuments(unavailable), false);
+    assert.equal(hasPublishedRegistrationDocuments(unavailable), false);
+    assert.equal(hasPublishedRegistrationDocuments(unavailable, { allowDemonstration: true }), false);
+
+    const mixed = {
+        status: 'approved' as const,
+        documents: demonstration.documents.map((document) =>
+            document.id === 'offer' ? { ...document, status: 'published' as const, demonstration: false } : document,
+        ),
+    };
+    assert.equal(hasPublishedRegistrationDocuments(mixed), false);
+    assert.equal(hasPublishedRegistrationDocuments(mixed, { allowDemonstration: true }), false);
 });

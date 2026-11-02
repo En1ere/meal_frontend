@@ -23,7 +23,7 @@
 .heading h2,
 .panel h2 {
     margin: 0;
-    font-family: Georgia, serif;
+    font-family: var(--mp-font-serif);
 }
 
 .toolbar {

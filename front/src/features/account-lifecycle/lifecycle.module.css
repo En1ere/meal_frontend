@@ -144,7 +144,7 @@
 
 .warning {
     color: var(--mp-color-warning-text);
-    background: var(--surface) 0d7;
+    background: var(--mp-color-warning-surface);
 }
 
 .muted {

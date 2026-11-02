@@ -104,6 +104,22 @@
     gap: 1em;
 }
 
+.readonly-field {
+    display: grid;
+    gap: 0.3em;
+    min-height: 54px;
+    padding: 0.75em 1em;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--soft);
+    color: var(--ink);
+}
+
+.readonly-field span,
+.readonly-field small {
+    color: var(--muted);
+}
+
 .form select {
     width: 100%;
     min-height: 54px;

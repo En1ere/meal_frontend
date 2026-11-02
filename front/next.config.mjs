@@ -1,10 +1,13 @@
 import { fileURLToPath } from 'node:url';
 
 const mode = process.env.NEXT_PUBLIC_API_MODE ?? (process.env.NODE_ENV === 'development' ? 'mock' : 'real');
+const legalEvidenceMode = process.env.NEXT_PUBLIC_LEGAL_EVIDENCE_MODE ?? 'approved';
 const singleSessionE2E = process.env.FRONT_E2E_SINGLE_SESSION === '1';
 const e2eProductionMocks = process.env.FRONT_E2E_PRODUCTION_MOCKS === '1';
 const singleSessionDevelopment = singleSessionE2E && process.env.NODE_ENV === 'development';
 if (!['mock', 'real'].includes(mode)) throw new Error('NEXT_PUBLIC_API_MODE must be mock or real');
+if (!['approved', 'demonstration'].includes(legalEvidenceMode))
+    throw new Error('NEXT_PUBLIC_LEGAL_EVIDENCE_MODE must be approved or demonstration');
 if (e2eProductionMocks && (process.env.NODE_ENV !== 'production' || mode !== 'mock' || !singleSessionE2E))
     throw new Error(
         'FRONT_E2E_PRODUCTION_MOCKS requires NODE_ENV=production, NEXT_PUBLIC_API_MODE=mock and FRONT_E2E_SINGLE_SESSION=1',
@@ -30,6 +33,7 @@ const config = {
     transpilePackages: ['@meal-planner/design-system'],
     env: {
         NEXT_PUBLIC_API_MODE: mode,
+        NEXT_PUBLIC_LEGAL_EVIDENCE_MODE: legalEvidenceMode,
         NEXT_PUBLIC_E2E_PRODUCTION_MOCKS: e2eProductionMocks ? '1' : '0',
     },
     ...(e2eProductionMocks ? { distDir: '.next-e2e' } : {}),

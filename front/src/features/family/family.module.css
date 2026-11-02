@@ -161,7 +161,7 @@
 
 .danger {
     background: var(--danger);
-    color: white;
+    color: var(--mp-color-on-primary);
 }
 
 .danger:hover:not(:disabled) {

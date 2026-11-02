@@ -37,6 +37,11 @@ export interface LegalDocument {
     document: ImmutableLegalDocumentRef;
 }
 
+export interface PublicLegalManifest {
+    status: Manifest['status'];
+    documents: LegalDocument[];
+}
+
 export interface LegalSettings {
     manifestStatus: Manifest['status'];
     documents: LegalDocument[];
@@ -68,9 +73,9 @@ export function legalSettingsKey(userId: string | undefined) {
     return ['legal-settings', userId] as const;
 }
 
-export async function getPublicLegalManifest(api: ApiClient, signal?: AbortSignal): Promise<LegalDocument[]> {
+export async function getPublicLegalManifest(api: ApiClient, signal?: AbortSignal): Promise<PublicLegalManifest> {
     const response = await api.request('GET /api/v1/legal/manifest', undefined, signal);
-    return toDocuments(response.data);
+    return { status: response.data.status, documents: toDocuments(response.data) };
 }
 
 export async function getLegalSettings(api: ApiClient, signal?: AbortSignal): Promise<LegalSettings> {
@@ -107,15 +112,24 @@ export async function setConsent(
 }
 
 export function hasPublishedRegistrationDocuments(
-    documents: LegalDocument[] | undefined,
+    manifest: PublicLegalManifest | undefined,
     options: { allowDemonstration?: boolean } = {},
 ) {
-    if (!documents) return false;
+    if (!manifest) return false;
+    const acceptsApproved = manifest.status === 'approved';
+    const acceptsDemonstration = manifest.status === 'demonstration' && options.allowDemonstration === true;
+    if (!acceptsApproved && !acceptsDemonstration) return false;
     return ['offer', 'privacy_notice'].every((id) =>
-        documents.some(
+        manifest.documents.some(
             (item) =>
                 item.id === id &&
-                (item.status === 'published' || (options.allowDemonstration === true && item.demonstration)),
+                ((acceptsApproved && item.status === 'published' && !item.demonstration) ||
+                    (acceptsDemonstration && item.demonstration)),
         ),
     );
+}
+
+export function hasReviewableRegistrationDocuments(manifest: PublicLegalManifest | undefined) {
+    if (!manifest || !['approved', 'demonstration'].includes(manifest.status)) return false;
+    return ['offer', 'privacy_notice'].every((id) => manifest.documents.some((item) => item.id === id && item.href));
 }

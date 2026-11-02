@@ -37,7 +37,7 @@
 .filters a[aria-current='page'] {
     background: var(--accent);
     border-color: var(--accent);
-    color: white;
+    color: var(--mp-color-on-primary);
 }
 
 .list,

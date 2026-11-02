@@ -27,7 +27,7 @@ export default defineConfig({
     },
     webServer: {
         command: `"${process.execPath}" "${npm}" --prefix front run dev`,
-        env: { NEXT_PUBLIC_API_MODE: 'mock' },
+        env: { NEXT_PUBLIC_API_MODE: 'mock', NEXT_PUBLIC_LEGAL_EVIDENCE_MODE: 'demonstration' },
         reuseExistingServer: false,
         timeout: 120_000,
         url: 'http://localhost:3000/auth',

@@ -317,6 +317,14 @@ function Content() {
                         <section className={styles.panel}>
                             <h2>Подборка пока пуста</h2>
                             <p>Добавьте продукты или заполните предпочтения, чтобы уточнить рекомендации.</p>
+                            <nav className={styles.actions} aria-label="Как получить рекомендации">
+                                <Link className="button primary" href="/inventory/new">
+                                    Добавить продукт
+                                </Link>
+                                <Link className="button outline" href="/settings/preferences">
+                                    Настроить предпочтения
+                                </Link>
+                            </nav>
                         </section>
                     ) : personalized && recommendations.data ? (
                         <>
@@ -409,7 +417,10 @@ function Content() {
                     <section className={styles.panel}>
                         <h2>Семейные рецепты</h2>
                         <span className={styles.badge}>Plus</span>
-                        <p>Семейная коллекция появится в следующей итерации.</p>
+                        <p>Общие рецепты доступны участникам активной семьи.</p>
+                        <Link className="button outline" href="/family/recipes">
+                            Открыть семейные рецепты
+                        </Link>
                     </section>
                     <section className={styles.panel}>
                         <h2>Готовьте из того, что есть</h2>

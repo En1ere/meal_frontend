@@ -1,3 +1,5 @@
+0.0.10 - 02.11.2026 | 10:02 - AuthShell и ServiceShell больше не принуждают тёмную native color-scheme: нативные контролы наследуют выбранную светлую/тёмную тему. ServiceShell использует семантические font/overlay tokens и навигационные touch-targets 44 px; добавлены regression-тесты для четырёх тем и shell-токенов.
+
 0.0.9 - 10.24.2026 | 18:34 - Перенос в самостоятельный frontend workspace с единой установкой React и сохранением общих UI-примитивов.
 
 0.0.8 - 12.10.2026 | 15:33 - AppShell и ServiceShell согласованы с React ref lifecycle: cleanup использует стабильный opener, а закрытие native dialog выполняется только обработчиком события, не во время render.

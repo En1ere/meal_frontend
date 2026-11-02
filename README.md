@@ -1,6 +1,6 @@
 # Meal frontend
 
-Текущие версии исходников: root `0.0.43`, frontend app `0.0.152`. Контракты соответствуют backend `0.0.152`, OpenAPI `0.0.61` и additive schema v31; wire paths и payload не менялись. Docker Compose, immutable digest deploy-helper и rollback подтверждены на VPS; технические HTTPS origins остаются активными до появления DNS для `meal.royalexander.online` и `admin.meal.royalexander.online`.
+Текущие версии исходников: root `0.0.44`, frontend app `0.0.153`. Контракты соответствуют backend `0.0.152`, OpenAPI `0.0.61` и additive schema v31; wire paths и payload не менялись. Docker Compose, immutable digest deploy-helper и rollback подтверждены на VPS; технические HTTPS origins остаются активными до появления DNS для `meal.royalexander.online` и `admin.meal.royalexander.online`.
 
 Самостоятельный клиент Meal Planner: `front/` (Next.js, порт 3000) и локальная `design-system/`. Админка вынесена в независимый `meal_admin` (Vite, порт 3002), сервер и SQL находятся в `meal_backend` (API, порт 3001). Каждый репозиторий устанавливается отдельно, без исходников соседей и без исходного `test-roject`.
 
@@ -25,6 +25,7 @@ npm run dev
 
 ```dotenv
 NEXT_PUBLIC_API_MODE=real
+NEXT_PUBLIC_LEGAL_EVIDENCE_MODE=approved
 BACKEND_ORIGIN=http://127.0.0.1:3001
 ```
 
@@ -56,6 +57,6 @@ E2E использует Chromium по умолчанию; установить 
 
 Контрактная сверка с явно выбранным backend-артефактом: `node front/scripts/check-backend-contract.mjs ../meal_backend/contracts/openapi.json`. Генерация валидаторов: `npm --workspace front run contracts:generate`. Проверка принимает путь к артефакту явно; соседний checkout не нужен для обычной установки, проверки типов и сборки.
 
-После сборки клиент запускается через `npm start`; production image использует Next standalone output и непривилегированный процесс на порту `3000`. `NEXT_PUBLIC_API_MODE`, `NEXT_PUBLIC_APP_VERSION` и используемый Next rewrites `BACKEND_ORIGIN` фиксируются во время `next build`: production image собирается с `real`, версией app manifest и Docker-origin `http://backend:3001`. Runtime не должен выдавать эти параметры за изменяемую конфигурацию. Настройки статического hosting админки описаны в отдельном `meal_admin`. Две копии дизайн-системы версионируются локально; общие изменения компонентов нужно явно переносить и проверять в обоих проектах.
+После сборки клиент запускается через `npm start`; production image использует Next standalone output и непривилегированный процесс на порту `3000`. `NEXT_PUBLIC_API_MODE`, `NEXT_PUBLIC_LEGAL_EVIDENCE_MODE`, `NEXT_PUBLIC_APP_VERSION` и используемый Next rewrites `BACKEND_ORIGIN` фиксируются во время `next build`. Публичный production использует fail-closed `approved`; только согласованный технический стенд может собираться с `demonstration`, причём backend обязан использовать тот же evidence mode. Runtime не должен выдавать эти параметры за изменяемую конфигурацию. Настройки статического hosting админки описаны в отдельном `meal_admin`. Две копии дизайн-системы версионируются локально; общие изменения компонентов нужно явно переносить и проверять в обоих проектах.
 
 Тестовый production-стенд развёрнут на `https://abstract-usable-gazebo.ruweb.place` в single-host Docker Compose с immutable GHCR digest, host Nginx/TLS и loopback ingress. Админка доступна отдельно на `https://admin.abstract-usable-gazebo.ruweb.place`. Сборка, smoke и rollback клиента описаны в [DEPLOYMENT.md](DEPLOYMENT.md); общая серверная инфраструктура, backup и миграции — в `meal_backend/docs/DEPLOYMENT.md`. Пароли и MFA-секреты в Git не хранятся. Каталог `/legal` показывает 11 allowlisted предварительных текстов с заглушкой `[Тут будут данные]`; пакет остаётся `draft_blocked`, а внешние провайдеры — отдельными условиями публичной готовности.

@@ -65,7 +65,7 @@
 
 .read-only {
     border-color: var(--mp-color-warning-text);
-    background: var(--surface) 4df;
+    background: var(--mp-color-warning-surface);
 }
 
 .active p,

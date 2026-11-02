@@ -12,10 +12,7 @@ export interface AuthShellProps {
 
 export function AuthShell({ brand, themeControl, art, artCaption, children, service = false }: AuthShellProps) {
     return (
-        <main
-            id="main"
-            className={`${styles.layout} ${service ? styles.service : ''}`.trim()}
-        >
+        <main id="main" className={styles.layout} data-service={service ? 'true' : 'false'}>
             <aside
                 className={styles.art}
                 aria-label={art.alt}

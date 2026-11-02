@@ -19,7 +19,11 @@ import {
     formError,
 } from './form-parts.js';
 import styles from './account.module.css';
-import { getPublicLegalManifest, hasPublishedRegistrationDocuments } from '../../shared/legal/mock-legal.js';
+import {
+    getPublicLegalManifest,
+    hasPublishedRegistrationDocuments,
+    hasReviewableRegistrationDocuments,
+} from '../../shared/legal/mock-legal.js';
 
 const acceptedMessage =
     'Запрос принят. Если действие доступно для указанного адреса, будет подготовлено письмо. Принятие запроса не подтверждает доставку.';
@@ -46,20 +50,41 @@ export function SignUpPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [repeat, setRepeat] = useState('');
-    const [termsAccepted, setTermsAccepted] = useState(false);
-    const [privacyAcknowledged, setPrivacyAcknowledged] = useState(false);
+    const [termsAcceptedFor, setTermsAcceptedFor] = useState<string | null>(null);
+    const [privacyAcknowledgedFor, setPrivacyAcknowledgedFor] = useState<string | null>(null);
     const [accepted, setAccepted] = useState(false);
+    const [legalRetrying, setLegalRetrying] = useState(false);
     const legal = useQuery({
         queryKey: ['public-legal-manifest'],
         retry: false,
         enabled: !!runtime.api,
         queryFn: ({ signal }) => getPublicLegalManifest(runtime.api!, signal),
     });
-    const terms = legal.data?.find((item) => item.id === 'offer');
-    const privacy = legal.data?.find((item) => item.id === 'privacy_notice');
-    const legalReady = hasPublishedRegistrationDocuments(legal.data, {
-        allowDemonstration: process.env.NEXT_PUBLIC_API_MODE === 'mock',
-    });
+    const terms = legal.data?.documents.find((item) => item.id === 'offer');
+    const privacy = legal.data?.documents.find((item) => item.id === 'privacy_notice');
+    const demonstrationEvidenceMode = process.env.NEXT_PUBLIC_LEGAL_EVIDENCE_MODE === 'demonstration';
+    const legalStateCurrent = !legal.isPending && !legal.isError && !legal.isFetching;
+    const legalReady =
+        legalStateCurrent &&
+        hasPublishedRegistrationDocuments(legal.data, { allowDemonstration: demonstrationEvidenceMode });
+    const legalReviewable = legalStateCurrent && hasReviewableRegistrationDocuments(legal.data);
+    const usesDemonstrationEvidence = terms?.demonstration === true || privacy?.demonstration === true;
+    const evidenceKey = (document: typeof terms) =>
+        document
+            ? [
+                  document.document.documentId,
+                  document.document.documentVersion,
+                  document.document.bodyHash,
+                  document.document.contentReleaseId,
+                  document.document.publishEventId,
+              ].join(':')
+            : null;
+    const termsEvidenceKey = evidenceKey(terms);
+    const privacyEvidenceKey = evidenceKey(privacy);
+    const termsAccepted = legalStateCurrent && termsEvidenceKey !== null && termsAcceptedFor === termsEvidenceKey;
+    const privacyAcknowledged =
+        legalStateCurrent && privacyEvidenceKey !== null && privacyAcknowledgedFor === privacyEvidenceKey;
+    const legalStatusId = 'registration-legal-status';
     return (
         <AuthShell>
             <h1>{accepted ? 'Подтвердите почту' : 'Создайте аккаунт'}</h1>
@@ -119,8 +144,8 @@ export function SignUpPage() {
                                     );
                                 } catch (cause) {
                                     if (cause instanceof ApiError && cause.code === 'LEGAL_DOCUMENT_STALE') {
-                                        setTermsAccepted(false);
-                                        setPrivacyAcknowledged(false);
+                                        setTermsAcceptedFor(null);
+                                        setPrivacyAcknowledgedFor(null);
                                         await legal.refetch();
                                         formError(
                                             'Документы обновились. Ознакомьтесь с актуальными версиями и отметьте обе галочки снова.',
@@ -194,18 +219,19 @@ export function SignUpPage() {
                             type="checkbox"
                             required
                             checked={termsAccepted}
-                            onChange={(e) => setTermsAccepted(e.target.checked)}
-                            disabled={action.pending || !legalReady}
+                            onChange={(e) => setTermsAcceptedFor(e.target.checked ? termsEvidenceKey : null)}
+                            disabled={action.pending || !legalReviewable}
+                            aria-describedby={legalReady ? undefined : legalStatusId}
                         />
                         <span>
-                            <label htmlFor="terms-accepted">Я принимаю</label>{' '}
+                            <label htmlFor="terms-accepted">Я принимаю условия использования.</label>{' '}
                             <Link
                                 href={terms?.href ?? '/legal/terms'}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 aria-label="Условия использования (откроются в новой вкладке)"
                             >
-                                условия использования
+                                Открыть документ
                             </Link>
                             {terms ? `, версия ${terms.version}` : ''}.
                         </span>
@@ -216,39 +242,75 @@ export function SignUpPage() {
                             type="checkbox"
                             required
                             checked={privacyAcknowledged}
-                            onChange={(e) => setPrivacyAcknowledged(e.target.checked)}
-                            disabled={action.pending || !legalReady}
+                            onChange={(e) => setPrivacyAcknowledgedFor(e.target.checked ? privacyEvidenceKey : null)}
+                            disabled={action.pending || !legalReviewable}
+                            aria-describedby={legalReady ? undefined : legalStatusId}
                         />
                         <span>
-                            <label htmlFor="privacy-acknowledged">Я ознакомился с</label>{' '}
+                            <label htmlFor="privacy-acknowledged">Я ознакомился с политикой конфиденциальности.</label>{' '}
                             <Link
                                 href={privacy?.href ?? '/legal/privacy'}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 aria-label="Политика конфиденциальности (откроется в новой вкладке)"
                             >
-                                политикой конфиденциальности
+                                Открыть документ
                             </Link>
                             {privacy ? `, версия ${privacy.version}` : ''}.
                         </span>
                     </div>
-                    <p className={styles.muted}>
-                        Это демонстрационные версии документов для проверки сценария. Они не являются production-
-                        юридическими текстами.
-                    </p>
-                    {legal.isPending && <p role="status">Проверяем доступность документов…</p>}
-                    {legal.isError && (
-                        <p role="alert">Документы недоступны. Регистрация заблокирована до их загрузки.</p>
+                    {legalRetrying && (
+                        <div id={legalStatusId} role="status" aria-live="polite" aria-busy="true">
+                            <p>Загружаем актуальные документы…</p>
+                            <button className="text-button" type="button" disabled aria-busy="true">
+                                Загружаем…
+                            </button>
+                        </div>
                     )}
+                    {!legalRetrying && (legal.isPending || legal.isFetching) && (
+                        <p id={legalStatusId} role="status">
+                            Проверяем доступность документов…
+                        </p>
+                    )}
+                    {!legalRetrying && legal.isError && (
+                        <div id={legalStatusId} role="alert" aria-live="assertive" aria-busy={legal.isFetching}>
+                            <p>Документы недоступны. Регистрация заблокирована до их загрузки.</p>
+                            <button
+                                className="text-button"
+                                type="button"
+                                disabled={action.pending || legal.isFetching}
+                                aria-busy="false"
+                                onClick={() => {
+                                    setTermsAcceptedFor(null);
+                                    setPrivacyAcknowledgedFor(null);
+                                    setLegalRetrying(true);
+                                    void legal.refetch().finally(() => setLegalRetrying(false));
+                                }}
+                            >
+                                Загрузить документы снова
+                            </button>
+                        </div>
+                    )}
+                    {!legalRetrying && !legal.isPending && !legal.isFetching && !legal.isError && !legalReady && (
+                        <p id={legalStatusId} className={styles.muted} role="status">
+                            Доступны демонстрационные версии документов: с ними можно ознакомиться, но создать аккаунт
+                            получится только после публикации юридических текстов.
+                        </p>
+                    )}
+                    {!legalRetrying &&
+                        !legal.isPending &&
+                        !legal.isFetching &&
+                        !legal.isError &&
+                        legalReady &&
+                        usesDemonstrationEvidence && (
+                            <p className={styles.muted} role="status">
+                                Тестовый контур: регистрация фиксирует демонстрационные версии документов. Они не
+                                являются утверждёнными production-текстами.
+                            </p>
+                        )}
                     <Submit
                         pending={action.pending}
-                        disabled={
-                            !runtime.api ||
-                            process.env.NEXT_PUBLIC_API_MODE !== 'mock' ||
-                            !legalReady ||
-                            !termsAccepted ||
-                            !privacyAcknowledged
-                        }
+                        disabled={!runtime.api || !legalReady || !termsAccepted || !privacyAcknowledged}
                     >
                         Создать аккаунт
                     </Submit>

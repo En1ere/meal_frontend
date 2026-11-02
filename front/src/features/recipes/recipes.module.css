@@ -297,7 +297,7 @@
 }
 
 .warning {
-    background: var(--surface) 0df;
+    background: var(--mp-color-warning-surface);
     color: var(--mp-color-warning-text);
 }
 
@@ -407,7 +407,7 @@
     width: fit-content;
     padding: 0.35rem 0.55rem;
     border-radius: 0.5rem;
-    background: var(--surface) 0df;
+    background: var(--mp-color-warning-surface);
     color: var(--mp-color-warning-text);
     font-size: 0.82rem;
 }
@@ -505,7 +505,7 @@
 }
 
 .allergen-summary {
-    background: var(--surface) af4;
+    background: var(--soft);
 }
 
 .allergen-heading,
@@ -555,7 +555,7 @@
 
 .allergen-incomplete {
     border-color: var(--mp-color-warning-text);
-    background: var(--surface) 0df;
+    background: var(--mp-color-warning-surface);
 }
 
 .allergen-dialog {
@@ -597,7 +597,7 @@
     padding: 1rem;
     border: 1px solid var(--mp-color-warning-text);
     border-radius: 0.8rem;
-    background: var(--surface) 8ee;
+    background: var(--mp-color-warning-surface);
 }
 
 .unknown-list {

@@ -43,7 +43,7 @@
     padding: 16px 20px;
     border: 1px solid var(--line);
     border-radius: 18px;
-    background: var(--surface) 9e9;
+    background: var(--mp-color-warning-surface);
 }
 
 .read-only span {

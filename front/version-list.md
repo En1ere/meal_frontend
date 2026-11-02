@@ -1,5 +1,7 @@
 # Frontend version-list
 
+0.0.153 - 02.11.2026 | 09:09 - Fixed the registration blocker: submit no longer depends on mock API mode, legal-manifest failures expose an explicit retry, draft documents remain reviewable, and consent labels provide full keyboard/pointer targets. Added an explicit approved/demonstration evidence build policy (approved by default) and regression coverage. Account/offline settings retain the shared PersonalShell, including explicit offline access, without duplicate brand/theme controls. Confirmed contrast, warning surfaces and typography now use semantic design tokens. Recipe empty states now lead directly to inventory, preferences and the implemented family collection; unavailable QR labels link to pricing instead of a dead button, and the unsupported locale is presented as readonly information. API payloads and paths are unchanged.
+
 0.0.152 - 29.10.2026 | 18:22 - Release metadata synchronized with backend runtime 0.0.152 and admin 0.0.128 after the backend APP_VERSION drift fix; OpenAPI 0.0.61, schema v31, wire contracts and frontend behavior are unchanged.
 
 0.0.151 - 29.10.2026 | 18:05 - Full OpenAPI 0.0.61 metadata synchronized with backend 0.0.151 and additive schema v31. Generated contracts, package/lock and release documentation were updated; wire paths, payloads and frontend runtime behavior are unchanged.
