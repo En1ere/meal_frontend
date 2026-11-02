@@ -59,6 +59,8 @@ function ReceiptNewContent() {
         [fiscalNumber, setFiscalNumber] = useState(''),
         [fiscalDocumentNumber, setFiscalDocumentNumber] = useState(''),
         [financeConsent, setFinanceConsent] = useState(false),
+        [ocrReviewRequired, setOcrReviewRequired] = useState(false),
+        [ocrReviewed, setOcrReviewed] = useState(false),
         [busy, setBusy] = useState(false),
         [error, setError] = useState('');
     const requestSignal = useRequestSignal();
@@ -72,6 +74,10 @@ function ReceiptNewContent() {
                 validateImage(new Uint8Array(await f.arrayBuffer()), f.type);
             }
             setFiles((a) => [...a, ...incoming]);
+            setText('');
+            setLines([]);
+            setOcrReviewRequired(false);
+            setOcrReviewed(false);
         } catch (e) {
             setError(e instanceof Error ? e.message : 'Не удалось прочитать фото.');
         }
@@ -87,6 +93,8 @@ function ReceiptNewContent() {
             const result = await api.upload('POST /api/v1/inventory/ingest/scan', body, signal);
             if (signal.aborted) return;
             setText(result.data.images.map((i) => i.text).join('\n'));
+            setOcrReviewRequired(result.data.requiresReview);
+            setOcrReviewed(false);
         } catch (e) {
             if (!signal.aborted)
                 setError(e instanceof ApiError ? e.message : 'Не удалось распознать. Можно заполнить позиции вручную.');
@@ -95,6 +103,10 @@ function ReceiptNewContent() {
         }
     }
     async function save() {
+        if (ocrReviewRequired && !ocrReviewed) {
+            setError('Подтвердите, что вы проверили распознанный текст.');
+            return;
+        }
         if ((sourceKind === 'electronic_link' || financeEnabled) && !pro) {
             setError('Электронные и финансовые чеки доступны только с активным Pro.');
             return;
@@ -207,7 +219,7 @@ function ReceiptNewContent() {
                             </label>
                         </div>
                         <p>
-                            До трёх фото, каждое до 10 МБ и 20 Мп. Фото видно только здесь до закрытия страницы;
+                            До трёх фото, каждое до 10 МБ и 12 Мп. Фото видно только здесь до закрытия страницы;
                             хранение исходника пока недоступно.
                         </p>
                     </>
@@ -223,7 +235,13 @@ function ReceiptNewContent() {
                                     <Photo file={file} />
                                     <button
                                         disabled={busy || cmd.pending}
-                                        onClick={() => setFiles((a) => a.filter((_, n) => n !== i))}
+                                        onClick={() => {
+                                            setFiles((a) => a.filter((_, n) => n !== i));
+                                            setText('');
+                                            setLines([]);
+                                            setOcrReviewRequired(false);
+                                            setOcrReviewed(false);
+                                        }}
                                     >
                                         Убрать фото
                                     </button>
@@ -245,9 +263,22 @@ function ReceiptNewContent() {
                         rows={8}
                         value={text}
                         disabled={busy || cmd.pending || cmd.unknown}
-                        onChange={(e) => setText(e.target.value)}
+                        onChange={(e) => {
+                            setText(e.target.value);
+                            if (ocrReviewRequired) setOcrReviewed(false);
+                        }}
                     />
                 </label>
+                {ocrReviewRequired && (
+                    <label className={styles.check}>
+                        <input
+                            type="checkbox"
+                            checked={ocrReviewed}
+                            onChange={(event) => setOcrReviewed(event.target.checked)}
+                        />
+                        Я проверил распознанный текст и исправил ошибки.
+                    </label>
+                )}
                 <button
                     disabled={!text.trim() || busy || cmd.pending || cmd.unknown}
                     onClick={() => {
@@ -361,6 +392,7 @@ function ReceiptNewContent() {
                         !lines.length ||
                         cmd.pending ||
                         busy ||
+                        (ocrReviewRequired && !ocrReviewed) ||
                         (financeEnabled && (!financeConsent || !totalRub)) ||
                         (sourceKind === 'electronic_link' && !electronicLink)
                     }

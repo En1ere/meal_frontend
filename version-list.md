@@ -1,5 +1,7 @@
 # Meal frontend version-list
 
+0.0.46 - 11.02.2026 | 16:39 - Workspace синхронизирован с production-safe OCR preview контрактом backend: ответ требует `requiresReview: true`, чек нельзя сохранить без явного подтверждения ручной проверки, а клиентский лимит изображений приведён к CDR-лимиту 12 Мп. Frontend package поднят до 0.0.155.
+
 0.0.44 - 02.11.2026 | 09:09 - Registration consent controls now remain reviewable when draft documents are available, expose a recoverable legal-manifest error, and unlock submit only for the explicit approved/demonstration build policy plus both acknowledgements. The test deploy declares demonstration evidence; production defaults fail-closed to approved. Account/offline settings retain the shared application shell, and confirmed theme, contrast, typography and malformed CSS values now use design-system tokens. Recipe, family, QR capability and locale states lead to implemented destinations or explain readonly behavior instead of rendering dead/misleading controls. Wire contracts are unchanged.
 
 0.0.43 - 29.10.2026 | 18:22 - Release metadata синхронизирована с backend runtime 0.0.152 и admin 0.0.128 после устранения APP_VERSION drift; OpenAPI 0.0.61, schema v31 и wire-контракты не менялись.

@@ -88,9 +88,9 @@ export async function runIngestUpload(path: string, form: FormData, signal?: Abo
                 const file = item as File;
                 validateImage(new Uint8Array(await file.arrayBuffer()), file.type);
                 const bitmap = await createImageBitmap(file);
-                if (bitmap.width * bitmap.height > 20000000) {
+                if (bitmap.width * bitmap.height > 12000000) {
                     bitmap.close();
-                    throw new Error('Фото превышает 20 Мп');
+                    throw new Error('Фото превышает 12 Мп');
                 }
                 const scale = Math.min(1, 2400 / Math.max(bitmap.width, bitmap.height));
                 const canvas = new OffscreenCanvas(
@@ -108,6 +108,7 @@ export async function runIngestUpload(path: string, form: FormData, signal?: Abo
             }
             return scanPreviewSchema.parse({
                 images,
+                requiresReview: true,
                 warnings: [
                     'Распознавание может ошибаться. Проверьте название, количество, единицу и даты перед сохранением.',
                 ],

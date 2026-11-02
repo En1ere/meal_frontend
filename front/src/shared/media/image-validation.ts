@@ -57,5 +57,5 @@ export function validateImage(bytes: Uint8Array, mime: string): void {
         }
     }
     if (!width || !height) throw new Error('Не удалось проверить изображение. Нужен JPEG, PNG или WebP.');
-    if (width * height > 20000000) throw new Error('Фото превышает 20 Мп');
+    if (width * height > 12000000) throw new Error('Фото превышает 12 Мп');
 }

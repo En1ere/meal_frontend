@@ -1,4 +1,4 @@
-// Generated from contracts/openapi.json. Do not edit. SHA256: 50572e87f8fb6d96dea45b5209caf5bde000fc067b10bfda7d72f3e4cff5f92c
+// Generated from contracts/openapi.json. Do not edit. SHA256: f9a62975e9e6906a61dffbc88cb90d4ffecda76501f1f0cac6a6d9924f10a622
 import { z } from 'zod';
 export const contractVersion = '0.0.63';
 export const contracts = {
@@ -19238,6 +19238,7 @@ export const contracts = {
             data: z.strictObject({
                 images: z.array(z.strictObject({ filename: z.string(), text: z.string(), confidence: z.number() })),
                 warnings: z.array(z.string()),
+                requiresReview: z.literal(true),
             }),
             meta: z.strictObject({
                 requestId: z

@@ -6,6 +6,7 @@ export const importPreviewSchema = z.strictObject({
 });
 export const scanPreviewSchema = z.strictObject({
     images: z.array(z.strictObject({ filename: z.string(), text: z.string(), confidence: z.number() })),
+    requiresReview: z.literal(true),
     warnings: z.array(z.string()),
 });
 export type ImportPreview = z.infer<typeof importPreviewSchema>;

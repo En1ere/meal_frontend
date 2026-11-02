@@ -99,7 +99,7 @@ export function ScanPage({ scope = 'private' }: { scope?: InventoryScope }) {
                 (file) => !['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 10485760,
             )
         ) {
-            setCameraError('До 3 фото JPEG, PNG или WebP, каждое до 10 МБ и 20 Мп.');
+            setCameraError('До 3 фото JPEG, PNG или WebP, каждое до 10 МБ и 12 Мп.');
             return;
         }
         const attempt = ++photoGeneration.current;
@@ -174,7 +174,7 @@ export function ScanPage({ scope = 'private' }: { scope?: InventoryScope }) {
                     <section className={styles.card}>
                         <h2>Снимите упаковку</h2>
                         <p>
-                            До 3 фото JPEG, PNG или WebP, каждое до 10 МБ и 20 Мп. Хорошо освещённые название, состав и
+                            До 3 фото JPEG, PNG или WebP, каждое до 10 МБ и 12 Мп. Хорошо освещённые название, состав и
                             штрихкод распознаются точнее.
                         </p>
                         <video
@@ -282,6 +282,9 @@ export function ScanPage({ scope = 'private' }: { scope?: InventoryScope }) {
                     {mutation.data && (
                         <section className={styles.card}>
                             <h2>Результат распознавания</h2>
+                            <p className={styles.notice} role="status">
+                                Это черновик OCR. Перед сохранением нужно вручную проверить каждую строку.
+                            </p>
                             {mutation.data.images.map((image) => (
                                 <p key={image.filename}>
                                     {image.filename}: уверенность {Math.round(image.confidence)}%
