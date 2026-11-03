@@ -1,5 +1,7 @@
 # Meal frontend version-list
 
+0.0.48 - 11.03.2026 | 14:21 - Frontend package 0.0.157: consumer contract синхронизирован с backend OpenAPI 0.0.65 (288 операций), regenerated client проверен normalized diff. Финальный reliability checkpoint обновил только устаревшие Edge desktop/mobile assertions для legal-заглушки `[Тут будут данные]`, независимых push/email capabilities и theme hydration; focused повтор 6/6, полный check 181/181 + ops 6/6, build budget и audit 0. VPS restart и immutable frontend rollback/roll-forward завершены all-component verify без изменения данных.
+
 0.0.47 - 11.02.2026 | 18:20 - Frontend package 0.0.156: в настройках уведомлений добавлено явное подключение/отключение session-bound Web Push без автоматического permission prompt. Существующий offline worker обрабатывает минимизированный push payload и открывает только allowlisted same-origin маршруты; unsupported/denied/unavailable/error состояния остаются восстановимыми. OpenAPI snapshot 0.0.64 и generated client синхронизированы с тремя additive push endpoints; общий ApiClient обеспечивает строгую Zod-валидацию и CSRF без временного transport API.
 
 0.0.46 - 11.02.2026 | 16:39 - Workspace синхронизирован с production-safe OCR preview контрактом backend: ответ требует `requiresReview: true`, чек нельзя сохранить без явного подтверждения ручной проверки, а клиентский лимит изображений приведён к CDR-лимиту 12 Мп. Frontend package поднят до 0.0.155.

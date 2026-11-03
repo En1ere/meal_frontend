@@ -431,6 +431,6 @@ test('legal pages and registration expose loading, draft and recovery states wit
     await gotoSettled(page, '/legal/terms');
     await expect(page.getByRole('note', { name: 'Статус документа' })).toContainText('production-редакцией');
     await gotoSettled(page, '/legal/privacy');
-    await expect(page.getByRole('note', { name: 'Статус документа' })).toContainText('[УКАЗАТЬ]');
+    await expect(page.getByRole('note', { name: 'Статус документа' })).toContainText('[Тут будут данные]');
     expect(errors).toEqual([]);
 });

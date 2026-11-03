@@ -242,3 +242,15 @@
 ## 28. Критерий завершения
 
 Приёмка считается успешной, когда все применимые кейсы PASS на mock и обязательные интеграционные кейсы PASS с real backend; нет console errors, неожиданных 4xx/5xx, дублей, утечки памяти или чужих данных, линейного роста DOM/listeners, необъяснённых расхождений контрактов, недоступных контролов, случайных цветов и горизонтального overflow. Все BLOCKED должны иметь владельца, причину и условие разблокировки.
+
+## 29. Финальный reliability checkpoint 03.11.2026
+
+1. Выполнить `npm run check`, `npm run test:performance:budget` и dependency audit. Ожидается: design-system 7/7, OpenAPI 0.0.65 / 288 операций, architecture/type/lint/style/format PASS, frontend unit 181/181, ops 6/6, build и audit 0.
+2. На desktop/mobile проверить registration legal checkboxes, required validation, stale/503 legal manifest recovery, double-submit и atomic mail failure. Labels и сами checkbox должны быть кликабельны мышью, touch и клавиатурой.
+3. Проверить public/auth/notifications: Web Push control доступен, если `push=true`, даже когда email delivery недоступна; email control disabled отдельно. Permission запрашивается только после явного «Подключить».
+4. Переключить `coffee-light`, `coffee-dark`, `nature-light`, `nature-dark` на публичной и authenticated странице. Перед действием controlled select должен синхронизироваться с inline-applied `html[data-theme]`; после reload совпадают select, DOM attribute и localStorage.
+5. Проверить legal pages: текущая согласованная заглушка — `[Тут будут данные]`. Старый `[УКАЗАТЬ]` не является актуальным acceptance evidence.
+6. Выполнить cross-app recipe flow: draft → submit → admin approve → public readback; затем новая revision pending/rejected не заменяет активную publication. Повторить hide/unpublish, 409/412, transient 503 и unknown outcome с тем же idempotency key.
+7. На production после container restart и immutable rollback/roll-forward открыть `/recipes`, login и основные authenticated routes. Ожидается 200/корректный auth redirect, отсутствие console/page errors и сохранение текущего digest после roll-forward.
+8. Bounded public load учитывает общий backend limiter 200 requests/min/IP: после исчерпания ожидается 429, а после окна — восстановление 200 без роста RSS/PID. Не отключать limiter ради теста.
+9. Physical screen reader/device, production RUM/APM, real payment/SMTP/AI/scanner и custom-domain DNS остаются отдельными внешними gates.

@@ -915,3 +915,11 @@
 6. Передать внешний, protocol-relative или неизвестный href, malformed JSON и oversized fields: worker использует `/notifications` и безопасные fallback-тексты.
 7. Проверить logout/switch account, две вкладки, rotation subscription, offline/reconnect и 404/410 cleanup: подписка другого аккаунта не используется, private payload не кэшируется.
 8. Повторить в Chrome, Firefox и установленном iOS PWA; проверить четыре темы, mobile layout и клавиатурный focus.
+
+## Reliability checkpoint 03.11.2026
+
+- Backend consumer snapshot обновлён с OpenAPI 0.0.64 до 0.0.65; generated client проверяет 288 операций, normalized backend/frontend contract diff отсутствует.
+- Полный `npm run check`: design-system 7/7, architecture/type/lint/style/format PASS, frontend unit 181/181, ops tests 6/6. Readiness честно остаётся blocked только внешними manifests/provider/physical-device inputs.
+- Production build/browser budget PASS: 188 files, 154 unique chunks, max raw/gzip 853,105/124,355 B, total raw/gzip 3,562,131/878,981 B, max route 25 requests / 377,959 gzip B; dependency audit — 0 vulnerabilities.
+- Возобновлённый Edge desktop/mobile пакет: 61/66 initial PASS; пять устаревших expectations исправлены и focused повтор 6/6 PASS. Исправлены только тесты: legal placeholder, независимость push/email capability и ожидание theme hydration.
+- VPS restart сохранил schema/data aggregates, frontend application rollback/roll-forward вернул текущий immutable digest, `/recipes` после limiter window — 200, all-component verify PASS.

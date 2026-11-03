@@ -10,6 +10,9 @@ async function assertThemeControl(page: Page) {
     }
     await expect(switcher).toBeVisible({ timeout: 30_000 });
     await expect(switcher.locator('option')).toHaveCount(themes.length);
+    const initialTheme = await page.locator('html').getAttribute('data-theme');
+    expect(themes).toContain(initialTheme);
+    await expect(switcher).toHaveValue(initialTheme!);
     for (const theme of themes) {
         await switcher.selectOption(theme);
         await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
@@ -33,6 +36,7 @@ test('applies and persists every public theme before hydration', async ({ page }
     await page.addInitScript(() => localStorage.setItem('meal-theme', 'nature-dark'));
     await page.goto('/auth', { waitUntil: 'domcontentloaded' });
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'nature-dark');
+    await expect(page.getByRole('button', { name: 'Войти', exact: true })).toBeEnabled({ timeout: 30_000 });
     await assertThemeControl(page);
 });
 

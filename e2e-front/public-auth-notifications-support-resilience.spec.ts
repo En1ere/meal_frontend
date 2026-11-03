@@ -356,7 +356,8 @@ test('notification counts synchronize across tabs and unavailable delivery stays
     await expect(page.getByRole('alert').filter({ hasText: 'Рецепт недоступен' })).toBeVisible({ timeout: 30_000 });
     await gotoExact(page, '/settings/notifications');
     await expect(page.getByText('Доставка ещё не подключена')).toBeVisible();
-    await expect(page.getByLabel('Web Push: security')).toBeDisabled();
+    await expect(page.getByRole('button', { name: 'Подключить', exact: true })).toBeEnabled();
+    await expect(page.getByLabel('Web Push: security')).toBeEnabled();
     await expect(page.getByLabel('Email: security')).toBeDisabled();
     await second?.close();
 });
