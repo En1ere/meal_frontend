@@ -1,41 +1,13 @@
 import assert from 'node:assert/strict';
 import { after, test } from 'node:test';
-import { mkdir, mkdtemp, realpath, rm, stat, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { analyzeArchitecture } from './architecture-analyzer.mjs';
+import { resolveTestOutputRoot } from './test-output-root.mjs';
 
-function findProjectsRoot(start) {
-    let current = path.resolve(start);
-    while (true) {
-        if (path.basename(current).toLocaleLowerCase('en-US') === 'projects') return current;
-        const parent = path.dirname(current);
-        if (parent === current) return null;
-        current = parent;
-    }
-}
-
-const projectsRoot = findProjectsRoot(path.dirname(fileURLToPath(import.meta.url)));
-if (!projectsRoot) throw new Error('Architecture fixtures require a repository ancestor directory named projects');
-
-const permittedOutputRoot = path.join(projectsRoot, 'tempFiles');
-let permittedOutputRootStats;
-try {
-    permittedOutputRootStats = await stat(permittedOutputRoot);
-} catch {
-    throw new Error(`Architecture fixture root is unavailable: ${permittedOutputRoot}`);
-}
-if (!permittedOutputRootStats.isDirectory())
-    throw new Error(`Architecture fixture root is not a directory: ${permittedOutputRoot}`);
-
-const canonicalPermittedOutputRoot = await realpath(permittedOutputRoot);
-const outputRoot = process.env.QA_OUTPUT_DIR ? path.resolve(process.env.QA_OUTPUT_DIR) : canonicalPermittedOutputRoot;
-await mkdir(outputRoot, { recursive: true });
-const canonicalOutputRoot = await realpath(outputRoot);
-const outputRootRelative = path.relative(canonicalPermittedOutputRoot, canonicalOutputRoot);
-if (outputRootRelative.startsWith('..') || path.isAbsolute(outputRootRelative))
-    throw new Error(`QA_OUTPUT_DIR must resolve inside ${canonicalPermittedOutputRoot}: ${canonicalOutputRoot}`);
-const fixtureRoot = await mkdtemp(path.join(outputRoot, 'meal-frontend-architecture-'));
+const canonicalOutputRoot = await resolveTestOutputRoot(path.dirname(fileURLToPath(import.meta.url)), 'Architecture');
+const fixtureRoot = await mkdtemp(path.join(canonicalOutputRoot, 'meal-frontend-architecture-'));
 
 function verifyFixturePath(target) {
     const relative = path.relative(canonicalOutputRoot, target);

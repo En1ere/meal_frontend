@@ -1,5 +1,7 @@
 # Frontend version-list
 
+0.0.267 - 11.07.2026 | 00:55 - Исправлена переносимость architecture/query-key/transport fixture tests: рабочая станция сохраняет строгую границу `projects/tempFiles`, а clean GitHub Actions runner безопасно использует свой `RUNNER_TEMP`. CI больше не зависит от имени родительской директории checkout; escape-проверка `QA_OUTPUT_DIR` сохранена.
+
 0.0.266 - 11.07.2026 | 00:05 - Первичный AI-запуск и continuation переведены на `202 Accepted` через canonical operation routes и owner-scoped polling. Экраны отдельно показывают очередь, выполнение, подтверждённую ошибку и неизвестный provider outcome; автоматический повтор для `unknown` запрещён, stable idempotency key сохраняется до принятия операции, а данные беседы обновляются только после `succeeded`. Generated OpenAPI обновлён до 0.0.70; добавлены mock/readback и подробный ручной тест-кейс.
 
 0.0.265 - 06.11.2026 | 23:12 - Синхронизирован OpenAPI 0.0.68 и типизирован безопасный `GET /ai/operations/{id}` для будущего bounded polling: lifecycle и financial state разделены, неизвестный provider outcome виден как reconciliation hold, а prompt/context/raw provider data отсутствуют. UI пока не переключён на polling до публикации durable create/worker lifecycle.

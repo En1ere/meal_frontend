@@ -1,5 +1,7 @@
 # Meal frontend version-list
 
+0.0.49 - 11.07.2026 | 00:55 - Frontend package 0.0.267 исправляет portable contract архитектурных тестов: локально временные fixtures по-прежнему создаются только в разрешённом `projects/tempFiles`, а GitHub Actions использует изолированный `RUNNER_TEMP`. Устранено падение clean Linux CI, вызванное ошибочным требованием иметь ancestor с именем `projects` на hosted runner; root workspace повышен синхронно для нового CI checkpoint.
+
 0.0.48 (root unchanged) - 11.07.2026 | 00:05 - Frontend package 0.0.266 синхронизирован с OpenAPI 0.0.70; первичный запуск и продолжение беседы переведены с synchronous legacy-маршрутов на canonical `202` + owner polling. UI различает queued/running/failed/unknown, не повторяет неизвестный provider outcome, сохраняет stable idempotency key до принятия операции и обновляет беседу только после `succeeded`. Mock-контур, generated contract и ручные тест-кейсы обновлены; root и design-system не менялись.
 
 0.0.48 (root unchanged) - 06.11.2026 | 23:12 - Frontend package 0.0.265 синхронизирован с backend OpenAPI 0.0.68 и получил generated contract canonical AI operation readback. Root и design-system не менялись.
