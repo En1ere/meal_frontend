@@ -254,3 +254,11 @@
 7. На production после container restart и immutable rollback/roll-forward открыть `/recipes`, login и основные authenticated routes. Ожидается 200/корректный auth redirect, отсутствие console/page errors и сохранение текущего digest после roll-forward.
 8. Bounded public load учитывает общий backend limiter 200 requests/min/IP: после исчерпания ожидается 429, а после окна — восстановление 200 без роста RSS/PID. Не отключать limiter ради теста.
 9. Physical screen reader/device, production RUM/APM, real payment/SMTP/AI/scanner и custom-domain DNS остаются отдельными внешними gates.
+
+## 30. Актуальный release gate 07.11.2026
+
+1. Выполнить `npm run check` и `npm run test:performance:budget`. Ожидается: design-system 7/7, пользовательский OpenAPI snapshot 0.0.70 / 291 разрешённая операция, architecture/query-key/transport/design-route/type/lint/style/format PASS, frontend unit 345/345, ops 6/6, production build и browser budget PASS.
+2. Для каждой доступной по текущему тарифу AI-задачи проверить initial `202`, queued/running polling, terminal readback и continuation. Stable idempotency key сохраняется до принятия операции; `unknown/reconciliation_hold` не вызывает автоматический retry или новую оплату.
+3. Убедиться, что Free/Plus/Pro видят только задачи своих доменных возможностей. Наличие AI-баланса не повышает тариф; `seasonal_analysis` и `document_analysis` остаются недоступны до появления достоверных source contracts.
+4. Повторить AI-сценарии без personal context и с разрешёнными inventory/preferences/nutrition sources. Отзыв обязательного consent до dispatch завершает операцию без provider call; prompt, context и provider identity не появляются в URL, telemetry или UI ошибок.
+5. Реальный provider success/eval остаётся BLOCKED до production OpenAI key и положительного месячного бюджета. Mock-успех не считается доказательством внешней доставки; payment/SMTP/scanner, custom-domain DNS и physical assistive-device проверки также остаются отдельными внешними gates.
