@@ -6,6 +6,8 @@ import { useState } from 'react';
 import { useRuntime } from '../../shared/runtime/index.js';
 import { useSession } from '../../entities/session/client.js';
 import styles from './finance.module.css';
+import { financeKeys } from './query-keys.js';
+import { createFinancePrice, loadFinancePriceCatalog, loadFinancePrices } from './api.js';
 import { money, dateFormat, today, text, minor, localIso, Frame, Loading, ErrorPanel, AccessNotice } from './shared.js';
 
 export function FinancePricesPage() {
@@ -22,15 +24,14 @@ function FinancePricesContent() {
     const cache = useQueryClient();
     const [open, setOpen] = useState(false);
     const prices = useQuery({
-        queryKey: ['finance-prices', session.data?.id],
+        queryKey: financeKeys.prices(session.data?.id),
         enabled: !!api && !!session.data,
-        queryFn: ({ signal }) => api!.request('GET /api/v1/finance/prices', undefined, signal).then((r) => r.data),
+        queryFn: ({ signal }) => loadFinancePrices(api!, signal),
     });
     const catalog = useQuery({
-        queryKey: ['finance-price-catalog', session.data?.id],
+        queryKey: financeKeys.priceCatalog(session.data?.id),
         enabled: !!api && !!session.data,
-        queryFn: ({ signal }) =>
-            api!.request('GET /api/v1/finance/prices/catalog', undefined, signal).then((r) => r.data),
+        queryFn: ({ signal }) => loadFinancePriceCatalog(api!, signal),
     });
     const create = useMutation({
         mutationFn: (form: FormData) => {
@@ -48,7 +49,7 @@ function FinancePricesContent() {
                 Number(quantity) <= 0
             )
                 throw new Error('Проверьте цену и количество');
-            return api!.request('POST /api/v1/finance/prices', {
+            return createFinancePrice(api!, {
                 ingredientId,
                 unit,
                 quantity,
@@ -60,7 +61,7 @@ function FinancePricesContent() {
         },
         onSuccess: async () => {
             setOpen(false);
-            await cache.invalidateQueries({ queryKey: ['finance-prices'] });
+            await cache.invalidateQueries({ queryKey: financeKeys.pricesRoot });
         },
     });
     if (prices.isPending || catalog.isPending) return <Loading />;

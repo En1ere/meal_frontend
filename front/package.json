@@ -1,6 +1,6 @@
 {
     "name": "meal-planner-front",
-    "version": "0.0.157",
+    "version": "0.0.266",
     "private": true,
     "type": "module",
     "engines": {
@@ -14,6 +14,12 @@
         "start": "next start -p 3000",
         "build:mocks": "tsc -p tsconfig.test.json",
         "architecture:check": "node scripts/check-architecture.mjs",
+        "architecture:test": "node --test scripts/check-architecture.test.mjs",
+        "query-keys:check": "node scripts/check-query-keys.mjs",
+        "query-keys:test": "node --test scripts/check-query-keys.test.mjs",
+        "transport-requests:check": "node scripts/check-transport-requests.mjs",
+        "transport-requests:test": "node --test scripts/check-transport-requests.test.mjs",
+        "design-route-audit:test": "node --test scripts/design-route-audit-routes.test.mjs",
         "typecheck": "next typegen && tsc -p tsconfig.json --noEmit",
         "test": "npm run build:mocks && node --test dist/test/*.test.js",
         "lint": "eslint . && prettier --check . && npm run lint:css",
@@ -21,7 +27,7 @@
         "format": "prettier --write .",
         "contracts:generate": "node scripts/generate-contracts.mjs",
         "contracts:check": "node scripts/generate-contracts.mjs --check",
-        "check": "npm run contracts:check && npm run architecture:check && npm run typecheck && npm run lint && npm test"
+        "check": "npm run contracts:check && npm run architecture:test && npm run architecture:check && npm run query-keys:test && npm run query-keys:check && npm run transport-requests:test && npm run transport-requests:check && npm run design-route-audit:test && npm run typecheck && npm run lint && npm test"
     },
     "dependencies": {
         "@meal-planner/design-system": "file:../design-system",

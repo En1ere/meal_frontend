@@ -3,11 +3,12 @@ import Link from 'next/link';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useRuntime } from '../../shared/runtime/index.js';
-import type { Success } from '../../shared/api/contracts.generated.js';
 import { useSession } from '../../entities/session/client.js';
 import styles from './personalization.module.css';
 import { useConsent } from '../../entities/consent/client.js';
 import { ApiError } from '../../shared/api/client.js';
+import { loadPersonalization, savePreferences, type PersonalizationPreferences } from './api.js';
+import { personalizationKeys } from './query-keys.js';
 
 export function SettingsPage() {
     return (
@@ -61,28 +62,24 @@ function PreferencesContent() {
     const session = useSession('user');
     const healthConsent = useConsent('special_category');
     const query = useQuery({
-        queryKey: ['personalization', session.data?.id],
+        queryKey: personalizationKeys.settings(session.data?.id),
         enabled: !!api && !!session.data,
-        queryFn: async ({ signal }) => (await api!.request('GET /api/v1/personalization', undefined, signal)).data,
+        queryFn: ({ signal }) => loadPersonalization(api!, signal),
     });
-    type Preference = Success<'GET /api/v1/personalization'>['data']['preferences'];
-    const [draft, setDraft] = useState<Preference | null>(null);
+    const [draft, setDraft] = useState<PersonalizationPreferences | null>(null);
     const mutation = useMutation({
         mutationFn: async (value: NonNullable<typeof draft>) =>
-            (
-                await api!.request('PUT /api/v1/personalization/preferences', {
-                    diets: value.diets,
-                    allergens: value.allergens,
-                    dislikes: value.dislikes,
-                    allergenMode: value.allergenMode,
-                    equipment: value.equipment,
-                    goals: value.goals,
-                    expectedVersion: value.version,
-                    idempotencyKey: crypto.randomUUID(),
-                })
-            ).data,
+            savePreferences(api!, {
+                diets: value.diets,
+                allergens: value.allergens,
+                dislikes: value.dislikes,
+                allergenMode: value.allergenMode,
+                equipment: value.equipment,
+                goals: value.goals,
+                expectedVersion: value.version,
+            }),
         onSuccess: (value) => {
-            queryClient.setQueryData(['personalization', session.data?.id], (old: typeof query.data) =>
+            queryClient.setQueryData(personalizationKeys.settings(session.data?.id), (old: typeof query.data) =>
                 old ? { ...old, preferences: value } : old,
             );
             setDraft(value);

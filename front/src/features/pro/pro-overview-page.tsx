@@ -3,14 +3,13 @@
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useRuntime } from '../../shared/runtime/index.js';
-import type { Success } from '../../shared/api/contracts.generated.js';
 import { ApiError } from '../../shared/api/client.js';
 import { Skeleton as ArcSkeleton } from '@meal-planner/design-system';
 import { useSession } from '../../entities/session/client.js';
+import { loadProOverview, proOverviewKeys, type ProOverview } from '../../entities/pro-overview/client.js';
 import styles from './pro-overview.module.css';
 
-type Overview = Success<'GET /api/v1/pro/overview'>['data'];
-type MissingField = Overview['missingFields'][number];
+type MissingField = ProOverview['missingFields'][number];
 
 const fieldNames: Record<MissingField, string> = {
     nutrition_profile: 'Профиль питания',
@@ -21,7 +20,7 @@ const fieldNames: Record<MissingField, string> = {
     carbohydrate_g: 'Углеводы',
     fiber_g: 'Клетчатка',
 };
-const goalNames: Record<NonNullable<Overview['goal']>, string> = {
+const goalNames: Record<NonNullable<ProOverview['goal']>, string> = {
     maintain: 'Поддерживать вес',
     lose_weight: 'Снижать вес',
     gain_weight: 'Набирать вес',
@@ -42,9 +41,9 @@ function Content() {
     const { api } = useRuntime();
     const session = useSession('user');
     const query = useQuery({
-        queryKey: ['pro-overview', session.data?.id],
+        queryKey: proOverviewKeys.overview(session.data?.id),
         enabled: !!api && !!session.data,
-        queryFn: async ({ signal }) => (await api!.request('GET /api/v1/pro/overview', undefined, signal)).data,
+        queryFn: ({ signal }) => loadProOverview(api!, signal),
     });
 
     if (query.isPending) return <Loading />;

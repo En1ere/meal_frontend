@@ -5,6 +5,9 @@ import { ApiError } from '../../shared/api/client.js';
 import { contracts, type JsonRoute, type JsonSuccess } from '../../shared/api/contracts.generated.js';
 import { setUserSession } from '../../entities/session/client.js';
 import { useRequestSignal } from '../../shared/api/use-request-signal.js';
+import { preserveKeys } from '../../entities/preserve/model.js';
+import { inventoryKeys } from '../../entities/inventory/query-keys.js';
+import { recipeQueryRoots } from '../../entities/recipe/query-keys.js';
 export function usePreserveCommand(scope: 'private' | 'family' = 'private') {
     const runtime = useRuntime();
     const { api, queryClient } = runtime;
@@ -51,11 +54,13 @@ export function usePreserveCommand(scope: 'private' | 'family' = 'private') {
             const response = await api.request(route, operation.body, abort, operation.params);
             if (abort.aborted) return;
             frozen.current = null;
-            await Promise.all(
-                ['preserves', 'cooking', 'inventory', 'inventory-history', 'recipe-workspace'].map((key) =>
-                    queryClient.invalidateQueries({ queryKey: [key] }),
-                ),
-            );
+            await Promise.all([
+                queryClient.invalidateQueries({ queryKey: preserveKeys.root }),
+                queryClient.invalidateQueries({ queryKey: recipeQueryRoots.cookingRoot }),
+                queryClient.invalidateQueries({ queryKey: inventoryKeys.root }),
+                queryClient.invalidateQueries({ queryKey: inventoryKeys.historyRoot }),
+                queryClient.invalidateQueries({ queryKey: recipeQueryRoots.workspaceRoot }),
+            ]);
             return response.data;
         } catch (e) {
             if (abort.aborted) return;
@@ -72,7 +77,7 @@ export function usePreserveCommand(scope: 'private' | 'family' = 'private') {
                 if (e.status === 401) {
                     api.invalidate();
                     setUserSession(runtime, null);
-                    queryClient.removeQueries({ queryKey: ['preserves'] });
+                    queryClient.removeQueries({ queryKey: preserveKeys.root });
                 }
             }
         } finally {

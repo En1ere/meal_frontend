@@ -6,6 +6,7 @@ import { ApiError } from '../../shared/api/client.js';
 import { InlineLoader as ArcInlineLoader } from '@meal-planner/design-system';
 import { useSession } from '../../entities/session/client.js';
 import type { RecipeDetailData } from './detail.js';
+import { reportRecipeAllergens } from './allergens-api.js';
 import styles from './recipes.module.css';
 
 const iconNames: Record<string, string> = {
@@ -84,7 +85,7 @@ export function RecipeAllergens({ recipe }: { recipe: RecipeDetailData }) {
         setPending(true);
         setError('');
         try {
-            const result = await api.request('POST /api/v1/allergens/reports', {
+            const result = await reportRecipeAllergens(api, {
                 recipeId: recipe.id,
                 revisionId: recipe.revisionId,
                 unknownIngredientIds: payload.unknownIngredientIds,
@@ -92,7 +93,7 @@ export function RecipeAllergens({ recipe }: { recipe: RecipeDetailData }) {
                 idempotencyKey: reportAttempt.current.idempotencyKey,
             });
             reportAttempt.current = null;
-            setTicket(result.data);
+            setTicket(result);
         } catch (cause) {
             setError(cause instanceof ApiError ? cause.message : 'Не удалось отправить обращение. Попробуйте ещё раз.');
         } finally {

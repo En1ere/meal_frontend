@@ -8,14 +8,23 @@ import { useSession } from '../../entities/session/client.js';
 import type { Success } from '../../shared/api/contracts.generated.js';
 import { RecipeShell, RecipeLoading, RecipeError } from './shared.js';
 import { recipeUnits } from '../../entities/recipe/model.js';
+import { inventoryKeys } from '../../entities/inventory/query-keys.js';
+import { recipeKeys } from './query-keys.js';
+import { preserveKeys } from '../../entities/preserve/model.js';
 import { useRecipeCommand } from './use-command.js';
-import { ApiError } from '../../shared/api/client.js';
 import { useCookingAlert } from './use-cooking-alert.js';
 import { RecipeCommunity } from './community.js';
 import { CookingReminders } from './cooking-reminders.js';
 import styles from './workspace.module.css';
 import { readOfflineOwner } from '../../entities/offline/store.js';
 import { readOfflineSnapshotData, saveOfflineSnapshot } from '../../entities/offline/snapshots.js';
+import {
+    loadCookingAttempt,
+    loadCookingAttempts,
+    loadCookingLocations,
+    loadCookingRecipe,
+    loadCookingStockOptions,
+} from './cooking-read-api.js';
 type Attempt = Success<'GET /api/v1/cooking-attempts/{id}'>['data'];
 type StockBatch = Success<'GET /api/v1/cooking-attempts/stock-options'>['data']['items'][number];
 type PreserveContainer = StockBatch['containers'][number];
@@ -107,15 +116,14 @@ function FinalReview({ attempt, onDone }: { attempt: Attempt; onDone: () => void
         Math.max(0, Math.round((Date.now() - Date.parse(attempt.startedAt)) / 1000)),
     );
     const stocks = useQuery({
-        queryKey: ['inventory', user.data?.id, 'cooking-review', attempt.id],
+        queryKey: inventoryKeys.cookingReview(user.data?.id, attempt.id),
         enabled: !!api,
-        queryFn: async ({ signal }) =>
-            (await api!.request('GET /api/v1/cooking-attempts/stock-options', undefined, signal)).data,
+        queryFn: ({ signal }) => loadCookingStockOptions(api!, signal),
     });
     const locations = useQuery({
-        queryKey: ['inventory-locations', user.data?.id],
+        queryKey: inventoryKeys.cookingLocations(user.data?.id),
         enabled: !!api,
-        queryFn: async ({ signal }) => (await api!.request('GET /api/v1/inventory-locations', undefined, signal)).data,
+        queryFn: ({ signal }) => loadCookingLocations(api!, signal),
     });
     const stockChoices = (stocks.data?.items ?? []).flatMap<StockChoice>((batch) =>
         batch.kind === 'preserve'
@@ -183,11 +191,11 @@ function FinalReview({ attempt, onDone }: { attempt: Attempt; onDone: () => void
         );
         if (result) {
             await Promise.all([
-                queryClient.invalidateQueries({ queryKey: ['cooking'] }),
-                queryClient.invalidateQueries({ queryKey: ['inventory'] }),
-                queryClient.invalidateQueries({ queryKey: ['preserves'] }),
-                queryClient.invalidateQueries({ queryKey: ['recipes', 'personal'] }),
-                queryClient.invalidateQueries({ queryKey: ['recipe-community'] }),
+                queryClient.invalidateQueries({ queryKey: recipeKeys.cookingRoot }),
+                queryClient.invalidateQueries({ queryKey: inventoryKeys.root }),
+                queryClient.invalidateQueries({ queryKey: preserveKeys.root }),
+                queryClient.invalidateQueries({ queryKey: recipeKeys.personalRoot }),
+                queryClient.invalidateQueries({ queryKey: recipeKeys.communityRoot }),
             ]);
             onDone();
         }
@@ -223,7 +231,7 @@ function FinalReview({ attempt, onDone }: { attempt: Attempt; onDone: () => void
                         onClick={() =>
                             void Promise.all([
                                 stocks.refetch(),
-                                queryClient.invalidateQueries({ queryKey: ['cooking'] }),
+                                queryClient.invalidateQueries({ queryKey: recipeKeys.cookingRoot }),
                             ])
                         }
                     >
@@ -561,7 +569,7 @@ function ActiveCooking({ attempt }: { attempt: Attempt }) {
         const result = await command.run('POST /api/v1/cooking-attempts/{id}/progress', body, { id: attempt.id });
         if (result || command.wasQueued()) {
             setPrivateNote('');
-            if (result) await queryClient.invalidateQueries({ queryKey: ['cooking'] });
+            if (result) await queryClient.invalidateQueries({ queryKey: recipeKeys.cookingRoot });
             else {
                 const optimistic = applyOfflineProgress(attempt, body);
                 queryClient.setQueriesData<Attempt>(
@@ -604,7 +612,7 @@ function ActiveCooking({ attempt }: { attempt: Attempt }) {
             {command.error && (
                 <p role="alert">
                     {command.error}{' '}
-                    <button onClick={() => void queryClient.invalidateQueries({ queryKey: ['cooking'] })}>
+                    <button onClick={() => void queryClient.invalidateQueries({ queryKey: recipeKeys.cookingRoot })}>
                         Обновить состояние
                     </button>
                 </p>
@@ -822,7 +830,7 @@ function CookingContent({ id }: { id: string }) {
     const attemptId = search.get('attempt');
     const view = search.get('view') === 'archive' ? 'archive' : search.get('view') === 'all' ? 'all' : 'current';
     const attempts = useQuery({
-        queryKey: ['cooking', owner, 'list', view],
+        queryKey: recipeKeys.cookingList(owner, view),
         enabled: !!api && !!owner,
         refetchInterval: 60000,
         queryFn: async ({ signal }) => {
@@ -835,15 +843,13 @@ function CookingContent({ id }: { id: string }) {
                 if (!cached) throw new Error('Список приготовлений не сохранён для offline-доступа.');
                 return cached;
             }
-            const data = (
-                await api!.request('GET /api/v1/cooking-attempts', undefined, signal, undefined, { query: { view } })
-            ).data;
+            const data = await loadCookingAttempts(api!, view, signal);
             await saveOfflineSnapshot(owner!, key, data);
             return data;
         },
     });
     const attempt = useQuery({
-        queryKey: ['cooking', owner, attemptId],
+        queryKey: recipeKeys.cookingAttempt(owner, attemptId),
         enabled: !!api && !!owner && !!attemptId,
         refetchInterval: 60000,
         queryFn: async ({ signal }) => {
@@ -853,31 +859,15 @@ function CookingContent({ id }: { id: string }) {
                 if (!cached) throw new Error('Это приготовление не сохранено для offline-доступа.');
                 return cached;
             }
-            const data = (
-                await api!.request('GET /api/v1/cooking-attempts/{id}', undefined, signal, { id: attemptId! })
-            ).data;
+            const data = await loadCookingAttempt(api!, attemptId!, signal);
             await saveOfflineSnapshot(owner!, key, data);
             return data;
         },
     });
     const recipe = useQuery({
-        queryKey: ['cooking', user.data?.id, 'recipe', id],
+        queryKey: recipeKeys.cookingRecipe(user.data?.id, id),
         enabled: !!api && !attemptId && view !== 'archive',
-        queryFn: async ({ signal }) => {
-            try {
-                return (await api!.request('GET /api/v1/recipes/{id}', undefined, signal, { id })).data.recipe;
-            } catch (error) {
-                if (!(error instanceof ApiError) || error.status !== 404) throw error;
-                const own = (await api!.request('GET /api/v1/recipe-workspace/{id}', undefined, signal, { id })).data
-                    .recipe;
-                return {
-                    id: own.id,
-                    revisionId: own.revisionId,
-                    title: own.document.title,
-                    baseServings: own.document.baseServings,
-                };
-            }
-        },
+        queryFn: ({ signal }) => loadCookingRecipe(api!, id, signal),
     });
     async function start() {
         if (!recipe.data) return;
@@ -887,7 +877,7 @@ function CookingContent({ id }: { id: string }) {
             servings: Math.max(1, Math.min(1000, Number(search.get('servings')) || recipe.data.baseServings)),
         });
         if (result) {
-            await queryClient.invalidateQueries({ queryKey: ['cooking'] });
+            await queryClient.invalidateQueries({ queryKey: recipeKeys.cookingRoot });
             router.replace(`/recipes/${id}/cook?attempt=${result.id}`);
         }
     }

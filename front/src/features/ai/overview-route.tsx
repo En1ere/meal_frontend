@@ -3,13 +3,23 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { useRuntime } from '../../shared/runtime/index.js';
 import type { Success } from '../../shared/api/contracts.generated.js';
 import { useSession } from '../../entities/session/client.js';
+import { aiBalanceKeys } from '../../entities/ai-balance/model.js';
+import {
+    aiKeys,
+    enqueueAiTask,
+    loadAiBalance,
+    loadAiCapabilities,
+    loadAiOperation,
+    previewAiTask,
+} from '../../entities/ai/index.js';
 import styles from './ai.module.css';
 import { isConsentRequiredError, useConsent } from '../../entities/consent/client.js';
 import { taskClassLabels, priorityLabels, actionLabel, Frame } from './shared.js';
+import { useStableCommandKey } from './use-stable-command-key.js';
 
 export function AiPage() {
     return (
@@ -23,61 +33,70 @@ function AiContent() {
     const { api, queryClient } = useRuntime(),
         router = useRouter(),
         session = useSession('user'),
-        [taskType, setTaskType] = useState('culinary_question'),
+        [taskType, setTaskType] =
+            useState<Success<'GET /api/v1/ai/capabilities'>['data']['taskTypes'][number]['code']>('culinary_question'),
         [prompt, setPrompt] = useState(''),
         [personal, setPersonal] = useState(false),
         [agreement, setAgreement] = useState(false),
         [familyReserveAccepted, setFamilyReserveAccepted] = useState(false),
         [preview, setPreview] = useState<Success<'POST /api/v1/ai/preview'>['data'] | null>(null),
-        [result, setResult] = useState<string | null>(null);
+        [operationId, setOperationId] = useState<string | null>(null);
+    const runCommand = useStableCommandKey();
     const capabilities = useQuery({
-        queryKey: ['ai-capabilities'],
-        enabled: !!api,
-        queryFn: async ({ signal }) => (await api!.request('GET /api/v1/ai/capabilities', undefined, signal)).data,
+        queryKey: aiKeys.capabilities(session.data?.id),
+        enabled: !!api && !!session.data,
+        queryFn: ({ signal }) => loadAiCapabilities(api!, signal),
     });
     const aiConsent = useConsent('ai_data_access');
     const balance = useQuery({
-        queryKey: ['ai-balance', session.data?.id],
+        queryKey: aiBalanceKeys.forAccount(session.data?.id),
         enabled: !!api && !!session.data,
-        queryFn: async ({ signal }) => (await api!.request('GET /api/v1/ai/balance', undefined, signal)).data,
+        queryFn: ({ signal }) => loadAiBalance(api!, signal),
     });
     const quote = useMutation({
-        mutationFn: async () =>
-            (
-                await api!.request('POST /api/v1/ai/preview', {
-                    taskType,
-                    prompt,
-                    usePersonalData: personal,
-                    agreementAccepted: true,
-                })
-            ).data,
+        mutationFn: () => previewAiTask(api!, { taskType, prompt, usePersonalData: personal, agreementAccepted: true }),
         onSuccess: (value) => {
+            runCommand.reset();
             setPreview(value);
             setFamilyReserveAccepted(false);
         },
     });
     const run = useMutation({
-        mutationFn: async () =>
-            (
-                await api!.request('POST /api/v1/ai/run', {
-                    previewId: preview!.previewId,
-                    idempotencyKey: crypto.randomUUID(),
-                    familyReserveAccepted,
-                })
-            ).data,
+        mutationFn: () => {
+            const intent = JSON.stringify({ previewId: preview!.previewId, familyReserveAccepted });
+            return enqueueAiTask(api!, {
+                previewId: preview!.previewId,
+                idempotencyKey: runCommand.forIntent(intent),
+                familyReserveAccepted,
+            });
+        },
         onSuccess: (value) => {
-            setResult(value.item.result);
+            runCommand.reset();
+            setOperationId(value.item.id);
             setPreview(null);
             setFamilyReserveAccepted(false);
             setPrompt('');
-            void queryClient.invalidateQueries({ queryKey: ['ai-balance', session.data?.id] });
-            void queryClient.invalidateQueries({ queryKey: ['ai-history', session.data?.id] });
-            router.push(`/ai/${value.item.id}`);
+            void queryClient.invalidateQueries({ queryKey: aiBalanceKeys.forAccount(session.data?.id) });
         },
     });
+    const operation = useQuery({
+        queryKey: aiKeys.operation(session.data?.id, operationId ?? 'pending'),
+        enabled: !!api && !!session.data && !!operationId,
+        queryFn: ({ signal }) => loadAiOperation(api!, operationId!, signal),
+        refetchInterval: (query) => {
+            const state = query.state.data?.item.state;
+            return state && ['succeeded', 'failed', 'cancelled', 'unknown'].includes(state) ? false : 2_000;
+        },
+        retry: 2,
+    });
+    useEffect(() => {
+        if (operation.data?.item.state !== 'succeeded') return;
+        void queryClient.invalidateQueries({ queryKey: aiBalanceKeys.forAccount(session.data?.id) });
+        void queryClient.invalidateQueries({ queryKey: aiKeys.historyRoot(session.data?.id) });
+        router.push(`/ai/${operation.data.item.taskId}`);
+    }, [operation.data, queryClient, router, session.data?.id]);
     const submit = (e: FormEvent) => {
         e.preventDefault();
-        setResult(null);
         quote.mutate();
     };
     return (
@@ -117,7 +136,7 @@ function AiContent() {
                     <select
                         value={taskType}
                         onChange={(e) => {
-                            setTaskType(e.target.value);
+                            setTaskType(e.target.value as typeof taskType);
                             setPreview(null);
                         }}
                     >
@@ -270,10 +289,39 @@ function AiContent() {
                     )}
                 </section>
             )}
-            {result && (
-                <section className={styles.result}>
-                    <h2>Результат</h2>
-                    <p>{result}</p>
+            {operationId && (
+                <section className={styles.result} aria-live="polite">
+                    <h2>Статус запуска</h2>
+                    {operation.isPending && <p role="status">Запрос принят. Ожидаем свободный AI-worker…</p>}
+                    {operation.isError && (
+                        <div role="alert">
+                            <p>Не удалось прочитать состояние. Повторно запускать задачу не нужно.</p>
+                            <button type="button" onClick={() => void operation.refetch()}>
+                                Проверить состояние
+                            </button>
+                        </div>
+                    )}
+                    {operation.data?.item.state === 'queued' && <p role="status">Запрос находится в очереди.</p>}
+                    {operation.data?.item.state === 'running' && <p role="status">AI обрабатывает запрос…</p>}
+                    {operation.data?.item.state === 'unknown' && (
+                        <div role="alert">
+                            <p>
+                                Результат уточняется. Резерв сохранён; повторная отправка может создать двойную работу.
+                            </p>
+                            <button type="button" onClick={() => void operation.refetch()}>
+                                Обновить состояние
+                            </button>
+                        </div>
+                    )}
+                    {operation.data?.item.state === 'failed' && (
+                        <div role="alert">
+                            <p>{operation.data.item.failure?.userMessage ?? 'AI не завершил запрос.'}</p>
+                            <button type="button" onClick={() => setOperationId(null)}>
+                                Подготовить новый запуск
+                            </button>
+                        </div>
+                    )}
+                    {operation.data?.item.state === 'cancelled' && <p role="status">Запуск отменён.</p>}
                     <small>{capabilities.data?.disclaimer}</small>
                 </section>
             )}

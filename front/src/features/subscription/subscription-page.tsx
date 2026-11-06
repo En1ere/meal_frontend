@@ -9,6 +9,19 @@ import type { Success } from '../../shared/api/contracts.generated.js';
 import { Skeleton as ArcSkeleton } from '@meal-planner/design-system';
 import { useSession } from '../../entities/session/client.js';
 import { familyKeys } from '../../entities/family/model.js';
+import { aiBalanceKeys } from '../../entities/ai-balance/model.js';
+import { mealPlanKeys } from '../../entities/meal-plan/model.js';
+import { subscriptionKeys } from './query-keys.js';
+import {
+    activateSubscriptionTrial,
+    commitSubscriptionChange,
+    consentToSubscriptionCombination,
+    loadSubscription,
+    previewSubscriptionCombination,
+    previewSubscriptionDowngrade,
+    previewSubscriptionPlan,
+    previewSubscriptionRenewal,
+} from './api.js';
 import styles from './subscription.module.css';
 
 type Overview = Success<'GET /api/v1/settings/subscription'>['data'];
@@ -43,7 +56,7 @@ function Content() {
     const params = useSearchParams();
     const { api, queryClient } = useRuntime();
     const session = useSession('user');
-    const key = ['subscription-settings', session.data?.id] as const;
+    const key = subscriptionKeys.settings(session.data?.id);
     const [period, setPeriod] = useState<'month' | 'year'>(params.get('period') === 'year' ? 'year' : 'month');
     const [review, setReview] = useState<Review | null>(null);
     const dialog = useRef<HTMLDialogElement>(null);
@@ -52,14 +65,13 @@ function Content() {
     const query = useQuery({
         queryKey: key,
         enabled: !!api && !!session.data,
-        queryFn: async ({ signal }) =>
-            (await api!.request('GET /api/v1/settings/subscription', undefined, signal)).data,
+        queryFn: ({ signal }) => loadSubscription(api!, signal),
     });
     const refreshRelated = (value: Overview) => {
         queryClient.setQueryData(key, value);
-        void queryClient.invalidateQueries({ queryKey: ['ai-balance', session.data?.id] });
+        void queryClient.invalidateQueries({ queryKey: aiBalanceKeys.forAccount(session.data?.id) });
         void queryClient.invalidateQueries({ queryKey: familyKeys.context(session.data?.id) });
-        void queryClient.invalidateQueries({ queryKey: ['meal-plan'] });
+        void queryClient.invalidateQueries({ queryKey: mealPlanKeys.root });
     };
     const recover = () => {
         setReview(null);
@@ -67,13 +79,11 @@ function Content() {
         void query.refetch();
     };
     const trial = useMutation({
-        mutationFn: async (version: number) =>
-            (
-                await api!.request('POST /api/v1/settings/subscription/trial/activate', {
-                    expectedVersion: version,
-                    idempotencyKey: trialKey.current,
-                })
-            ).data,
+        mutationFn: (version: number) =>
+            activateSubscriptionTrial(api!, {
+                expectedVersion: version,
+                idempotencyKey: trialKey.current,
+            }),
         onSuccess: (value) => {
             refreshRelated(value);
             trialKey.current = crypto.randomUUID();
@@ -90,16 +100,14 @@ function Content() {
             targetPlan: 'plus' | 'pro';
             timing: 'now' | 'period_end';
         }) =>
-            (
-                await api!.request('POST /api/v1/settings/subscription/plan/preview', {
-                    expectedVersion: version,
-                    idempotencyKey: crypto.randomUUID(),
-                    period,
-                    targetPlan,
-                    timing,
-                    promotionOfferId: targetPlan === 'pro' ? (query.data?.promotion?.offerId ?? null) : null,
-                })
-            ).data,
+            previewSubscriptionPlan(api!, {
+                expectedVersion: version,
+                idempotencyKey: crypto.randomUUID(),
+                period,
+                targetPlan,
+                timing,
+                promotionOfferId: targetPlan === 'pro' ? (query.data?.promotion?.offerId ?? null) : null,
+            }),
         onSuccess: (value) => {
             commitKey.current = crypto.randomUUID();
             setReview({ kind: 'plan', value });
@@ -108,14 +116,12 @@ function Content() {
         onError: () => void query.refetch(),
     });
     const downgradePreview = useMutation({
-        mutationFn: async ({ version, targetPlan }: { version: number; targetPlan: 'free' | 'plus' }) =>
-            (
-                await api!.request('POST /api/v1/settings/subscription/downgrade/preview', {
-                    expectedVersion: version,
-                    idempotencyKey: crypto.randomUUID(),
-                    targetPlan,
-                })
-            ).data,
+        mutationFn: ({ version, targetPlan }: { version: number; targetPlan: 'free' | 'plus' }) =>
+            previewSubscriptionDowngrade(api!, {
+                expectedVersion: version,
+                idempotencyKey: crypto.randomUUID(),
+                targetPlan,
+            }),
         onSuccess: (value) => {
             commitKey.current = crypto.randomUUID();
             setReview({ kind: 'downgrade', value });
@@ -124,14 +130,12 @@ function Content() {
         onError: () => void query.refetch(),
     });
     const renewalPreview = useMutation({
-        mutationFn: async ({ version, enabled }: { version: number; enabled: boolean }) =>
-            (
-                await api!.request('POST /api/v1/settings/subscription/renewal/preview', {
-                    expectedVersion: version,
-                    idempotencyKey: crypto.randomUUID(),
-                    enabled,
-                })
-            ).data,
+        mutationFn: ({ version, enabled }: { version: number; enabled: boolean }) =>
+            previewSubscriptionRenewal(api!, {
+                expectedVersion: version,
+                idempotencyKey: crypto.randomUUID(),
+                enabled,
+            }),
         onSuccess: (value) => {
             commitKey.current = crypto.randomUUID();
             setReview({ kind: 'renewal', value });
@@ -149,14 +153,12 @@ function Content() {
             peerUserId: string;
             recipientId: string;
         }) =>
-            (
-                await api!.request('POST /api/v1/settings/subscription/combination/preview', {
-                    expectedVersion: version,
-                    idempotencyKey: crypto.randomUUID(),
-                    peerUserId,
-                    recipientId,
-                })
-            ).data,
+            previewSubscriptionCombination(api!, {
+                expectedVersion: version,
+                idempotencyKey: crypto.randomUUID(),
+                peerUserId,
+                recipientId,
+            }),
         onSuccess: (value) => {
             commitKey.current = crypto.randomUUID();
             setReview({ kind: 'combination', value });
@@ -172,20 +174,16 @@ function Content() {
                 expectedVersion: review.value.expectedVersion,
                 idempotencyKey: commitKey.current,
             };
-            if (review.kind === 'plan')
-                return (await api!.request('POST /api/v1/settings/subscription/plan/commit', body)).data;
-            if (review.kind === 'renewal')
-                return (await api!.request('POST /api/v1/settings/subscription/renewal/commit', body)).data;
+            if (review.kind === 'plan') return commitSubscriptionChange(api!, 'plan', body);
+            if (review.kind === 'renewal') return commitSubscriptionChange(api!, 'renewal', body);
             if (review.kind === 'combination') {
-                const result = (
-                    await api!.request('POST /api/v1/settings/subscription/combination/consent', {
-                        ...body,
-                        combinationId: review.value.combinationId,
-                    })
-                ).data;
+                const result = await consentToSubscriptionCombination(api!, {
+                    ...body,
+                    combinationId: review.value.combinationId,
+                });
                 return result.settings;
             }
-            return (await api!.request('POST /api/v1/settings/subscription/downgrade/commit', body)).data;
+            return commitSubscriptionChange(api!, 'downgrade', body);
         },
         onSuccess: (value) => {
             refreshRelated(value);
@@ -198,14 +196,12 @@ function Content() {
     const consentPending = useMutation({
         mutationFn: async ({ pending, version }: { pending: Overview['combination']['pending']; version: number }) => {
             if (!pending) throw new Error('Нет ожидающего объединения');
-            return (
-                await api!.request('POST /api/v1/settings/subscription/combination/consent', {
-                    previewId: pending.previewId,
-                    combinationId: pending.combinationId,
-                    expectedVersion: version,
-                    idempotencyKey: crypto.randomUUID(),
-                })
-            ).data;
+            return consentToSubscriptionCombination(api!, {
+                previewId: pending.previewId,
+                combinationId: pending.combinationId,
+                expectedVersion: version,
+                idempotencyKey: crypto.randomUUID(),
+            });
         },
         onSuccess: (result) => refreshRelated(result.settings),
         onError: () => void query.refetch(),

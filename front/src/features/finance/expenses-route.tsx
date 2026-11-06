@@ -5,7 +5,10 @@ import Link from 'next/link';
 import { useState, type FormEvent } from 'react';
 import { useRuntime } from '../../shared/runtime/index.js';
 import { useSession } from '../../entities/session/client.js';
+import { proOverviewKeys } from '../../entities/pro-overview/client.js';
 import styles from './finance.module.css';
+import { financeKeys } from './query-keys.js';
+import { createFinanceExpense, loadFinanceExpenses } from './api.js';
 import type { Category } from './shared.js';
 import {
     categories,
@@ -40,14 +43,9 @@ function FinanceExpensesContent() {
     const [category, setCategory] = useState<Category | ''>('');
     const [open, setOpen] = useState(false);
     const query = useQuery({
-        queryKey: ['finance-expenses', session.data?.id, from, to, category],
+        queryKey: financeKeys.expenses(session.data?.id, from, to, category),
         enabled: !!api && !!session.data && from <= to,
-        queryFn: ({ signal }) =>
-            api!
-                .request('GET /api/v1/finance/expenses', undefined, signal, undefined, {
-                    query: { from, to, ...(category ? { category } : {}) },
-                })
-                .then((response) => response.data),
+        queryFn: ({ signal }) => loadFinanceExpenses(api!, from, to, category, signal),
     });
     const create = useMutation({
         mutationFn: (form: FormData) => {
@@ -55,7 +53,7 @@ function FinanceExpensesContent() {
             const occurredOn = text(form.get('occurredOn'));
             const nextCategory = text(form.get('category')) as Category;
             if (!amountMinor || !occurredOn) throw new Error('Проверьте сумму и дату');
-            return api!.request('POST /api/v1/finance/expenses', {
+            return createFinanceExpense(api!, {
                 amountMinor,
                 occurredAt: localIso(occurredOn),
                 category: nextCategory,
@@ -66,9 +64,9 @@ function FinanceExpensesContent() {
         onSuccess: async () => {
             setOpen(false);
             await Promise.all([
-                cache.invalidateQueries({ queryKey: ['finance-expenses'] }),
-                cache.invalidateQueries({ queryKey: ['finance-overview'] }),
-                cache.invalidateQueries({ queryKey: ['pro-overview'] }),
+                cache.invalidateQueries({ queryKey: financeKeys.expensesRoot }),
+                cache.invalidateQueries({ queryKey: financeKeys.overviewRoot }),
+                cache.invalidateQueries({ queryKey: proOverviewKeys.root }),
             ]);
         },
     });

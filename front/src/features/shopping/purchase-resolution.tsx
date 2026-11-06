@@ -5,10 +5,12 @@ import { useRuntime } from '../../shared/runtime/index.js';
 import { useSession } from '../../entities/session/client.js';
 import { ApiError } from '../../shared/api/client.js';
 import type { Success } from '../../shared/api/contracts.generated.js';
-import { PurchaseLines, type PurchaseLine } from './purchase-review.js';
+import { PurchaseLines, type PurchaseLine } from './purchase-lines.js';
 import { useShoppingCommand } from './use-command.js';
 import { ShoppingLoading, useShoppingScope } from './shared.js';
 import styles from './shopping.module.css';
+import { shoppingKeys } from './query-keys.js';
+import { loadShoppingPurchase, previewPurchaseResolution } from './api.js';
 type StoredLine = Success<'GET /api/v1/purchases/{id}'>['data']['lines'][number];
 function ResolveLine({ id, line, refresh }: { id: string; line: StoredLine; refresh: () => void }) {
     const scope = useShoppingScope();
@@ -31,16 +33,7 @@ function ResolveLine({ id, line, refresh }: { id: string; line: StoredLine; refr
         setBusy(true);
         setError('');
         try {
-            setPreview(
-                (
-                    await api.request(
-                        'POST /api/v1/purchases/{id}/resolve-preview',
-                        { version: line.version, line: draft, scope },
-                        undefined,
-                        { id },
-                    )
-                ).data,
-            );
+            setPreview(await previewPurchaseResolution(api, id, { version: line.version, line: draft, scope }));
         } catch (e) {
             setError(e instanceof ApiError ? e.message : 'Не удалось проверить поступление.');
         } finally {
@@ -129,10 +122,9 @@ export function PurchaseResolution({ id }: { id: string }) {
     const { api } = useRuntime();
     const user = useSession('user');
     const query = useQuery({
-        queryKey: ['purchases', user.data?.id, scope, id],
+        queryKey: shoppingKeys.purchase(user.data?.id, scope, id),
         enabled: !!api && !!user.data,
-        queryFn: async ({ signal }) =>
-            (await api!.request('GET /api/v1/purchases/{id}', undefined, signal, { id }, { query: { scope } })).data,
+        queryFn: ({ signal }) => loadShoppingPurchase(api!, id, scope, signal),
     });
     if (query.isPending) return <ShoppingLoading />;
     if (query.isError)

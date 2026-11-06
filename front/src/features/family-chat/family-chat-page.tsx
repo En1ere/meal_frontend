@@ -7,6 +7,18 @@ import type { Success } from '../../shared/api/contracts.generated.js';
 import { Skeleton as ArcSkeleton } from '@meal-planner/design-system';
 import { useSession } from '../../entities/session/client.js';
 import styles from './family-chat.module.css';
+import { familyChatKeys } from './query-keys.js';
+import {
+    editFamilyChatMessage,
+    hideFamilyChatMessage,
+    loadFamilyChat,
+    markFamilyChatRead,
+    pinFamilyChatMessage,
+    reactToFamilyChatMessage,
+    removeFamilyChatMessage,
+    saveFamilyChatDraft,
+    sendFamilyChatMessage,
+} from './api.js';
 
 type Chat = Success<'GET /api/v1/family/chat'>['data'];
 type Message = Chat['items'][number];
@@ -66,7 +78,7 @@ function LoadedChat({
         const markRead = async () => {
             for (let attempt = 0; attempt < 2; attempt++) {
                 try {
-                    await api.request('POST /api/v1/family/chat/read', {
+                    await markFamilyChatRead(api, {
                         messageId: readMessageId,
                         idempotencyKey: state.key,
                     });
@@ -83,7 +95,7 @@ function LoadedChat({
         };
         void markRead();
     }, [api, readMessageId, readRetry]);
-    const refresh = () => client.invalidateQueries({ queryKey: ['family-chat'] });
+    const refresh = () => client.invalidateQueries({ queryKey: familyChatKeys.root });
     const command = useMutation({
         mutationFn: async (run: () => Promise<unknown>) => run(),
         onSuccess: () => void refresh(),
@@ -95,19 +107,14 @@ function LoadedChat({
         setError('');
         try {
             if (editing)
-                await api.request(
-                    'PUT /api/v1/family/chat/messages/{id}',
-                    {
-                        body: body.trim(),
-                        mentionUserIds: mentions,
-                        expectedVersion: editing.version,
-                        idempotencyKey: crypto.randomUUID(),
-                    },
-                    undefined,
-                    { id: editing.id },
-                );
+                await editFamilyChatMessage(api, editing.id, {
+                    body: body.trim(),
+                    mentionUserIds: mentions,
+                    expectedVersion: editing.version,
+                    idempotencyKey: crypto.randomUUID(),
+                });
             else
-                await api.request('POST /api/v1/family/chat/messages', {
+                await sendFamilyChatMessage(api, {
                     body: body.trim(),
                     replyToId: reply?.id ?? null,
                     mentionUserIds: mentions,
@@ -127,7 +134,7 @@ function LoadedChat({
     const saveDraft = async () => {
         if (!api || (!body && draftVersion === null)) return;
         try {
-            const result = await api.request('PUT /api/v1/family/chat/draft', {
+            const result = await saveFamilyChatDraft(api, {
                 body,
                 expectedVersion: draftVersion,
                 idempotencyKey: crypto.randomUUID(),
@@ -218,16 +225,11 @@ function LoadedChat({
                                                 aria-label={`Реакция ${labels[reaction]}`}
                                                 onClick={() =>
                                                     command.mutate(() =>
-                                                        api!.request(
-                                                            'POST /api/v1/family/chat/messages/{id}/reaction',
-                                                            {
-                                                                reaction,
-                                                                active: !value?.reactedByMe,
-                                                                idempotencyKey: crypto.randomUUID(),
-                                                            },
-                                                            undefined,
-                                                            { id: message.id },
-                                                        ),
+                                                        reactToFamilyChatMessage(api!, message.id, {
+                                                            reaction,
+                                                            active: !value?.reactedByMe,
+                                                            idempotencyKey: crypto.randomUUID(),
+                                                        }),
                                                     )
                                                 }
                                             >
@@ -248,12 +250,10 @@ function LoadedChat({
                                     <button
                                         onClick={() =>
                                             command.mutate(() =>
-                                                api!.request(
-                                                    'POST /api/v1/family/chat/messages/{id}/pin',
-                                                    { pinned: !message.pinned, idempotencyKey: crypto.randomUUID() },
-                                                    undefined,
-                                                    { id: message.id },
-                                                ),
+                                                pinFamilyChatMessage(api!, message.id, {
+                                                    pinned: !message.pinned,
+                                                    idempotencyKey: crypto.randomUUID(),
+                                                }),
                                             )
                                         }
                                     >
@@ -264,12 +264,9 @@ function LoadedChat({
                                         onClick={() => {
                                             if (confirm('Скрыть сообщение только у вас?'))
                                                 command.mutate(() =>
-                                                    api!.request(
-                                                        'POST /api/v1/family/chat/messages/{id}/hide',
-                                                        { idempotencyKey: crypto.randomUUID() },
-                                                        undefined,
-                                                        { id: message.id },
-                                                    ),
+                                                    hideFamilyChatMessage(api!, message.id, {
+                                                        idempotencyKey: crypto.randomUUID(),
+                                                    }),
                                                 );
                                         }}
                                     >
@@ -280,15 +277,10 @@ function LoadedChat({
                                             onClick={() => {
                                                 if (confirm('Удалить сообщение для всех участников?'))
                                                     command.mutate(() =>
-                                                        api!.request(
-                                                            'POST /api/v1/family/chat/messages/{id}/remove',
-                                                            {
-                                                                expectedVersion: message.version,
-                                                                idempotencyKey: crypto.randomUUID(),
-                                                            },
-                                                            undefined,
-                                                            { id: message.id },
-                                                        ),
+                                                        removeFamilyChatMessage(api!, message.id, {
+                                                            expectedVersion: message.version,
+                                                            idempotencyKey: crypto.randomUUID(),
+                                                        }),
                                                     );
                                             }}
                                         >
@@ -375,15 +367,10 @@ function Content() {
     const q = search.get('q') ?? '';
     const [draftSearch, setDraftSearch] = useState(q);
     const chat = useInfiniteQuery({
-        queryKey: ['family-chat', user.data?.id, q],
+        queryKey: familyChatKeys.list(user.data?.id, q),
         enabled: !!api && !!user.data,
         initialPageParam: null as string | null,
-        queryFn: async ({ signal, pageParam }) =>
-            (
-                await api!.request('GET /api/v1/family/chat', undefined, signal, undefined, {
-                    query: { q, ...(pageParam ? { before: pageParam } : {}) },
-                })
-            ).data,
+        queryFn: ({ signal, pageParam }) => loadFamilyChat(api!, q, pageParam, signal),
         getNextPageParam: (lastPage) => lastPage.nextBefore ?? undefined,
         retry: false,
     });

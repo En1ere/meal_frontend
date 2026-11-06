@@ -10,6 +10,8 @@ import { Skeleton as ArcSkeleton } from '@meal-planner/design-system';
 import { useSession } from '../../entities/session/client.js';
 import { familyKeys } from '../../entities/family/model.js';
 import { useWorkspaceScope } from '../../entities/workspace-scope/client.js';
+import { familyProjectionKeys } from './query-keys.js';
+import { acceptFamilyInvitation, loadFamilyInvitationPreview } from './api.js';
 import styles from './family.module.css';
 
 function Content() {
@@ -19,24 +21,17 @@ function Content() {
     const token = useSearchParams().get('token') ?? '';
     const key = useRef(crypto.randomUUID());
     const preview = useQuery({
-        queryKey: ['family-invitation-preview', session.data?.id, token],
+        queryKey: familyProjectionKeys.invitationPreview(session.data?.id, token),
         enabled: !!api && !!session.data && token.length >= 32,
-        queryFn: async ({ signal }) =>
-            (
-                await api!.request('GET /api/v1/family/invitation-preview', undefined, signal, undefined, {
-                    query: { token },
-                })
-            ).data,
+        queryFn: ({ signal }) => loadFamilyInvitationPreview(api!, token, signal),
     });
     const accept = useMutation({
-        mutationFn: async () =>
-            (
-                await api!.request('POST /api/v1/family/invitation-accept', {
-                    token,
-                    expectedFamilyVersion: preview.data!.familyVersion,
-                    idempotencyKey: key.current,
-                })
-            ).data,
+        mutationFn: () =>
+            acceptFamilyInvitation(api!, {
+                token,
+                expectedFamilyVersion: preview.data!.familyVersion,
+                idempotencyKey: key.current,
+            }),
         onSuccess: (family) => {
             queryClient.setQueryData(familyKeys.context(session.data?.id), family);
             if (session.data?.id) setScopeFor(session.data.id, 'family');

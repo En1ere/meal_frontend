@@ -6,18 +6,12 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useRuntime } from '../../shared/runtime/index.js';
 import { ApiError } from '../../shared/api/client.js';
 import { useSession } from '../../entities/session/client.js';
+import { inventoryKeys } from '../../entities/inventory/query-keys.js';
 import { useRequestSignal } from '../../shared/api/use-request-signal.js';
 import { InlineLoader as ArcInlineLoader } from '@meal-planner/design-system';
 import { BatchFields, emptyFields, type Fields } from './batch-form.js';
-import {
-    InventoryShell,
-    Loading,
-    Failure,
-    commandError,
-    inventoryBase,
-    inventoryScopeQuery,
-    type InventoryScope,
-} from './shared.js';
+import { createInventoryBatch, loadInventoryLocations, loadInventoryProducts } from './api.js';
+import { InventoryShell, Loading, Failure, commandError, inventoryBase, type InventoryScope } from './shared.js';
 import styles from './inventory.module.css';
 
 function Content({ scope }: { scope: InventoryScope }) {
@@ -42,21 +36,14 @@ function Content({ scope }: { scope: InventoryScope }) {
     const pendingRef = useRef(false);
     const attempt = useRef<{ key: string; fingerprint: string } | null>(null);
     const products = useQuery({
-        queryKey: ['inventory-products', user.data?.id, q],
+        queryKey: inventoryKeys.productSearch(user.data?.id, q),
         enabled: !!api && !!user.data,
-        queryFn: async ({ signal }) =>
-            (await api!.request('GET /api/v1/products', undefined, signal, undefined, { query: { q, limit: '20' } }))
-                .data,
+        queryFn: ({ signal }) => loadInventoryProducts(api!, q, signal),
     });
     const locations = useQuery({
-        queryKey: ['inventory-locations', scope, user.data?.id],
+        queryKey: inventoryKeys.locations(scope, user.data?.id),
         enabled: !!api && !!user.data,
-        queryFn: async ({ signal }) =>
-            (
-                await api!.request('GET /api/v1/inventory-locations', undefined, signal, undefined, {
-                    query: inventoryScopeQuery(scope),
-                })
-            ).data.items,
+        queryFn: ({ signal }) => loadInventoryLocations(api!, scope, signal),
     });
     async function save(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -70,14 +57,14 @@ function Content({ scope }: { scope: InventoryScope }) {
         setError('');
         const requestSignal = signal();
         try {
-            const response = await api.request(
-                'POST /api/v1/inventory',
+            const response = await createInventoryBatch(
+                api,
                 { ...body, idempotencyKey: attempt.current.key },
                 requestSignal,
             );
             if (requestSignal.aborted) return;
-            await queryClient.invalidateQueries({ queryKey: ['inventory'] });
-            await queryClient.invalidateQueries({ queryKey: ['inventory-attention'] });
+            await queryClient.invalidateQueries({ queryKey: inventoryKeys.root });
+            await queryClient.invalidateQueries({ queryKey: inventoryKeys.attentionRoot });
             router.push(`${inventoryBase(scope)}/batches/${response.data.batch.id}`);
         } catch (err) {
             if (!requestSignal.aborted) {

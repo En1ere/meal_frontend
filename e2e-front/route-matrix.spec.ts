@@ -22,6 +22,7 @@ const concrete = (route: string) => {
         .replace('[username]', 'pro1')
         .replace('[token]', 'invalid-token')
         .replace('[queue]', 'recipes')
+        .replace('[slug]', 'personal-data-consent')
         .replace('[id]', '00000000-0000-4000-8000-000000000001');
 };
 
@@ -255,8 +256,10 @@ const routeChunks = Array.from({ length: Math.ceil(userRoutes.length / chunkSize
     userRoutes.slice(index * chunkSize, (index + 1) * chunkSize),
 );
 
-expect(routes).toHaveLength(117);
-expect(userRoutes).toHaveLength(109);
+expect(routes).toContain('/legal');
+expect(routes).toContain('/legal/[slug]');
+expect(routes).toHaveLength(119);
+expect(userRoutes).toHaveLength(111);
 for (const [index, chunk] of routeChunks.entries())
     test(`renders authenticated Pro route chunk ${index + 1}/${routeChunks.length}`, async ({ page }) => {
         await loginUser(page);

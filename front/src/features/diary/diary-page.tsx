@@ -8,8 +8,19 @@ import type { Success } from '../../shared/api/contracts.generated.js';
 import { ApiError } from '../../shared/api/client.js';
 import { Skeleton as ArcSkeleton } from '@meal-planner/design-system';
 import { useSession } from '../../entities/session/client.js';
+import { proOverviewKeys } from '../../entities/pro-overview/client.js';
+import { inventoryKeys } from '../../entities/inventory/query-keys.js';
 import styles from './diary.module.css';
 import { isConsentRequiredError, useConsent } from '../../entities/consent/client.js';
+import { diaryKeys } from './query-keys.js';
+import {
+    archiveDiaryEntry,
+    createDiaryEntry,
+    decideDiaryPortion,
+    loadDiaryDay,
+    loadDiarySources,
+    updateDiaryEntry,
+} from './api.js';
 
 type Day = Success<'GET /api/v1/diary'>['data'];
 type Entry = Day['items'][number];
@@ -90,33 +101,25 @@ function Content() {
     const healthConsent = useConsent('special_category');
 
     const day = useQuery({
-        queryKey: ['diary', session.data?.id, date],
+        queryKey: diaryKeys.day(session.data?.id, date),
         enabled: !!api && !!session.data && healthConsent.enabled,
-        queryFn: ({ signal }) =>
-            api!
-                .request('GET /api/v1/diary', undefined, signal, undefined, { query: { date } })
-                .then((response) => response.data),
+        queryFn: ({ signal }) => loadDiaryDay(api!, date, signal),
     });
     const sources = useQuery({
-        queryKey: ['diary-sources', sourceType, search],
+        queryKey: diaryKeys.sources(sourceType, search),
         enabled: !!api && composer && sourceType !== 'manual',
-        queryFn: ({ signal }) =>
-            api!
-                .request('GET /api/v1/diary/sources', undefined, signal, undefined, {
-                    query: { type: sourceType, q: search, limit: '20' },
-                })
-                .then((response) => response.data.items),
+        queryFn: ({ signal }) => loadDiarySources(api!, sourceType, search, signal),
     });
     const refresh = async () => {
         await Promise.all([
-            cache.invalidateQueries({ queryKey: ['diary'] }),
-            cache.invalidateQueries({ queryKey: ['pro-overview'] }),
-            cache.invalidateQueries({ queryKey: ['inventory'] }),
+            cache.invalidateQueries({ queryKey: diaryKeys.root }),
+            cache.invalidateQueries({ queryKey: proOverviewKeys.root }),
+            cache.invalidateQueries({ queryKey: inventoryKeys.root }),
         ]);
     };
     const create = useMutation({
         mutationFn: () =>
-            api!.request('POST /api/v1/diary', {
+            createDiaryEntry(api!, {
                 eatenAt: new Date(eatenAt).toISOString(),
                 meal,
                 note: note.trim() || null,
@@ -126,7 +129,6 @@ function Content() {
                     quantity: amount,
                     unit: componentUnit,
                 })),
-                idempotencyKey: crypto.randomUUID(),
             }),
         onSuccess: async () => {
             setComposer(false);
@@ -137,34 +139,20 @@ function Content() {
     });
     const archive = useMutation({
         mutationFn: (entry: Entry) =>
-            api!.request(
-                'POST /api/v1/diary/{id}/archive',
-                {
-                    archived: entry.state !== 'archived',
-                    expectedVersion: entry.version,
-                    idempotencyKey: crypto.randomUUID(),
-                },
-                undefined,
-                { id: entry.id },
-                { ifMatch: entry.version },
-            ),
+            archiveDiaryEntry(api!, entry.id, {
+                archived: entry.state !== 'archived',
+                expectedVersion: entry.version,
+            }),
         onSuccess: refresh,
     });
     const update = useMutation({
         mutationFn: (entry: Entry) =>
-            api!.request(
-                'PUT /api/v1/diary/{id}',
-                {
-                    eatenAt: entry.eatenAt,
-                    meal: entry.meal,
-                    note: entry.note,
-                    expectedVersion: entry.version,
-                    idempotencyKey: crypto.randomUUID(),
-                },
-                undefined,
-                { id: entry.id },
-                { ifMatch: entry.version },
-            ),
+            updateDiaryEntry(api!, entry.id, {
+                eatenAt: entry.eatenAt,
+                meal: entry.meal,
+                note: entry.note,
+                expectedVersion: entry.version,
+            }),
         onSuccess: async () => {
             setEditing(null);
             await refresh();
@@ -177,14 +165,7 @@ function Content() {
         }: {
             proposal: PortionProposal;
             decision: 'confirmed' | 'refused' | 'cancelled';
-        }) =>
-            api!.request(
-                'POST /api/v1/diary/portions/{id}/decision',
-                { decision, expectedVersion: proposal.version, idempotencyKey: crypto.randomUUID() },
-                undefined,
-                { id: proposal.id },
-                { ifMatch: proposal.version },
-            ),
+        }) => decideDiaryPortion(api!, proposal.id, { decision, expectedVersion: proposal.version }),
         onSuccess: refresh,
     });
     const grouped = useMemo(

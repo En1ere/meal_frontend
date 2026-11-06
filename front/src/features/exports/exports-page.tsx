@@ -9,6 +9,8 @@ import { ApiError } from '../../shared/api/client.js';
 import type { Success } from '../../shared/api/contracts.generated.js';
 import { useSession } from '../../entities/session/client.js';
 import { CriticalReauthDialog } from '../../entities/account-security/client.js';
+import { exportKeys } from '../../entities/export/model.js';
+import { createExport, downloadExport, loadExportHistory, previewExport } from './api.js';
 import styles from './exports.module.css';
 
 type Preview = Success<'POST /api/v1/exports/preview'>['data'];
@@ -72,9 +74,7 @@ function HistoryCard({ job }: { job: Job }) {
     const expiredByClock = job.status === 'ready' && !!job.expiresAt && expiredAt === job.expiresAt;
     const status = expiredByClock ? 'expired' : job.status;
     const download = useMutation({
-        mutationFn: async () =>
-            (await api!.request('GET /api/v1/exports/{id}/download-content', undefined, undefined, { id: job.id }))
-                .data,
+        mutationFn: () => downloadExport(api!, job.id),
         onSuccess: (file) => {
             const url = URL.createObjectURL(new Blob([file.content], { type: file.mediaType }));
             const anchor = document.createElement('a');
@@ -160,15 +160,10 @@ function ExportHistory() {
     const { api } = useRuntime();
     const session = useSession('user');
     const history = useInfiniteQuery({
-        queryKey: ['exports', session.data?.id],
+        queryKey: exportKeys.forAccount(session.data?.id),
         enabled: !!api && !!session.data,
         initialPageParam: null as string | null,
-        queryFn: async ({ pageParam, signal }) =>
-            (
-                await api!.request('GET /api/v1/exports', undefined, signal, undefined, {
-                    query: { limit: '20', ...(pageParam ? { cursor: pageParam } : {}) },
-                })
-            ).data,
+        queryFn: ({ pageParam, signal }) => loadExportHistory(api!, pageParam, signal),
         getNextPageParam: (page) => page.nextCursor ?? undefined,
         refetchInterval: (query) => {
             const pages = query.state.data?.pages ?? [];
@@ -244,16 +239,14 @@ function ExportComposer() {
         idempotencyKey.current = null;
     };
     const review = useMutation({
-        mutationFn: async () =>
-            (
-                await api!.request('POST /api/v1/exports/preview', {
-                    scope,
-                    domain,
-                    format,
-                    startsOn: startsOn || null,
-                    endsOn: endsOn || null,
-                })
-            ).data,
+        mutationFn: () =>
+            previewExport(api!, {
+                scope,
+                domain,
+                format,
+                startsOn: startsOn || null,
+                endsOn: endsOn || null,
+            }),
         onSuccess: (value) => {
             setPreview(value);
             idempotencyKey.current = null;
@@ -262,18 +255,16 @@ function ExportComposer() {
     const create = useMutation({
         mutationFn: async (reauthToken: string) => {
             idempotencyKey.current ??= crypto.randomUUID();
-            return (
-                await api!.request('POST /api/v1/exports', {
-                    previewId: preview!.previewId,
-                    idempotencyKey: idempotencyKey.current,
-                    reauthToken,
-                })
-            ).data.job;
+            return createExport(api!, {
+                previewId: preview!.previewId,
+                idempotencyKey: idempotencyKey.current,
+                reauthToken,
+            });
         },
         onSuccess: async () => {
             idempotencyKey.current = null;
             setPreview(null);
-            await queryClient.invalidateQueries({ queryKey: ['exports', session.data?.id] });
+            await queryClient.invalidateQueries({ queryKey: exportKeys.forAccount(session.data?.id) });
         },
     });
     const submit = (event: FormEvent<HTMLFormElement>) => {

@@ -11,6 +11,9 @@ import {
     type Recommendation,
 } from '../../entities/recommendation/client.js';
 import styles from './user-home.module.css';
+import { authHomeKeys } from './home/query-keys.js';
+import { recommendationKeys } from '../../entities/recommendation/query-keys.js';
+import { loadAuthHome, loadAuthHomeRecipeRecommendations } from './home/api.js';
 
 const mealName = (value: string) =>
     ({ breakfast: 'Завтрак', lunch: 'Обед', dinner: 'Ужин', snack: 'Перекус' })[value] ?? value;
@@ -52,24 +55,14 @@ function Content() {
     const receiptsPath = scope === 'family' ? '/family/receipts' : '/receipts';
     const session = useSession('user');
     const query = useQuery({
-        queryKey: ['home', session.data?.id],
+        queryKey: authHomeKeys.home(session.data?.id),
         enabled: !!api && !!session.data,
-        queryFn: async ({ signal }) => (await api!.request('GET /api/v1/home', undefined, signal)).data,
+        queryFn: ({ signal }) => loadAuthHome(api!, signal),
     });
     const recommendations = useQuery({
-        queryKey: ['recommendations', 'recipe', session.data?.id, scope, 3],
+        queryKey: recommendationKeys.recipe(session.data?.id, scope, 3),
         enabled: !!api && !!session.data,
-        queryFn: async ({ signal }) =>
-            (
-                await api!.request('GET /api/v1/recommendations', undefined, signal, undefined, {
-                    query: {
-                        type: 'recipe',
-                        scope: scope === 'family' ? 'family' : 'private',
-                        surface: 'home',
-                        limit: '3',
-                    },
-                })
-            ).data.items.filter((item): item is RecipeRecommendation => item.type === 'recipe'),
+        queryFn: ({ signal }) => loadAuthHomeRecipeRecommendations(api!, scope, signal),
     });
     if (query.isPending)
         return (

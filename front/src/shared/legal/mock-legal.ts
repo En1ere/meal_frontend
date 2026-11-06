@@ -69,10 +69,6 @@ const combine = (manifest: Manifest, state: ConsentState, history: ConsentHistor
     history: history.events,
 });
 
-export function legalSettingsKey(userId: string | undefined) {
-    return ['legal-settings', userId] as const;
-}
-
 export async function getPublicLegalManifest(api: ApiClient, signal?: AbortSignal): Promise<PublicLegalManifest> {
     const response = await api.request('GET /api/v1/legal/manifest', undefined, signal);
     return { status: response.data.status, documents: toDocuments(response.data) };

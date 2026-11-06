@@ -22,6 +22,8 @@ import { storeRecipeCache, clearBrowserRecipeCache } from '../../entities/recipe
 import { SavedRecipesReader } from './offline.js';
 import { RecipeAllergens } from './allergens.js';
 import { CostEstimateBadge } from '../../entities/finance-cost/client.js';
+import { recipeKeys } from './query-keys.js';
+import { loadRecipeDetail, loadRecipePersonal, loadRecipeStatistics, saveRecipeBookmark } from './detail-api.js';
 export type RecipeDetailData = Success<'GET /api/v1/recipes/{id}'>['data']['recipe'];
 type Personal = Success<'GET /api/v1/recipes/{id}/personal'>['data'];
 const tabs = [
@@ -46,41 +48,22 @@ function Content({ id, initialData }: { id: string; initialData?: RecipeDetailDa
     const [shareStatus, setShareStatus] = useState('');
     const attempt = useRef<{ bookmarked: boolean; idempotencyKey: string } | null>(null);
     const query = useQuery({
-        queryKey: ['recipes', 'public', id],
+        queryKey: recipeKeys.publicDetail(id),
         initialData,
         staleTime: 30000,
         enabled: !!api,
-        queryFn: async ({ signal }) =>
-            (await api!.request('GET /api/v1/recipes/{id}', undefined, signal, { id })).data.recipe,
+        queryFn: ({ signal }) => loadRecipeDetail(api!, id, signal),
     });
     const state = detailState(new URLSearchParams(search), query.data?.baseServings ?? 1);
     const personal = useQuery({
-        queryKey: ['recipes', 'personal', user.data?.id, id, state.servings],
+        queryKey: recipeKeys.personal(user.data?.id, id, state.servings),
         enabled: !!api && !!user.data && query.isSuccess,
-        queryFn: async ({ signal }) =>
-            (
-                await api!.request(
-                    'GET /api/v1/recipes/{id}/personal',
-                    undefined,
-                    signal,
-                    { id },
-                    { query: { servings: String(state.servings) } },
-                )
-            ).data,
+        queryFn: ({ signal }) => loadRecipePersonal(api!, id, state.servings, signal),
     });
     const statistics = useQuery({
-        queryKey: ['recipes', 'statistics', id, state.servings],
+        queryKey: recipeKeys.statistics(id, state.servings),
         enabled: !!api,
-        queryFn: async ({ signal }) =>
-            (
-                await api!.request(
-                    'GET /api/v1/recipes/{id}/cooking-statistics',
-                    undefined,
-                    signal,
-                    { id },
-                    { query: { servings: String(state.servings) } },
-                )
-            ).data,
+        queryFn: ({ signal }) => loadRecipeStatistics(api!, id, state.servings, signal),
     });
     useEffect(() => {
         if (query.error instanceof ApiError && [403, 404].includes(query.error.status)) {
@@ -107,16 +90,16 @@ function Content({ id, initialData }: { id: string; initialData?: RecipeDetailDa
         setBookmarkError('');
         const abort = signal();
         try {
-            await api.request('POST /api/v1/recipes/{id}/bookmark', attempt.current, abort, { id });
+            await saveRecipeBookmark(api, id, attempt.current, abort);
             if (abort.aborted) return;
             attempt.current = null;
-            await queryClient.invalidateQueries({ queryKey: ['recipes', 'personal', user.data?.id, id] });
+            await queryClient.invalidateQueries({ queryKey: recipeKeys.personalDetail(user.data?.id, id) });
         } catch (error) {
             if (!abort.aborted) {
                 if (error instanceof ApiError && error.status === 401) {
                     api.invalidate();
                     setUserSession(runtime, null);
-                    queryClient.removeQueries({ queryKey: ['recipes', 'personal'] });
+                    queryClient.removeQueries({ queryKey: recipeKeys.personalRoot });
                 }
                 setBookmarkError(
                     error instanceof ApiError

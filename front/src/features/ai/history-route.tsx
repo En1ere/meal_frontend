@@ -5,8 +5,10 @@ import { useInfiniteQuery, useMutation } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useRuntime } from '../../shared/runtime/index.js';
 import { useSession } from '../../entities/session/client.js';
+import { aiKeys, loadAiHistory, setAiHistoryArchived } from '../../entities/ai/index.js';
 import styles from './ai.module.css';
 import { statusLabels, Frame } from './shared.js';
+import { useStableCommandKey } from './use-stable-command-key.js';
 
 export function AiHistoryPage() {
     return (
@@ -20,39 +22,27 @@ function HistoryContent() {
     const { api, queryClient } = useRuntime(),
         session = useSession('user'),
         [archived, setArchived] = useState<'active' | 'archived' | 'all'>('active');
+    const archiveCommand = useStableCommandKey();
     const query = useInfiniteQuery({
-        queryKey: ['ai-history', session.data?.id, archived],
+        queryKey: aiKeys.history(session.data?.id, archived),
         enabled: !!api && !!session.data,
         initialPageParam: null as string | null,
-        queryFn: async ({ signal, pageParam }) =>
-            (
-                await api!.request('GET /api/v1/ai/history', undefined, signal, undefined, {
-                    query: {
-                        archived,
-                        limit: '20',
-                        ...(pageParam ? { cursor: pageParam } : {}),
-                    },
-                })
-            ).data,
+        queryFn: ({ signal, pageParam }) => loadAiHistory(api!, archived, pageParam, signal),
         getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
     });
     const transition = useMutation({
-        mutationFn: async (item: { id: string; archived: boolean; version: number }) =>
-            (
-                await api!.request(
-                    'PUT /api/v1/ai/history/{id}/archive',
-                    {
-                        archived: !item.archived,
-                        expectedVersion: item.version,
-                        idempotencyKey: crypto.randomUUID(),
-                    },
-                    undefined,
-                    { id: item.id },
-                )
-            ).data,
+        mutationFn: (item: { id: string; archived: boolean; version: number }) => {
+            const intent = JSON.stringify(item);
+            return setAiHistoryArchived(api!, item.id, {
+                archived: !item.archived,
+                expectedVersion: item.version,
+                idempotencyKey: archiveCommand.forIntent(intent),
+            });
+        },
         onSuccess: (value) => {
-            void queryClient.invalidateQueries({ queryKey: ['ai-history', session.data?.id] });
-            void queryClient.invalidateQueries({ queryKey: ['ai-conversation', session.data?.id, value.item.id] });
+            archiveCommand.reset();
+            void queryClient.invalidateQueries({ queryKey: aiKeys.historyRoot(session.data?.id) });
+            void queryClient.invalidateQueries({ queryKey: aiKeys.conversation(session.data?.id, value.item.id) });
         },
     });
     const items = query.data?.pages.flatMap((page) => page.items) ?? [];

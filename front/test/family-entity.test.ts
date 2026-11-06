@@ -6,4 +6,7 @@ void test('family entity preserves canonical prefix and account-scoped query key
     assert.deepEqual(familyKeys.all, ['family']);
     assert.deepEqual(familyKeys.context(undefined), ['family', undefined]);
     assert.deepEqual(familyKeys.context('user-a'), ['family', 'user-a']);
+    assert.deepEqual(familyKeys.planContext(undefined), ['family-context', undefined]);
+    assert.deepEqual(familyKeys.planContext('user-a'), ['family-context', 'user-a']);
+    assert.notDeepEqual(familyKeys.planContext('user-a'), familyKeys.context('user-a'));
 });

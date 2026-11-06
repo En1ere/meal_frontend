@@ -7,6 +7,8 @@ import { useRecipeCommand } from './use-command.js';
 import type { Success } from '../../shared/api/contracts.generated.js';
 import styles from './workspace.module.css';
 import { Skeleton as ArcSkeleton } from '@meal-planner/design-system';
+import { recipeKeys } from './query-keys.js';
+import { loadCookingReminderPreferences } from './cooking-reminders-api.js';
 export type CookingReminder = Success<'GET /api/v1/cooking-attempts'>['data']['reminders'][number];
 function deviceTimezone() {
     try {
@@ -20,10 +22,9 @@ export function CookingReminders({ recipeId, reminders }: { recipeId: string; re
     const user = useSession('user');
     const command = useRecipeCommand();
     const preferences = useQuery({
-        queryKey: ['cooking', user.data?.id, 'reminder-preferences'],
+        queryKey: recipeKeys.cookingReminderPreferences(user.data?.id),
         enabled: !!api && !!user.data,
-        queryFn: async ({ signal }) =>
-            (await api!.request('GET /api/v1/cooking-attempts/reminder-preferences', undefined, signal)).data,
+        queryFn: ({ signal }) => loadCookingReminderPreferences(api!, signal),
     });
     async function save(enabled: boolean, useDevice = false) {
         const timezone = useDevice ? deviceTimezone() : (preferences.data?.timezone ?? deviceTimezone());
@@ -31,7 +32,7 @@ export function CookingReminders({ recipeId, reminders }: { recipeId: string; re
             enabled,
             ...(timezone ? { timezone } : {}),
         });
-        if (result) await queryClient.invalidateQueries({ queryKey: ['cooking'] });
+        if (result) await queryClient.invalidateQueries({ queryKey: recipeKeys.cookingRoot });
     }
     return (
         <section className={styles.panel}>

@@ -23,6 +23,9 @@ import { readOfflineOwner, subscribeOfflineState } from '../../entities/offline/
 import { enqueueOfflineOperation, readOfflineDraftState } from '../../entities/offline/queue.js';
 import { readOfflineSnapshotData, saveOfflineSnapshot } from '../../entities/offline/snapshots.js';
 import { normalizeCachedWorkspaceRecipe } from '../../entities/recipe/index.js';
+import { productKeys } from '../../entities/product/model.js';
+import { recipeKeys } from './query-keys.js';
+import { loadRecipeEditorProducts, loadRecipeWorkspace, saveRecipeWorkspace } from './editor-api.js';
 
 function EditorForm({
     initial,
@@ -54,14 +57,9 @@ function EditorForm({
     const [offlineQueued, setOfflineQueued] = useState(false);
     const attempt = useRef<{ key: string; document: RecipeDocument } | null>(null);
     const products = useQuery({
-        queryKey: ['products', 'editor', user.data?.id, search],
+        queryKey: productKeys.editorSearch(user.data?.id, search),
         enabled: !!api && !!user.data,
-        queryFn: async ({ signal }) =>
-            (
-                await api!.request('GET /api/v1/products', undefined, signal, undefined, {
-                    query: { q: search, limit: '100' },
-                })
-            ).data,
+        queryFn: ({ signal }) => loadRecipeEditorProducts(api!, search, signal),
     });
     const update = (value: Partial<RecipeDocument>) => setDocument((previous) => ({ ...previous, ...value }));
     const problems = submissionProblems(document);
@@ -124,31 +122,33 @@ function EditorForm({
         const abort = signal();
         try {
             const value = attempt.current;
-            const result = recipe
-                ? await api.request(
-                      'PUT /api/v1/recipe-workspace/{id}',
-                      { document: value.document, expectedVersion: recipe.version, idempotencyKey: value.key },
-                      abort,
-                      { id: recipe.id },
-                  )
-                : await api.request(
-                      'POST /api/v1/recipe-workspace',
-                      { document: value.document, idempotencyKey: value.key, scope },
-                      abort,
-                  );
+            const saved = await saveRecipeWorkspace(
+                api,
+                recipe
+                    ? {
+                          action: 'update',
+                          id: recipe.id,
+                          body: {
+                              document: value.document,
+                              expectedVersion: recipe.version,
+                              idempotencyKey: value.key,
+                          },
+                      }
+                    : {
+                          action: 'create',
+                          body: { document: value.document, idempotencyKey: value.key, scope },
+                      },
+                abort,
+            );
             if (abort.aborted) return;
             attempt.current = null;
-            setRecipe(result.data.recipe);
-            setDocument(result.data.recipe.document);
+            setRecipe(saved);
+            setDocument(saved.document);
             setConflict(false);
             setNotice('Черновик сохранён. Публикация выполняется отдельно.');
-            await queryClient.invalidateQueries({ queryKey: ['recipe-workspace'] });
+            await queryClient.invalidateQueries({ queryKey: recipeKeys.workspaceRoot });
             if (!recipe)
-                router.replace(
-                    scope === 'family'
-                        ? `/family/recipes/${result.data.recipe.id}/edit`
-                        : `/recipes/${result.data.recipe.id}/edit`,
-                );
+                router.replace(scope === 'family' ? `/family/recipes/${saved.id}/edit` : `/recipes/${saved.id}/edit`);
         } catch (e) {
             if (abort.aborted) return;
             setError(e instanceof ApiError ? e.message : 'Ответ не получен. Повторите сохранение с теми же данными.');
@@ -165,16 +165,10 @@ function EditorForm({
         if (!api || !recipe || pending) return;
         setPending(true);
         try {
-            const result = await api.request(
-                'GET /api/v1/recipe-workspace/{id}',
-                undefined,
-                signal(),
-                { id: recipe.id },
-                { query: { scope } },
-            );
-            setRecipe(result.data.recipe);
+            const current = await loadRecipeWorkspace(api, recipe.id, scope, signal());
+            setRecipe(current);
             setConflict(false);
-            setServerComparison(result.data.recipe.document);
+            setServerComparison(current.document);
             setNotice(
                 'Версия обновлена; ваши поля сохранены для сравнения. Перед сохранением проверьте актуальный рецепт в предпросмотре сервера.',
             );
@@ -644,7 +638,7 @@ function EditorContent({ id, scope }: { id?: string; scope: 'private' | 'family'
     );
     const online = scope === 'family' ? true : browserOnline;
     const query = useQuery({
-        queryKey: ['recipe-workspace', owner, scope, id],
+        queryKey: recipeKeys.workspaceDetail(owner, scope, id),
         enabled: !!api && !!owner && !!id,
         queryFn: async ({ signal }) => {
             if (scope === 'private' && !navigator.onLine) {
@@ -652,28 +646,18 @@ function EditorContent({ id, scope }: { id?: string; scope: 'private' | 'family'
                 if (!cached) throw new Error('Этот рецепт не сохранён для offline-редактирования.');
                 return normalizeCachedWorkspaceRecipe(cached);
             }
-            const recipe = (
-                await api!.request(
-                    'GET /api/v1/recipe-workspace/{id}',
-                    undefined,
-                    signal,
-                    { id: id! },
-                    {
-                        query: { scope },
-                    },
-                )
-            ).data.recipe;
+            const recipe = await loadRecipeWorkspace(api!, id!, scope, signal);
             if (scope === 'private') await saveOfflineSnapshot(owner!, `recipe-workspace:${id}`, recipe);
             return recipe;
         },
     });
     const localDraft = useQuery({
-        queryKey: ['recipe-workspace', owner, 'new', draftId, 'offline'],
+        queryKey: recipeKeys.workspaceOfflineNew(owner, draftId),
         enabled: scope === 'private' && !!owner && !id && !online,
         queryFn: () => readOfflineSnapshotData<RecipeDocument>(owner!, `recipe-workspace:new:${draftId}`),
     });
     const draftState = useQuery({
-        queryKey: ['offline-draft-state', owner, draftId],
+        queryKey: recipeKeys.offlineDraftState(owner, draftId),
         enabled: scope === 'private' && !!owner && !id && online && !!requestedDraftId,
         queryFn: () => readOfflineDraftState(owner!, `draft:${draftId}`),
         refetchInterval: (query) => (query.state.data?.unresolvedStatus ? 2_000 : false),

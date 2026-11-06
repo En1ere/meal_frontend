@@ -266,6 +266,17 @@ test('Pro overview fails closed on a transient response and recovers explicitly'
     await restoreEndpoint(page, '/api/v1/pro/overview');
     await alert.getByRole('button', { name: 'Повторить' }).click();
     await expect(page.getByRole('region', { name: 'Статус доступа Pro' })).toContainText('Pro активен');
+    await expect(page.getByText('0 расходов', { exact: true })).toBeVisible();
+
+    await gotoExact(page, '/finance/expenses');
+    await page.getByRole('button', { name: '＋ Добавить расход', exact: true }).click();
+    const form = page.locator('form').filter({ has: page.getByRole('heading', { name: 'Добавить расход' }) });
+    await form.getByLabel('Сумма, ₽').fill('1250');
+    await form.getByRole('checkbox').check();
+    await form.getByRole('button', { name: 'Сохранить', exact: true }).click();
+    await expect(page.getByRole('heading', { name: 'Добавить расход' })).toHaveCount(0);
+    await gotoExact(page, '/pro');
+    await expect(page.getByText('1 расходов', { exact: true })).toBeVisible();
 });
 
 test('offline settings isolate owners, expose conflicts and block destructive clearing until resolution', async ({

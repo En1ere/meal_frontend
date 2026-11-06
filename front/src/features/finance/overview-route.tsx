@@ -6,6 +6,8 @@ import { useState, type FormEvent } from 'react';
 import { useRuntime } from '../../shared/runtime/index.js';
 import { useSession } from '../../entities/session/client.js';
 import styles from './finance.module.css';
+import { financeKeys } from './query-keys.js';
+import { createFinanceBudget, loadFinanceBudgets, loadFinanceOverview, updateFinanceBudget } from './api.js';
 import { money, today, monthStart, text, minor, Frame, Loading, ErrorPanel, AccessNotice } from './shared.js';
 
 export function FinanceOverviewPage() {
@@ -24,18 +26,14 @@ function FinanceOverviewContent() {
     const [to, setTo] = useState(today);
     const [budgetOpen, setBudgetOpen] = useState(false);
     const overview = useQuery({
-        queryKey: ['finance-overview', session.data?.id, from, to],
+        queryKey: financeKeys.overview(session.data?.id, from, to),
         enabled: !!api && !!session.data && from <= to,
-        queryFn: ({ signal }) =>
-            api!
-                .request('GET /api/v1/finance/overview', undefined, signal, undefined, { query: { from, to } })
-                .then((response) => response.data),
+        queryFn: ({ signal }) => loadFinanceOverview(api!, from, to, signal),
     });
     const budgets = useQuery({
-        queryKey: ['finance-budgets', session.data?.id],
+        queryKey: financeKeys.budgets(session.data?.id),
         enabled: !!api && !!session.data,
-        queryFn: ({ signal }) =>
-            api!.request('GET /api/v1/finance/budgets', undefined, signal).then((response) => response.data),
+        queryFn: ({ signal }) => loadFinanceBudgets(api!, signal),
     });
     const saveBudget = useMutation({
         mutationFn: (form: FormData) => {
@@ -46,8 +44,9 @@ function FinanceOverviewContent() {
                 throw new Error('Проверьте сумму и период бюджета');
             const current = budgets.data?.items.find((item) => item.startsOn <= endsOn && item.endsOn >= startsOn);
             return current
-                ? api!.request(
-                      'PUT /api/v1/finance/budgets/{id}',
+                ? updateFinanceBudget(
+                      api!,
+                      current.id,
                       {
                           amountMinor,
                           startsOn,
@@ -56,11 +55,9 @@ function FinanceOverviewContent() {
                           expectedVersion: current.version,
                           idempotencyKey: crypto.randomUUID(),
                       },
-                      undefined,
-                      { id: current.id },
-                      { ifMatch: current.version },
+                      current.version,
                   )
-                : api!.request('POST /api/v1/finance/budgets', {
+                : createFinanceBudget(api!, {
                       amountMinor,
                       startsOn,
                       endsOn,
@@ -71,8 +68,8 @@ function FinanceOverviewContent() {
         onSuccess: async () => {
             setBudgetOpen(false);
             await Promise.all([
-                cache.invalidateQueries({ queryKey: ['finance-overview'] }),
-                cache.invalidateQueries({ queryKey: ['finance-budgets'] }),
+                cache.invalidateQueries({ queryKey: financeKeys.overviewRoot }),
+                cache.invalidateQueries({ queryKey: financeKeys.budgetsRoot }),
             ]);
         },
     });

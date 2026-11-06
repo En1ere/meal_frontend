@@ -7,6 +7,8 @@ import { useRuntime } from '../../shared/runtime/index.js';
 import { Skeleton as ArcSkeleton } from '@meal-planner/design-system';
 import { useSession } from '../../entities/session/client.js';
 import styles from './family-notes.module.css';
+import { familyNotesKeys } from './query-keys.js';
+import { loadFamilyNotes } from './api.js';
 
 function Content() {
     const { api } = useRuntime();
@@ -17,11 +19,9 @@ function Content() {
     const q = search.get('q') ?? '';
     const [draft, setDraft] = useState(q);
     const notes = useQuery({
-        queryKey: ['family-notes', user.data?.id, tab, q],
+        queryKey: familyNotesKeys.list(user.data?.id, tab, q),
         enabled: !!api && !!user.data,
-        queryFn: async ({ signal }) =>
-            (await api!.request('GET /api/v1/family/notes', undefined, signal, undefined, { query: { tab, q } })).data
-                .items,
+        queryFn: ({ signal }) => loadFamilyNotes(api!, tab, q, signal),
     });
     function submit(event: FormEvent) {
         event.preventDefault();

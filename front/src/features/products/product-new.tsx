@@ -6,12 +6,15 @@ import { useQuery } from '@tanstack/react-query';
 import { useRuntime } from '../../shared/runtime/index.js';
 import { ApiError } from '../../shared/api/client.js';
 import { useSession } from '../../entities/session/client.js';
+import { inventoryKeys } from '../../entities/inventory/query-keys.js';
+import { productKeys } from '../../entities/product/model.js';
 import { useRequestSignal } from '../../shared/api/use-request-signal.js';
 import { commandError } from '../../shared/api/command-error.js';
 import { units } from '../../entities/measurement/model.js';
 import { InlineLoader as ArcInlineLoader } from '@meal-planner/design-system';
 import styles from './products.module.css';
 import { ProductFailure, ProductLoading } from './async-state.js';
+import { loadProductReference, submitProductProposal, type ProductProposalInput } from './api.js';
 type AllergenStatus = 'contains' | 'may_contain' | 'unknown';
 function Content() {
     const { api, queryClient } = useRuntime();
@@ -24,11 +27,11 @@ function Content() {
     const [allergens, setAllergens] = useState<Record<string, AllergenStatus>>({});
     const attempt = useRef<{ key: string; fingerprint: string } | null>(null);
     const reference = useQuery({
-        queryKey: ['product-reference', user.data?.id],
+        queryKey: productKeys.reference(user.data?.id),
         enabled: !!api && !!user.data,
-        queryFn: async ({ signal }) => (await api!.request('GET /api/v1/products/reference', undefined, signal)).data,
+        queryFn: ({ signal }) => loadProductReference(api!, signal),
     });
-    const savedBody = useRef<Record<string, unknown> | null>(null);
+    const savedBody = useRef<ProductProposalInput | null>(null);
     async function submit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
         if (!api || pending) return;
@@ -37,13 +40,13 @@ function Content() {
             const value = form.get(key);
             return typeof value === 'string' ? value.trim() : '';
         };
-        const body =
+        const body: ProductProposalInput =
             uncertain && savedBody.current
                 ? savedBody.current
                 : {
                       name: text('name'),
                       categoryId: text('categoryId'),
-                      unit: text('unit'),
+                      unit: text('unit') as ProductProposalInput['unit'],
                       brand: text('brand') || null,
                       packageQuantity: text('packageQuantity').replace(',', '.') || null,
                       barcode: text('barcode') || null,
@@ -52,7 +55,7 @@ function Content() {
                       protein: text('protein').replace(',', '.') || null,
                       fat: text('fat').replace(',', '.') || null,
                       carbs: text('carbs').replace(',', '.') || null,
-                      nutritionBasisUnit: text('nutritionBasisUnit'),
+                      nutritionBasisUnit: text('nutritionBasisUnit') as ProductProposalInput['nutritionBasisUnit'],
                       allergens: Object.entries(allergens).map(([code, status]) => ({ code, status })),
                       source: 'user',
                       sourceText: text('sourceText') || null,
@@ -65,14 +68,10 @@ function Content() {
         setError('');
         const abort = signal();
         try {
-            const response = await api.request(
-                'POST /api/v1/products/proposals',
-                { ...body, idempotencyKey: attempt.current.key },
-                abort,
-            );
+            const product = await submitProductProposal(api, { ...body, idempotencyKey: attempt.current.key }, abort);
             if (abort.aborted) return;
-            await queryClient.invalidateQueries({ queryKey: ['inventory-products'] });
-            router.push(`/products/${response.data.product.id}`);
+            await queryClient.invalidateQueries({ queryKey: inventoryKeys.productSearchRoot });
+            router.push(`/products/${product.id}`);
         } catch (err) {
             if (!abort.aborted) {
                 setError(commandError(err));

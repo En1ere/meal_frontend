@@ -5,8 +5,18 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useRuntime } from '../../shared/runtime/index.js';
 import { useSession } from '../../entities/session/client.js';
+import { aiBalanceKeys } from '../../entities/ai-balance/model.js';
+import {
+    aiKeys,
+    decideAiTransfer,
+    loadAiBalance,
+    loadAiFamilySharing,
+    purchaseAiPackage,
+    requestAiTransfer,
+} from '../../entities/ai/index.js';
 import styles from './ai.module.css';
 import { Frame } from './shared.js';
+import { useStableCommandKey } from './use-stable-command-key.js';
 
 export function AiBalancePage() {
     return (
@@ -21,57 +31,58 @@ function BalanceContent() {
         session = useSession('user'),
         [donorId, setDonorId] = useState(''),
         [amount, setAmount] = useState(1);
+    const purchaseCommand = useStableCommandKey();
+    const transferCommand = useStableCommandKey();
+    const decisionCommand = useStableCommandKey();
     const query = useQuery({
-        queryKey: ['ai-balance', session.data?.id],
+        queryKey: aiBalanceKeys.forAccount(session.data?.id),
         enabled: !!api && !!session.data,
-        queryFn: async ({ signal }) => (await api!.request('GET /api/v1/ai/balance', undefined, signal)).data,
+        queryFn: ({ signal }) => loadAiBalance(api!, signal),
     });
     const purchase = useMutation({
-        mutationFn: async () =>
-            (
-                await api!.request('POST /api/v1/ai/package/purchase', {
-                    acceptedAmountMinor: 19900,
-                    idempotencyKey: crypto.randomUUID(),
-                })
-            ).data,
-        onSuccess: (value) => queryClient.setQueryData(['ai-balance', session.data?.id], value.balance),
+        mutationFn: () =>
+            purchaseAiPackage(api!, {
+                acceptedAmountMinor: 19900,
+                idempotencyKey: purchaseCommand.forIntent('package:40:19900'),
+            }),
+        onSuccess: (value) => {
+            purchaseCommand.reset();
+            queryClient.setQueryData(aiBalanceKeys.forAccount(session.data?.id), value.balance);
+        },
     });
     const sharing = useQuery({
-        queryKey: ['ai-family-sharing', session.data?.id],
+        queryKey: aiKeys.familySharing(session.data?.id),
         enabled: !!api && !!session.data,
         retry: false,
-        queryFn: async ({ signal }) => (await api!.request('GET /api/v1/ai/family-sharing', undefined, signal)).data,
+        queryFn: ({ signal }) => loadAiFamilySharing(api!, signal),
     });
     const refreshSharing = () => {
-        void queryClient.invalidateQueries({ queryKey: ['ai-family-sharing', session.data?.id] });
-        void queryClient.invalidateQueries({ queryKey: ['ai-balance', session.data?.id] });
+        void queryClient.invalidateQueries({ queryKey: aiKeys.familySharing(session.data?.id) });
+        void queryClient.invalidateQueries({ queryKey: aiBalanceKeys.forAccount(session.data?.id) });
     };
     const requestTransfer = useMutation({
-        mutationFn: async () =>
-            (
-                await api!.request('POST /api/v1/ai/transfers', {
-                    donorId,
-                    amount,
-                    idempotencyKey: crypto.randomUUID(),
-                })
-            ).data,
-        onSuccess: refreshSharing,
+        mutationFn: () =>
+            requestAiTransfer(api!, {
+                donorId,
+                amount,
+                idempotencyKey: transferCommand.forIntent(JSON.stringify({ donorId, amount })),
+            }),
+        onSuccess: () => {
+            transferCommand.reset();
+            refreshSharing();
+        },
     });
     const decideTransfer = useMutation({
-        mutationFn: async (input: { id: string; expectedVersion: number; decision: 'accept' | 'reject' }) =>
-            (
-                await api!.request(
-                    'POST /api/v1/ai/transfers/{id}/decision',
-                    {
-                        expectedVersion: input.expectedVersion,
-                        decision: input.decision,
-                        idempotencyKey: crypto.randomUUID(),
-                    },
-                    undefined,
-                    { id: input.id },
-                )
-            ).data,
-        onSuccess: refreshSharing,
+        mutationFn: (input: { id: string; expectedVersion: number; decision: 'accept' | 'reject' }) =>
+            decideAiTransfer(api!, input.id, {
+                expectedVersion: input.expectedVersion,
+                decision: input.decision,
+                idempotencyKey: decisionCommand.forIntent(JSON.stringify(input)),
+            }),
+        onSuccess: () => {
+            decisionCommand.reset();
+            refreshSharing();
+        },
     });
     const ownShare = sharing.data?.members.find((member) => member.currentUser),
         donors = sharing.data?.members.filter((member) => !member.currentUser && member.availableToTransfer > 0) ?? [];

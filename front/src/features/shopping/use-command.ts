@@ -6,6 +6,8 @@ import { contracts, type JsonRoute, type JsonSuccess } from '../../shared/api/co
 import { setUserSession } from '../../entities/session/client.js';
 import { useRequestSignal } from '../../shared/api/use-request-signal.js';
 import { useShoppingScope } from './shared.js';
+import { inventoryKeys } from '../../entities/inventory/query-keys.js';
+import { shoppingQueryRoots } from '../../entities/shopping/query-keys.js';
 export function useShoppingCommand() {
     const scope = useShoppingScope();
     const runtime = useRuntime();
@@ -51,11 +53,13 @@ export function useShoppingCommand() {
             const response = await api.request(route, operation.body, abort, operation.params);
             if (abort.aborted) return;
             frozen.current = null;
-            await Promise.all(
-                ['shopping', 'receipts', 'purchases', 'inventory', 'inventory-history'].map((key) =>
-                    queryClient.invalidateQueries({ queryKey: [key] }),
-                ),
-            );
+            await Promise.all([
+                queryClient.invalidateQueries({ queryKey: shoppingQueryRoots.root }),
+                queryClient.invalidateQueries({ queryKey: shoppingQueryRoots.receiptsRoot }),
+                queryClient.invalidateQueries({ queryKey: shoppingQueryRoots.purchasesRoot }),
+                queryClient.invalidateQueries({ queryKey: inventoryKeys.root }),
+                queryClient.invalidateQueries({ queryKey: inventoryKeys.historyRoot }),
+            ]);
             return response.data;
         } catch (e) {
             if (abort.aborted) return;
@@ -72,8 +76,9 @@ export function useShoppingCommand() {
                 if (e.status === 401) {
                     api.invalidate();
                     setUserSession(runtime, null);
-                    for (const key of ['shopping', 'receipts', 'purchases'])
-                        queryClient.removeQueries({ queryKey: [key] });
+                    queryClient.removeQueries({ queryKey: shoppingQueryRoots.root });
+                    queryClient.removeQueries({ queryKey: shoppingQueryRoots.receiptsRoot });
+                    queryClient.removeQueries({ queryKey: shoppingQueryRoots.purchasesRoot });
                 }
             }
         } finally {

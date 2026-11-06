@@ -4,6 +4,8 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { ApiError } from '../../shared/api/client.js';
 import { useRuntime } from '../../shared/runtime/index.js';
+import { createCriticalReauth, loadAccountSecurity } from './api.js';
+import { accountSecurityKeys } from './query-keys.js';
 import styles from './critical-reauth.module.css';
 
 export type ReauthResult = { token: string; expiresAt: string };
@@ -25,19 +27,17 @@ export function CriticalReauthDialog({
     const [method, setMethod] = useState<'totp' | 'recovery'>('totp');
     const [code, setCode] = useState('');
     const security = useQuery({
-        queryKey: ['auth', 'security', 'critical-reauth'],
+        queryKey: accountSecurityKeys.criticalReauth,
         enabled: open && !!api,
-        queryFn: async ({ signal }) => (await api!.request('GET /api/v1/auth/security', undefined, signal)).data,
+        queryFn: ({ signal }) => loadAccountSecurity(api!, signal),
     });
     const mutation = useMutation({
-        mutationFn: async () =>
-            (
-                await api!.request('POST /api/v1/account/critical-reauth', {
-                    purpose,
-                    password,
-                    factor: security.data?.authenticatorEnabled ? { method, code } : null,
-                })
-            ).data,
+        mutationFn: () =>
+            createCriticalReauth(api!, {
+                purpose,
+                password,
+                factor: security.data?.authenticatorEnabled ? { method, code } : null,
+            }),
         onSuccess: (value) => {
             setPassword('');
             setCode('');

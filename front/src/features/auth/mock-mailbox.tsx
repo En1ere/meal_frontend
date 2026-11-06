@@ -5,6 +5,7 @@ import { useRuntime } from '../../shared/runtime/index.js';
 import type { Success } from '../../shared/api/contracts.generated.js';
 import { Field, Submit, Feedback, useAccountAction } from './form-parts.js';
 import styles from './account.module.css';
+import { loadMockMailbox } from './mock-mailbox-api.js';
 const paths = {
     verify: '/auth/verify-email',
     reset: '/auth/reset-password',
@@ -35,9 +36,9 @@ export function MockMailbox() {
                 onSubmit={(event) => {
                     event.preventDefault();
                     void action.run(async (signal) => {
-                        const response = await runtime.api!.request('POST /api/v1/dev/mailbox', { email }, signal);
+                        const nextMessages = await loadMockMailbox(runtime.api!, email, signal);
                         signal.throwIfAborted();
-                        setMessages(response.data.messages);
+                        setMessages(nextMessages);
                     });
                 }}
             >

@@ -9,6 +9,15 @@ import { useRequestSignal } from '../../shared/api/use-request-signal.js';
 import { ApiError } from '../../shared/api/client.js';
 import type { Success } from '../../shared/api/contracts.generated.js';
 import { units } from '../../entities/measurement/model.js';
+import { inventoryKeys } from '../../entities/inventory/query-keys.js';
+import { preserveKeys } from '../../entities/preserve/model.js';
+import {
+    loadPreserveDetail,
+    loadPreserveHistory,
+    loadPreserveLocations,
+    loadPreserveSourceRecipe,
+    previewPreserveConsumption,
+} from './api.js';
 import { localDate } from '../../shared/lib/date.js';
 import { RecipeImage } from '../../entities/recipe/client.js';
 import { PreserveShell, PreserveLoading, expiryLabel, dayText } from './shared.js';
@@ -43,14 +52,8 @@ function Operation({
     const unit = current.unit ? units[current.unit] : '';
     async function reread() {
         try {
-            const result = await api!.request(
-                'GET /api/v1/preserves/{id}',
-                undefined,
-                requestSignal(),
-                { id: current.id },
-                { query: { scope } },
-            );
-            setCurrent(result.data.preserve);
+            const result = await loadPreserveDetail(api!, current.id, scope, requestSignal());
+            setCurrent(result.preserve);
             setPreview(null);
             setError('Карточка обновлена. Ввод сохранён; проверьте остаток и повторите предпросмотр.');
         } catch (e) {
@@ -75,13 +78,8 @@ function Operation({
             if (!preview) {
                 setPreviewing(true);
                 try {
-                    const response = await api.request(
-                        'POST /api/v1/preserves/{id}/consume-preview',
-                        body,
-                        requestSignal(),
-                        { id: current.id },
-                    );
-                    setPreview(response.data);
+                    const response = await previewPreserveConsumption(api, current.id, body, requestSignal());
+                    setPreview(response);
                 } catch (e) {
                     setError(e instanceof ApiError ? e.message : 'Не удалось получить предпросмотр.');
                 } finally {
@@ -269,31 +267,19 @@ function Content({ id, scope }: { id: string; scope: 'private' | 'family' }) {
     const [historyPage, setHistoryPage] = useState(1);
     const [tab, setTab] = useState('ingredients');
     const detail = useQuery({
-        queryKey: ['preserves', user.data?.id, scope, id],
+        queryKey: preserveKeys.detail(user.data?.id, scope, id),
         enabled: !!api && !!user.data,
-        queryFn: async ({ signal }) =>
-            (await api!.request('GET /api/v1/preserves/{id}', undefined, signal, { id }, { query: { scope } })).data,
+        queryFn: ({ signal }) => loadPreserveDetail(api!, id, scope, signal),
     });
     const history = useQuery({
-        queryKey: ['preserves', user.data?.id, scope, id, 'history', historyPage],
+        queryKey: preserveKeys.history(user.data?.id, scope, id, historyPage),
         enabled: !!api && !!user.data && !!detail.data,
-        queryFn: async ({ signal }) =>
-            (
-                await api!.request(
-                    'GET /api/v1/preserves/{id}/history',
-                    undefined,
-                    signal,
-                    { id },
-                    { query: { page: String(historyPage), limit: '20', scope } },
-                )
-            ).data,
+        queryFn: ({ signal }) => loadPreserveHistory(api!, id, scope, historyPage, signal),
     });
     const locations = useQuery({
-        queryKey: ['inventory-locations', user.data?.id, scope],
+        queryKey: inventoryKeys.preserveLocations(user.data?.id, scope),
         enabled: !!api && !!user.data,
-        queryFn: async ({ signal }) =>
-            (await api!.request('GET /api/v1/inventory-locations', undefined, signal, undefined, { query: { scope } }))
-                .data,
+        queryFn: ({ signal }) => loadPreserveLocations(api!, scope, signal),
     });
     const returnTo = search.get('returnTo');
     const base = scope === 'family' ? '/family/preserves' : '/preserves';
@@ -586,7 +572,7 @@ function SourceRecipeLink({ id }: { id: string }) {
         setError('');
         const abort = signal();
         try {
-            await api.request('GET /api/v1/recipe-workspace/{id}', undefined, abort, { id });
+            await loadPreserveSourceRecipe(api, id, abort);
             if (!abort.aborted) router.push(`/recipes/${id}/edit`);
         } catch (e) {
             if (abort.aborted) return;

@@ -5,12 +5,15 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useRuntime } from '../../shared/runtime/index.js';
 import { useSession } from '../../entities/session/client.js';
 import { units } from '../../entities/measurement/model.js';
+import { inventoryKeys } from '../../entities/inventory/query-keys.js';
 import { localDate } from '../../shared/lib/date.js';
 import { PreserveShell, PreserveLoading, expiryLabel, dayText } from './shared.js';
 import { RecipeImage } from '../../entities/recipe/client.js';
 import { PreserveForm } from './form.js';
 import { preserveTypes } from './types.js';
+import { preserveKeys } from '../../entities/preserve/model.js';
 import styles from './preserves.module.css';
+import { loadPreserveList, loadPreserveLocations } from './api.js';
 function Content({ scope }: { scope: 'private' | 'family' }) {
     const { api } = useRuntime();
     const user = useSession('user');
@@ -22,21 +25,14 @@ function Content({ scope }: { scope: 'private' | 'family' }) {
         ),
     );
     const list = useQuery({
-        queryKey: ['preserves', user.data?.id, scope, 'list', query],
+        queryKey: preserveKeys.list(user.data?.id, scope, query),
         enabled: !!api && !!user.data,
-        queryFn: async ({ signal }) =>
-            (
-                await api!.request('GET /api/v1/preserves', undefined, signal, undefined, {
-                    query: { ...query, localDate: localDate(), limit: '20', scope },
-                })
-            ).data,
+        queryFn: ({ signal }) => loadPreserveList(api!, query, localDate(), scope, signal),
     });
     const locations = useQuery({
-        queryKey: ['inventory-locations', user.data?.id, scope],
+        queryKey: inventoryKeys.preserveLocations(user.data?.id, scope),
         enabled: !!api && !!user.data,
-        queryFn: async ({ signal }) =>
-            (await api!.request('GET /api/v1/inventory-locations', undefined, signal, undefined, { query: { scope } }))
-                .data,
+        queryFn: ({ signal }) => loadPreserveLocations(api!, scope, signal),
     });
     function href(patch: Record<string, string>) {
         const next = new URLSearchParams(search);

@@ -93,7 +93,8 @@ for (const [path, item] of Object.entries(document.paths))
             throw Error('Review new HTTP method before generating mocks');
         if (!includedPath(path)) continue;
         const request = operation.requestBody?.content['application/json']?.schema;
-        const success = (operation.responses['200'] ?? operation.responses['201']).content['application/json'].schema;
+        const success = (operation.responses['200'] ?? operation.responses['201'] ?? operation.responses['202'])
+            .content['application/json'].schema;
         const pathParameters = operation.parameters?.filter((parameter) => parameter.in === 'path') ?? [];
         const params = pathParameters.length
             ? `z.strictObject({${pathParameters.map((parameter) => `${JSON.stringify(parameter.name)}:${schema(parameter.schema)}`).join(',')}})`

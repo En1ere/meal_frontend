@@ -12,6 +12,16 @@ import { useSession } from '../../entities/session/client.js';
 import { useWorkspaceScope } from '../../entities/workspace-scope/client.js';
 import { familyKeys, useFamilyContext, type Family } from '../../entities/family/client.js';
 import { keepExactAttempt, type ExactAttempt } from './exact-attempt.js';
+import { familyProjectionKeys } from './query-keys.js';
+import {
+    createFamilyInvitation,
+    decideFamilyInvitation,
+    leaveFamily,
+    loadFamilyContext,
+    loadFamilyInvitations,
+    loadFamilyLeavePreview,
+    removeFamilyMember,
+} from './api.js';
 import styles from './family.module.css';
 
 function MembersPanel({ family, userId }: { family: Family; userId: string }) {
@@ -22,18 +32,16 @@ function MembersPanel({ family, userId }: { family: Family; userId: string }) {
     const [login, setLogin] = useState('');
     const [inviteLink, setInviteLink] = useState('');
     const invitations = useQuery({
-        queryKey: ['family-invitations', userId],
-        queryFn: async ({ signal }) => (await api!.request('GET /api/v1/family/invitations', undefined, signal)).data,
+        queryKey: familyProjectionKeys.invitations(userId),
+        queryFn: ({ signal }) => loadFamilyInvitations(api!, signal),
     });
     const invite = useMutation({
-        mutationFn: async () =>
-            (
-                await api!.request('POST /api/v1/family/invitations', {
-                    login,
-                    expectedVersion: family.version,
-                    idempotencyKey: crypto.randomUUID(),
-                })
-            ).data,
+        mutationFn: () =>
+            createFamilyInvitation(api!, {
+                login,
+                expectedVersion: family.version,
+                idempotencyKey: crypto.randomUUID(),
+            }),
         onSuccess: async (result) => {
             setLogin('');
             setInviteLink(result.token ? `${window.location.origin}/family/invite?token=${result.token}` : '');
@@ -41,17 +49,11 @@ function MembersPanel({ family, userId }: { family: Family; userId: string }) {
         },
     });
     const decide = useMutation({
-        mutationFn: async ({ id, version, action }: { id: string; version: number; action: 'approve' | 'cancel' }) =>
-            (
-                await api!.request(
-                    action === 'approve'
-                        ? 'POST /api/v1/family/invitations/{invitationId}/approve'
-                        : 'POST /api/v1/family/invitations/{invitationId}/cancel',
-                    { expectedVersion: version, idempotencyKey: crypto.randomUUID() },
-                    undefined,
-                    { invitationId: id },
-                )
-            ).data,
+        mutationFn: ({ id, version, action }: { id: string; version: number; action: 'approve' | 'cancel' }) =>
+            decideFamilyInvitation(api!, action, id, {
+                expectedVersion: version,
+                idempotencyKey: crypto.randomUUID(),
+            }),
         onSuccess: async (result) => {
             setInviteLink(result.token ? `${window.location.origin}/family/invite?token=${result.token}` : '');
             await invitations.refetch();
@@ -62,15 +64,11 @@ function MembersPanel({ family, userId }: { family: Family; userId: string }) {
         invite.mutate();
     }
     const remove = useMutation({
-        mutationFn: async (member: Family['members'][number]) =>
-            (
-                await api!.request(
-                    'POST /api/v1/family/members/{membershipId}/remove',
-                    { expectedVersion: family.version, idempotencyKey: key.current },
-                    undefined,
-                    { membershipId: member.id },
-                )
-            ).data,
+        mutationFn: (member: Family['members'][number]) =>
+            removeFamilyMember(api!, member.id, {
+                expectedVersion: family.version,
+                idempotencyKey: key.current,
+            }),
         onSuccess: (result) => {
             queryClient.setQueryData(familyKeys.context(userId), result);
             setSelected(null);
@@ -245,8 +243,8 @@ function AccessPanel({ family, state, plan, userId }: { family: Family; state: s
     const resetScope = useWorkspaceScope((scope) => scope.reset);
     const router = useRouter();
     const preview = useQuery({
-        queryKey: ['family-leave-preview', userId, family.version],
-        queryFn: async ({ signal }) => (await api!.request('GET /api/v1/family/leave-preview', undefined, signal)).data,
+        queryKey: familyProjectionKeys.leavePreview(userId, family.version),
+        queryFn: ({ signal }) => loadFamilyLeavePreview(api!, signal),
     });
     const [successor, setSuccessor] = useState('');
     const [unknown, setUnknown] = useState(false);
@@ -266,21 +264,21 @@ function AccessPanel({ family, state, plan, userId }: { family: Family; state: s
         setUnknown(false);
         setNeedsReadback(false);
         queryClient.removeQueries({ queryKey: familyKeys.context(userId) });
-        queryClient.removeQueries({ queryKey: ['family-leave-preview', userId] });
+        queryClient.removeQueries({ queryKey: familyProjectionKeys.leavePreviewRoot(userId) });
         resetScope();
         router.replace('/');
     };
     const readback = async () => {
         setReconciling(true);
         try {
-            const context = (await api!.request('GET /api/v1/family')).data;
+            const context = await loadFamilyContext(api!);
             queryClient.setQueryData(familyKeys.context(userId), context);
             if (!context.family) {
                 finish();
                 return 'left' as const;
             }
-            const nextPreview = (await api!.request('GET /api/v1/family/leave-preview')).data;
-            queryClient.setQueryData(['family-leave-preview', userId, context.family.version], nextPreview);
+            const nextPreview = await loadFamilyLeavePreview(api!);
+            queryClient.setQueryData(familyProjectionKeys.leavePreview(userId, context.family.version), nextPreview);
             return 'member' as const;
         } catch {
             return 'failed' as const;
@@ -291,7 +289,7 @@ function AccessPanel({ family, state, plan, userId }: { family: Family; state: s
     const leave = useMutation({
         mutationFn: async () => {
             if (!attempt.current) throw new Error('Leave attempt missing');
-            return (await api!.request('POST /api/v1/family/leave', attempt.current.body)).data;
+            return leaveFamily(api!, attempt.current.body);
         },
         onSuccess: finish,
         onError: async (error) => {

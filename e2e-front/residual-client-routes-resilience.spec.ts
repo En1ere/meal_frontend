@@ -259,6 +259,52 @@ test('home recovers explicitly while a failed recommendation source stays partia
     await expect(dismissedRecommendation).toHaveCount(0);
 });
 
+test('personalized recipe and author projections emit scoped impressions', async ({ page }, testInfo) => {
+    await login(page);
+    const events: Array<{ event?: string; surface?: string }> = [];
+    const projectionRequests: URL[] = [];
+    page.on('request', (request) => {
+        const url = new URL(request.url());
+        if (request.method() === 'GET' && url.pathname === '/api/v1/recommendations') {
+            projectionRequests.push(url);
+        }
+        if (request.method() === 'POST' && url.pathname === '/api/v1/recommendations/events') {
+            events.push(request.postDataJSON() as { event?: string; surface?: string });
+        }
+    });
+
+    await gotoExact(page, '/recipes');
+    await expect(page.getByRole('heading', { name: 'Рецепты для вас' })).toBeVisible();
+    await expect
+        .poll(() =>
+            projectionRequests.some(
+                (url) => url.searchParams.get('type') === 'recipe' && url.searchParams.get('surface') === 'recipes',
+            ),
+        )
+        .toBe(true);
+    await expect
+        .poll(() =>
+            projectionRequests.some(
+                (url) => url.searchParams.get('type') === 'author' && url.searchParams.get('surface') === 'authors',
+            ),
+        )
+        .toBe(true);
+    await expect
+        .poll(() => events.some((event) => event.event === 'impression' && event.surface === 'recipes'), {
+            timeout: 15_000,
+        })
+        .toBe(true);
+    if (testInfo.project.name === 'front-desktop') {
+        await expect(page.getByRole('heading', { name: 'Авторы для вас' })).toBeVisible({ timeout: 15_000 });
+        await expect(page.locator('article').filter({ hasText: '@' }).first()).toBeVisible({ timeout: 15_000 });
+        await expect
+            .poll(() => events.some((event) => event.event === 'impression' && event.surface === 'authors'), {
+                timeout: 15_000,
+            })
+            .toBe(true);
+    }
+});
+
 test('public about and help controls expose safe destinations, filters and an empty state', async ({ page }) => {
     await gotoExact(page, '/about');
     await expect(page.getByRole('heading', { name: 'Знайте, что есть дома. Решайте, что приготовить.' })).toBeVisible();

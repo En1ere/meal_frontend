@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useRuntime } from '../../shared/runtime/index.js';
 import { useSession } from '../../entities/session/client.js';
+import { loadFollowingPage } from '../../entities/recommendation/api.js';
+import { recommendationKeys } from '../../entities/recommendation/query-keys.js';
 import styles from './following.module.css';
 import type { ReactNode } from 'react';
 
@@ -11,15 +13,10 @@ export function FollowingList({ renderFollowAction }: { renderFollowAction: (use
     const { api } = useRuntime();
     const session = useSession('user');
     const query = useInfiniteQuery({
-        queryKey: ['profile-following', session.data?.id],
+        queryKey: recommendationKeys.following(session.data?.id),
         enabled: !!api && !!session.data,
         initialPageParam: null as string | null,
-        queryFn: async ({ signal, pageParam }) =>
-            (
-                await api!.request('GET /api/v1/profile/following', undefined, signal, undefined, {
-                    query: { limit: '20', ...(pageParam ? { cursor: pageParam } : {}) },
-                })
-            ).data,
+        queryFn: ({ signal, pageParam }) => loadFollowingPage(api!, pageParam, signal),
         getNextPageParam: (page) => page.nextCursor ?? undefined,
     });
     if (query.isPending) return <p role="status">Загружаем подписки…</p>;

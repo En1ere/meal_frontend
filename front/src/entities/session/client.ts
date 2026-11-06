@@ -6,7 +6,7 @@ import type { AuthContext } from '../../shared/auth/routes.js';
 import { useRuntime } from '../../shared/runtime/index.js';
 import { sessionQueryKey } from './model.js';
 
-export { sessionQueryKey, setUserSession, type UserSession } from './model.js';
+export { sessionListQueryKey, sessionQueryKey, setUserSession, type UserSession } from './model.js';
 
 export function useSession(context: AuthContext) {
     const { api, sessionLifecycle } = useRuntime();

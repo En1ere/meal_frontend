@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useRuntime } from '../../shared/runtime/index.js';
 import { useSession } from '../../entities/session/client.js';
+import { loadPersonalization, saveOnboarding, type OnboardingCommand } from './api.js';
+import { personalizationKeys } from './query-keys.js';
 import styles from './personalization.module.css';
 const flows = {
     quick: {
@@ -25,25 +27,14 @@ function Content() {
     const { api, queryClient } = useRuntime();
     const session = useSession('user');
     const query = useQuery({
-        queryKey: ['personalization', session.data?.id],
+        queryKey: personalizationKeys.settings(session.data?.id),
         enabled: !!api && !!session.data,
-        queryFn: async ({ signal }) => (await api!.request('GET /api/v1/personalization', undefined, signal)).data,
+        queryFn: ({ signal }) => loadPersonalization(api!, signal),
     });
     const mutation = useMutation({
-        mutationFn: async (next: {
-            flow: keyof typeof flows | null;
-            status: 'not_started' | 'in_progress' | 'completed' | 'skipped';
-            step: number;
-            expectedVersion: number;
-        }) =>
-            (
-                await api!.request('PUT /api/v1/personalization/onboarding', {
-                    ...next,
-                    idempotencyKey: crypto.randomUUID(),
-                })
-            ).data,
+        mutationFn: (next: OnboardingCommand) => saveOnboarding(api!, next),
         onSuccess: (value) =>
-            queryClient.setQueryData(['personalization', session.data?.id], (old: typeof query.data) =>
+            queryClient.setQueryData(personalizationKeys.settings(session.data?.id), (old: typeof query.data) =>
                 old ? { ...old, onboarding: value } : old,
             ),
         onError: () => void query.refetch(),

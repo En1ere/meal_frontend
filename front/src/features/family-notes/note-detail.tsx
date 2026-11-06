@@ -7,6 +7,8 @@ import { Skeleton as ArcSkeleton } from '@meal-planner/design-system';
 import { useSession } from '../../entities/session/client.js';
 import { useState } from 'react';
 import styles from './family-notes.module.css';
+import { familyNotesKeys } from './query-keys.js';
+import { archiveFamilyNote, loadFamilyNote, loadFamilyNoteHistory, toggleFamilyNoteItem } from './api.js';
 function Content({ id }: { id: string }) {
     const { api } = useRuntime();
     const user = useSession('user');
@@ -14,22 +16,20 @@ function Content({ id }: { id: string }) {
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const note = useQuery({
-        queryKey: ['family-note', id, user.data?.id],
+        queryKey: familyNotesKeys.note(id, user.data?.id),
         enabled: !!api && !!user.data,
-        queryFn: async ({ signal }) =>
-            (await api!.request('GET /api/v1/family/notes/{id}', undefined, signal, { id })).data,
+        queryFn: ({ signal }) => loadFamilyNote(api!, id, signal),
     });
     const history = useQuery({
-        queryKey: ['family-note-history', id, user.data?.id],
+        queryKey: familyNotesKeys.history(id, user.data?.id),
         enabled: !!api && !!user.data,
-        queryFn: async ({ signal }) =>
-            (await api!.request('GET /api/v1/family/notes/{id}/history', undefined, signal, { id })).data.items,
+        queryFn: ({ signal }) => loadFamilyNoteHistory(api!, id, signal),
     });
     async function refresh() {
         await Promise.all([
             note.refetch(),
             history.refetch(),
-            cache.invalidateQueries({ queryKey: ['family-notes', user.data?.id] }),
+            cache.invalidateQueries({ queryKey: familyNotesKeys.forAccount(user.data?.id) }),
         ]);
     }
     async function toggle(item: NonNullable<typeof note.data>['items'][number]) {
@@ -37,17 +37,12 @@ function Content({ id }: { id: string }) {
         setBusy(true);
         setError(null);
         try {
-            await api.request(
-                'POST /api/v1/family/notes/{id}/items/{itemId}/toggle',
-                {
-                    expectedNoteVersion: note.data.version,
-                    expectedItemVersion: item.version,
-                    checked: !item.checked,
-                    idempotencyKey: crypto.randomUUID(),
-                },
-                undefined,
-                { id, itemId: item.id },
-            );
+            await toggleFamilyNoteItem(api, id, item.id, {
+                expectedNoteVersion: note.data.version,
+                expectedItemVersion: item.version,
+                checked: !item.checked,
+                idempotencyKey: crypto.randomUUID(),
+            });
             await refresh();
         } catch (reason) {
             setError(reason instanceof ApiError ? reason.message : 'Не удалось изменить пункт.');
@@ -60,16 +55,11 @@ function Content({ id }: { id: string }) {
         setBusy(true);
         setError(null);
         try {
-            await api.request(
-                'POST /api/v1/family/notes/{id}/archive',
-                {
-                    expectedVersion: note.data.version,
-                    archived: !note.data.archivedAt,
-                    idempotencyKey: crypto.randomUUID(),
-                },
-                undefined,
-                { id },
-            );
+            await archiveFamilyNote(api, id, {
+                expectedVersion: note.data.version,
+                archived: !note.data.archivedAt,
+                idempotencyKey: crypto.randomUUID(),
+            });
             await refresh();
         } catch (reason) {
             setError(reason instanceof ApiError ? reason.message : 'Не удалось изменить архив.');

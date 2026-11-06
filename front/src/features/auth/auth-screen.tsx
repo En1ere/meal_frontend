@@ -8,9 +8,10 @@ import { authRoutes, safeReturnTo, type AuthContext } from '../../shared/auth/ro
 import { AuthShell as DesignSystemAuthShell } from '@meal-planner/design-system';
 import { Brand } from '../../shared/ui/brand.js';
 import { ThemeControl } from '../../shared/ui/theme-control.js';
-import { setUserSession, useSession } from '../../entities/session/client.js';
+import { sessionQueryKey, setUserSession, useSession } from '../../entities/session/client.js';
 import { useRequestSignal } from '../../shared/api/use-request-signal.js';
 import { InlineLoader as ArcInlineLoader } from '@meal-planner/design-system';
+import { signInUser, startStaffSignIn, verifyStaffMfa } from './sign-in-api.js';
 
 const neutralError = (error: unknown) =>
     error instanceof ApiError
@@ -76,28 +77,15 @@ export function SignIn({
         const signal = beginRequest();
         try {
             if (context === 'user') {
-                const response =
-                    method === 'password'
-                        ? await runtime.api.request('POST /api/v1/auth/login', { email, password }, signal)
-                        : method === 'totp'
-                          ? await runtime.api.request('POST /api/v1/auth/totp/login', { email, code: password }, signal)
-                          : await runtime.api.request('POST /api/v1/auth/pin/login', { pin: password }, signal);
+                const user = await signInUser(runtime.api, method, { email, secret: password }, signal);
                 signal.throwIfAborted();
                 runtime.reset();
-                setUserSession(runtime, response.data.user);
+                setUserSession(runtime, user);
                 runtime.broadcast();
             } else {
-                const response = await runtime.api.request(
-                    'POST /api/v1/staff/auth/login',
-                    {
-                        email,
-                        password,
-                        context,
-                    },
-                    signal,
-                );
+                const challenge = await startStaffSignIn(runtime.api, context, { email, password }, signal);
                 signal.throwIfAborted();
-                runtime.setMfa({ ...response.data, context, returnTo });
+                runtime.setMfa({ ...challenge, context, returnTo });
                 router.push(authRoutes[context].mfa);
             }
         } catch (error) {
@@ -293,21 +281,13 @@ export function MfaScreen({ context }: { context: 'moderator' }) {
         setError('');
         const signal = beginRequest();
         try {
-            const response = await runtime.api.request(
-                'POST /api/v1/staff/auth/mfa/verify',
-                {
-                    challenge: flow.challenge,
-                    code,
-                    method,
-                },
-                signal,
-            );
+            const result = await verifyStaffMfa(runtime.api, { challenge: flow.challenge, code, method }, signal);
             signal.throwIfAborted();
             runtime.api.invalidate();
             runtime.queryClient.clear();
-            runtime.queryClient.setQueryData(['session', 'staff'], response.data.user);
+            runtime.queryClient.setQueryData(sessionQueryKey('moderator'), result.user);
             runtime.broadcast();
-            if (response.data.recoveryCodes.length) setRecovery(response.data.recoveryCodes);
+            if (result.recoveryCodes.length) setRecovery(result.recoveryCodes);
             else {
                 runtime.setMfa(null);
                 router.replace(flow.returnTo);

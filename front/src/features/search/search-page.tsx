@@ -5,14 +5,13 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useRuntime } from '../../shared/runtime/index.js';
-import type { Success } from '../../shared/api/contracts.generated.js';
 import { useSession } from '../../entities/session/client.js';
 import { RecipeImage, Rating } from '../../entities/recipe/client.js';
 import { categoryLabels } from '../../entities/recipe/model.js';
+import { loadSearchPage, type SearchData } from './api.js';
+import { searchKeys, type SearchType } from './query-keys.js';
 import styles from './search.module.css';
 
-type SearchType = 'product' | 'recipe' | 'brand' | 'store';
-type SearchData = Success<'GET /api/v1/search'>['data'];
 type SearchItem = SearchData['items'][number];
 type SearchTab = 'all' | SearchType;
 
@@ -113,20 +112,10 @@ function SearchSection({ type, query, compact }: { type: SearchType; query: stri
     const pathname = usePathname();
     const limit = compact ? 4 : 20;
     const request = useInfiniteQuery({
-        queryKey: ['unified-search', session.data?.id, type, query, limit],
+        queryKey: searchKeys.results(session.data?.id, type, query, limit),
         enabled: !!api && !!session.data && !!query,
         initialPageParam: null as string | null,
-        queryFn: async ({ pageParam, signal }) =>
-            (
-                await api!.request('GET /api/v1/search', undefined, signal, undefined, {
-                    query: {
-                        type,
-                        q: query,
-                        limit: String(limit),
-                        ...(pageParam ? { cursor: pageParam } : {}),
-                    },
-                })
-            ).data,
+        queryFn: ({ pageParam, signal }) => loadSearchPage(api!, { type, query, limit, cursor: pageParam }, signal),
         getNextPageParam: (page) => page.nextCursor ?? undefined,
     });
     const items =

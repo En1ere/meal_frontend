@@ -1,0 +1,15 @@
+{
+    "version": 1,
+    "metrics": {
+        "sites": 0,
+        "files": 0,
+        "contexts": 0,
+        "featureSites": 0,
+        "entitySites": 0,
+        "reads": 0,
+        "commands": 0,
+        "literalSites": 0,
+        "computedSites": 0
+    },
+    "sites": {}
+}

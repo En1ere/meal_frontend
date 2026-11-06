@@ -7,7 +7,17 @@ import { useRuntime } from '../../shared/runtime/index.js';
 import { ApiError } from '../../shared/api/client.js';
 import { useSession } from '../../entities/session/client.js';
 import { CriticalReauthDialog, type ReauthResult } from '../../entities/account-security/client.js';
+import { exportKeys } from '../../entities/export/model.js';
 import styles from './lifecycle.module.css';
+import { accountLifecycleKeys } from './query-keys.js';
+import {
+    applyAccountDeletionAction,
+    archiveAccount,
+    loadAccountDeletionPreview,
+    loadAccountLifecycle,
+    loadAccountLifecycleExports,
+    requestAccountDeletion,
+} from './api.js';
 
 type Action = 'archive' | 'request' | 'cancel' | 'finalize';
 type ReauthAction = Action | 'verify';
@@ -31,26 +41,19 @@ function LifecycleContent() {
     const idempotency = useRef<Record<'archive' | 'request', string | null>>({ archive: null, request: null });
 
     const lifecycle = useQuery({
-        queryKey: ['account-lifecycle', session.data?.id],
+        queryKey: accountLifecycleKeys.lifecycle(session.data?.id),
         enabled: !!runtime.api && !!session.data,
-        queryFn: async ({ signal }) =>
-            (await runtime.api!.request('GET /api/v1/account/lifecycle', undefined, signal)).data,
+        queryFn: ({ signal }) => loadAccountLifecycle(runtime.api!, signal),
     });
     const readiness = useQuery({
-        queryKey: ['account-deletion-preview', session.data?.id],
+        queryKey: accountLifecycleKeys.deletionPreview(session.data?.id),
         enabled: !!runtime.api && !!session.data,
-        queryFn: async ({ signal }) =>
-            (await runtime.api!.request('GET /api/v1/account/deletion/preview', undefined, signal)).data,
+        queryFn: ({ signal }) => loadAccountDeletionPreview(runtime.api!, signal),
     });
     const exportsQuery = useQuery({
-        queryKey: ['exports', session.data?.id, 'lifecycle'],
+        queryKey: exportKeys.lifecycle(session.data?.id),
         enabled: !!runtime.api && !!session.data,
-        queryFn: async ({ signal }) =>
-            (
-                await runtime.api!.request('GET /api/v1/exports', undefined, signal, undefined, {
-                    query: { limit: '20' },
-                })
-            ).data,
+        queryFn: ({ signal }) => loadAccountLifecycleExports(runtime.api!, signal),
     });
     const refresh = async () => {
         await Promise.all([lifecycle.refetch(), readiness.refetch(), exportsQuery.refetch()]);
@@ -87,12 +90,10 @@ function LifecycleContent() {
                 idempotency.current.archive ??= crypto.randomUUID();
                 return {
                     kind,
-                    data: (
-                        await runtime.api!.request('POST /api/v1/account/archive', {
-                            reauthToken: reauth.token,
-                            idempotencyKey: idempotency.current.archive,
-                        })
-                    ).data,
+                    data: await archiveAccount(runtime.api!, {
+                        reauthToken: reauth.token,
+                        idempotencyKey: idempotency.current.archive,
+                    }),
                 } as const;
             }
             if (kind === 'request') {
@@ -106,26 +107,20 @@ function LifecycleContent() {
                 idempotency.current.request ??= crypto.randomUUID();
                 return {
                     kind,
-                    data: (
-                        await runtime.api!.request('POST /api/v1/account/deletion', {
-                            reauthToken: reauth.token,
-                            idempotencyKey: idempotency.current.request,
-                            acknowledgement: true,
-                        })
-                    ).data,
+                    data: await requestAccountDeletion(runtime.api!, {
+                        reauthToken: reauth.token,
+                        idempotencyKey: idempotency.current.request,
+                        acknowledgement: true,
+                    }),
                 } as const;
             }
             if (!currentDeletion) throw new Error('Deletion state missing');
-            const route =
-                kind === 'cancel' ? 'POST /api/v1/account/deletion/cancel' : 'POST /api/v1/account/deletion/finalize';
             return {
                 kind,
-                data: (
-                    await runtime.api!.request(route, {
-                        reauthToken: reauth.token,
-                        expectedVersion: currentDeletion.version,
-                    })
-                ).data,
+                data: await applyAccountDeletionAction(runtime.api!, kind, {
+                    reauthToken: reauth.token,
+                    expectedVersion: currentDeletion.version,
+                }),
             } as const;
         },
         onSuccess: async (result) => {
@@ -135,7 +130,7 @@ function LifecycleContent() {
             if (result.kind === 'finalize' && 'status' in result.data && result.data.status === 'finalized')
                 return finishSession('deleted');
             idempotency.current.request = null;
-            await queryClient.invalidateQueries({ queryKey: ['account-lifecycle', session.data?.id] });
+            await queryClient.invalidateQueries({ queryKey: accountLifecycleKeys.lifecycle(session.data?.id) });
             await refresh();
         },
         onError: async () => {

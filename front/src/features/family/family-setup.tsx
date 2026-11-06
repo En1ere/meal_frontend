@@ -11,6 +11,7 @@ import { ApiError } from '../../shared/api/client.js';
 import { useWorkspaceScope } from '../../entities/workspace-scope/client.js';
 import { familyKeys, useFamilyContext } from '../../entities/family/client.js';
 import { keepExactAttempt, type ExactAttempt } from './exact-attempt.js';
+import { createFamily, loadFamilyContext } from './api.js';
 import styles from './family.module.css';
 
 function Content() {
@@ -51,8 +52,8 @@ function Content() {
     const mutation = useMutation({
         mutationFn: async () => {
             attempt.current = keepExactAttempt(attempt.current, { name: name.trim() });
-            await api!.request('POST /api/v1/family', attempt.current.body);
-            return (await api!.request('GET /api/v1/family')).data;
+            await createFamily(api!, attempt.current.body);
+            return loadFamilyContext(api!);
         },
         onSuccess: (result) => {
             finish(result);

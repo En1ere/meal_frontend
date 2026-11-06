@@ -8,6 +8,14 @@ import type { Success } from '../../shared/api/contracts.generated.js';
 import { useSession } from '../../entities/session/client.js';
 import styles from './notifications.module.css';
 import { useConsent } from '../../entities/consent/client.js';
+import { notificationKeys } from '../../entities/notification/model.js';
+import {
+    loadNotificationPreferences,
+    loadNotifications,
+    markAllNotificationsRead,
+    markNotificationRead,
+    updateNotificationPreferences,
+} from './api.js';
 import {
     browserWebPushState,
     connectWebPush,
@@ -61,43 +69,24 @@ function CenterContent() {
     const raw = search.get('category');
     const category: Category = categories.some((x) => x[0] === raw) ? (raw as Category) : 'all';
     const unread = search.get('unread') === '1';
-    const key = ['notifications', session.data?.id, category, unread] as const;
+    const key = notificationKeys.list(session.data?.id, category, unread);
     const query = useQuery({
         queryKey: key,
         enabled: !!api && !!session.data,
-        queryFn: async ({ signal }) =>
-            (
-                await api!.request('GET /api/v1/notifications', undefined, signal, undefined, {
-                    query: { category, unread: unread ? '1' : '0', limit: '50', offset: '0' },
-                })
-            ).data,
+        queryFn: ({ signal }) => loadNotifications(api!, category, unread, signal),
     });
     const refresh = useCallback(
-        () => void queryClient.invalidateQueries({ queryKey: ['notifications', session.data?.id] }),
+        () => void queryClient.invalidateQueries({ queryKey: notificationKeys.forAccount(session.data?.id) }),
         [queryClient, session.data?.id],
     );
     useNotificationSync(refresh);
     const read = useMutation({
-        mutationFn: async (item: { id: string; version: number }) =>
-            (
-                await api!.request(
-                    'POST /api/v1/notifications/{id}/read',
-                    { expectedVersion: item.version, idempotencyKey: crypto.randomUUID() },
-                    undefined,
-                    { id: item.id },
-                )
-            ).data,
+        mutationFn: (item: { id: string; version: number }) => markNotificationRead(api!, item.id, item.version),
         onSettled: refresh,
         onSuccess: broadcastNotificationChange,
     });
     const all = useMutation({
-        mutationFn: async () =>
-            (
-                await api!.request('POST /api/v1/notifications/read-all', {
-                    category,
-                    idempotencyKey: crypto.randomUUID(),
-                })
-            ).data,
+        mutationFn: () => markAllNotificationsRead(api!, category),
         onSettled: refresh,
         onSuccess: broadcastNotificationChange,
     });
@@ -198,15 +187,14 @@ function SettingsContent() {
     const marketingConsent = useConsent('marketing');
     const pushTransport: PushTransport | null = api;
     const query = useQuery({
-        queryKey: ['notification-preferences', session.data?.id],
+        queryKey: notificationKeys.preferences(session.data?.id),
         enabled: !!api && !!session.data,
-        queryFn: async ({ signal }) =>
-            (await api!.request('GET /api/v1/notification-preferences', undefined, signal)).data,
+        queryFn: ({ signal }) => loadNotificationPreferences(api!, signal),
     });
     const [draft, setDraft] = useState<Preferences | null>(null);
     const [pushRevision, setPushRevision] = useState(0);
     const pushConfig = useQuery({
-        queryKey: ['notification-push-config', session.data?.id],
+        queryKey: notificationKeys.pushConfig(session.data?.id),
         enabled: !!pushTransport && !!session.data,
         queryFn: ({ signal }) => loadWebPushConfig(pushTransport!, signal),
     });
@@ -227,24 +215,21 @@ function SettingsContent() {
     void pushRevision;
     const refresh = useCallback(() => {
         setDraft(null);
-        void queryClient.invalidateQueries({ queryKey: ['notification-preferences', session.data?.id] });
+        void queryClient.invalidateQueries({ queryKey: notificationKeys.preferences(session.data?.id) });
     }, [queryClient, session.data?.id]);
     useNotificationSync(refresh);
     const mutation = useMutation({
-        mutationFn: async (value: Preferences) =>
-            (
-                await api!.request('PUT /api/v1/notification-preferences', {
-                    categories: value.categories,
-                    quietHours: value.quietHours,
-                    planReminderTime: value.planReminderTime,
-                    timezone: value.timezone,
-                    urgentFoodRisk: value.urgentFoodRisk,
-                    expectedVersion: value.version,
-                    idempotencyKey: crypto.randomUUID(),
-                })
-            ).data,
+        mutationFn: (value: Preferences) =>
+            updateNotificationPreferences(api!, {
+                categories: value.categories,
+                quietHours: value.quietHours,
+                planReminderTime: value.planReminderTime,
+                timezone: value.timezone,
+                urgentFoodRisk: value.urgentFoodRisk,
+                expectedVersion: value.version,
+            }),
         onSuccess: (value) => {
-            queryClient.setQueryData(['notification-preferences', session.data?.id], value);
+            queryClient.setQueryData(notificationKeys.preferences(session.data?.id), value);
             setDraft(value);
             broadcastNotificationChange();
         },

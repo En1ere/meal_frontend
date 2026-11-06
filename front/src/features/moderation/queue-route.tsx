@@ -6,9 +6,12 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { useRuntime } from '../../shared/runtime/index.js';
 import { ApiError } from '../../shared/api/client.js';
+import { sessionQueryKey } from '../../entities/session/client.js';
 import { PageLoader as ArcPageLoader } from '@meal-planner/design-system';
 import styles from './moderation.module.css';
 import { queueNames, ModeratorShell, PageState } from './shared.js';
+import { moderationKeys } from './query-keys.js';
+import { applyModerationQueueAction, loadModerationQueue } from './api.js';
 
 export function ModerationQueue({ queue }: { queue: string }) {
     const { api, queryClient } = useRuntime();
@@ -21,48 +24,30 @@ export function ModerationQueue({ queue }: { queue: string }) {
         priority: search.get('priority') ?? 'all',
     };
     const query = useInfiniteQuery({
-        queryKey: ['moderator', 'queue', queue, filters],
+        queryKey: moderationKeys.queue(queue, filters),
         enabled: !!api && isKnownQueue,
         initialPageParam: null as string | null,
-        queryFn: async ({ signal, pageParam }) =>
-            (
-                await api!.request(
-                    'GET /api/v1/moderator/queues/{queue}',
-                    undefined,
-                    signal,
-                    { queue },
-                    { query: { ...filters, ...(pageParam ? { cursor: pageParam } : {}) } },
-                )
-            ).data,
+        queryFn: ({ signal, pageParam }) => loadModerationQueue(api!, queue, filters, pageParam, signal),
         getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
     });
     const [message, setMessage] = useState('');
     const command = useMutation({
-        mutationFn: async ({ id, version, action }: { id: string; version: number; action: 'claim' | 'skip' }) =>
-            (
-                await api!.request(
-                    action === 'claim'
-                        ? 'POST /api/v1/moderator/items/{id}/claim'
-                        : 'POST /api/v1/moderator/items/{id}/skip',
-                    { version, idempotencyKey: crypto.randomUUID() },
-                    undefined,
-                    { id },
-                )
-            ).data,
+        mutationFn: ({ id, version, action }: { id: string; version: number; action: 'claim' | 'skip' }) =>
+            applyModerationQueueAction(api!, action, id, { version, idempotencyKey: crypto.randomUUID() }),
         onSuccess: async (_, variables) => {
             setMessage(
                 variables.action === 'claim'
                     ? 'Задача назначена вам.'
                     : 'Уведомление пропущено; материал остался в очереди.',
             );
-            await queryClient.invalidateQueries({ queryKey: ['moderator'] });
+            await queryClient.invalidateQueries({ queryKey: moderationKeys.root });
         },
         onError: async (error) => {
             setMessage(error instanceof ApiError ? error.message : 'Не удалось выполнить действие.');
             if (error instanceof ApiError && error.status === 401)
-                await queryClient.invalidateQueries({ queryKey: ['session', 'staff'] });
+                await queryClient.invalidateQueries({ queryKey: sessionQueryKey('moderator') });
             else if (error instanceof ApiError && [409, 412].includes(error.status))
-                await queryClient.invalidateQueries({ queryKey: ['moderator', 'queue', queue] });
+                await queryClient.invalidateQueries({ queryKey: moderationKeys.queueRoot(queue) });
         },
     });
     const setFilter = (key: string, value: string) => {

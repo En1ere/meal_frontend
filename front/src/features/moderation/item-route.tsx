@@ -5,45 +5,46 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useRuntime } from '../../shared/runtime/index.js';
 import { ApiError } from '../../shared/api/client.js';
+import { sessionQueryKey } from '../../entities/session/client.js';
 import { PageLoader as ArcPageLoader } from '@meal-planner/design-system';
 import styles from './moderation.module.css';
 import { queueNames, ModeratorShell, PageState } from './shared.js';
+import { moderationKeys } from './query-keys.js';
+import { decideModerationItem, loadModerationItem, type ModerationDecisionCommand } from './api.js';
 
 export function ModerationItem({ id }: { id: string }) {
     const { api, queryClient } = useRuntime();
-    const [action, setAction] = useState('');
+    const [action, setAction] = useState<ModerationDecisionCommand['action'] | ''>('');
     const [category, setCategory] = useState('');
     const [reason, setReason] = useState('');
     const [confirming, setConfirming] = useState(false);
     const [message, setMessage] = useState('');
     const query = useQuery({
-        queryKey: ['moderator', 'item', id],
+        queryKey: moderationKeys.item(id),
         enabled: !!api,
-        queryFn: async ({ signal }) =>
-            (await api!.request('GET /api/v1/moderator/items/{id}', undefined, signal, { id })).data,
+        queryFn: ({ signal }) => loadModerationItem(api!, id, signal),
     });
     const decision = useMutation({
-        mutationFn: async () =>
-            (
-                await api!.request(
-                    'POST /api/v1/moderator/items/{id}/decision',
-                    { action, category, reason, version: query.data!.version, idempotencyKey: crypto.randomUUID() },
-                    undefined,
-                    { id },
-                )
-            ).data,
+        mutationFn: () =>
+            decideModerationItem(api!, id, {
+                action: action as ModerationDecisionCommand['action'],
+                category,
+                reason,
+                version: query.data!.version,
+                idempotencyKey: crypto.randomUUID(),
+            }),
         onSuccess: async () => {
             setMessage('Решение сохранено.');
             setConfirming(false);
             setAction('');
             setCategory('');
             setReason('');
-            await queryClient.invalidateQueries({ queryKey: ['moderator'] });
+            await queryClient.invalidateQueries({ queryKey: moderationKeys.root });
         },
         onError: async (error) => {
             setMessage(error instanceof ApiError ? error.message : 'Не удалось сохранить решение.');
             if (error instanceof ApiError && error.status === 401)
-                await queryClient.invalidateQueries({ queryKey: ['session', 'staff'] });
+                await queryClient.invalidateQueries({ queryKey: sessionQueryKey('moderator') });
             else if (error instanceof ApiError && [409, 412].includes(error.status)) await query.refetch();
         },
     });
@@ -128,7 +129,7 @@ export function ModerationItem({ id }: { id: string }) {
                         <select
                             value={action}
                             onChange={(event) => {
-                                setAction(event.target.value);
+                                setAction(event.target.value as ModerationDecisionCommand['action'] | '');
                                 setConfirming(false);
                             }}
                         >

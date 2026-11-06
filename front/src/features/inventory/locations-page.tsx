@@ -6,7 +6,9 @@ import { useQuery } from '@tanstack/react-query';
 import { useRuntime } from '../../shared/runtime/index.js';
 import { ApiError } from '../../shared/api/client.js';
 import { useSession } from '../../entities/session/client.js';
+import { inventoryKeys } from '../../entities/inventory/query-keys.js';
 import { useRequestSignal } from '../../shared/api/use-request-signal.js';
+import { loadInventoryAtLocation, loadInventoryLocations, saveInventoryLocation } from './api.js';
 import {
     InventoryShell,
     Loading,
@@ -15,7 +17,6 @@ import {
     places,
     localDate,
     inventoryBase,
-    inventoryScopeQuery,
     type InventoryScope,
 } from './shared.js';
 import { BatchRows } from './list-page.js';
@@ -42,29 +43,14 @@ function Content({ scope }: { scope: InventoryScope }) {
     const [conflict, setConflict] = useState(false);
     const attempt = useRef<{ key: string; fingerprint: string } | null>(null);
     const locations = useQuery({
-        queryKey: ['inventory-locations', scope, user.data?.id],
+        queryKey: inventoryKeys.locations(scope, user.data?.id),
         enabled: !!api && !!user.data,
-        queryFn: async ({ signal }) =>
-            (
-                await api!.request('GET /api/v1/inventory-locations', undefined, signal, undefined, {
-                    query: inventoryScopeQuery(scope),
-                })
-            ).data.items,
+        queryFn: ({ signal }) => loadInventoryLocations(api!, scope, signal),
     });
     const batches = useQuery({
-        queryKey: ['inventory', scope, 'location', user.data?.id, selected],
+        queryKey: inventoryKeys.atLocation(scope, user.data?.id, selected),
         enabled: !!api && !!user.data && !!selected,
-        queryFn: async ({ signal }) =>
-            (
-                await api!.request('GET /api/v1/inventory', undefined, signal, undefined, {
-                    query: {
-                        locationId: selected,
-                        localDate: localDate(),
-                        limit: '100',
-                        ...inventoryScopeQuery(scope),
-                    },
-                })
-            ).data,
+        queryFn: ({ signal }) => loadInventoryAtLocation(api!, scope, selected, localDate(), signal),
     });
     const current = locations.data?.find((x) => x.id === selected);
     async function submit(event: React.FormEvent<HTMLFormElement>) {
@@ -81,12 +67,11 @@ function Content({ scope }: { scope: InventoryScope }) {
         setPending(true);
         setError('');
         try {
-            const result = await api.request(
-                'POST /api/v1/inventory-locations',
+            const result = await saveInventoryLocation(
+                api,
                 { ...body, idempotencyKey: attempt.current.key },
                 abort,
-                undefined,
-                rename && current ? { ifMatch: current.version } : undefined,
+                rename && current ? current.version : undefined,
             );
             if (abort.aborted) return;
             attempt.current = null;
@@ -95,7 +80,7 @@ function Content({ scope }: { scope: InventoryScope }) {
             setSelected(result.data.location.id);
             setName('');
             setRename(false);
-            await queryClient.invalidateQueries({ queryKey: ['inventory-locations'] });
+            await queryClient.invalidateQueries({ queryKey: inventoryKeys.locationsRoot });
         } catch (err) {
             if (!abort.aborted) {
                 setError(commandError(err));

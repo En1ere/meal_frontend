@@ -1,0 +1,11 @@
+{
+    "version": 1,
+    "metrics": {
+        "rawSites": 0,
+        "rawFiles": 0,
+        "rawContexts": 0,
+        "legacyFactorySites": 0
+    },
+    "rawSites": {},
+    "legacyFactories": {}
+}

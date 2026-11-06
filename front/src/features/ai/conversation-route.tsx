@@ -2,12 +2,15 @@
 
 import Link from 'next/link';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRuntime } from '../../shared/runtime/index.js';
 import { useSession } from '../../entities/session/client.js';
+import { aiBalanceKeys } from '../../entities/ai-balance/model.js';
+import { aiKeys, continueAiTask, loadAiConversation, loadAiOperation } from '../../entities/ai/index.js';
 import styles from './ai.module.css';
 import { isConsentRequiredError } from '../../entities/consent/client.js';
 import { Frame } from './shared.js';
+import { useStableCommandKey } from './use-stable-command-key.js';
 
 export function AiConversationPage({ id }: { id: string }) {
     return (
@@ -21,32 +24,48 @@ function ConversationContent({ id }: { id: string }) {
     const { api, queryClient } = useRuntime(),
         session = useSession('user'),
         [message, setMessage] = useState(''),
-        [familyReserveAccepted, setFamilyReserveAccepted] = useState(false);
-    const queryKey = ['ai-conversation', session.data?.id, id];
+        [familyReserveAccepted, setFamilyReserveAccepted] = useState(false),
+        [operationId, setOperationId] = useState<string | null>(null);
+    const continuationCommand = useStableCommandKey();
+    const queryKey = aiKeys.conversation(session.data?.id, id);
     const query = useQuery({
         queryKey,
         enabled: !!api && !!session.data,
-        queryFn: async ({ signal }) =>
-            (await api!.request('GET /api/v1/ai/tasks/{id}', undefined, signal, { id })).data,
+        queryFn: ({ signal }) => loadAiConversation(api!, id, signal),
     });
     const send = useMutation({
-        mutationFn: async () =>
-            (
-                await api!.request(
-                    'POST /api/v1/ai/tasks/{id}/messages',
-                    { message, idempotencyKey: crypto.randomUUID(), familyReserveAccepted },
-                    undefined,
-                    { id },
-                )
-            ).data,
+        mutationFn: () => {
+            const intent = JSON.stringify({ id, message, familyReserveAccepted });
+            return continueAiTask(api!, id, {
+                message,
+                idempotencyKey: continuationCommand.forIntent(intent),
+                familyReserveAccepted,
+            });
+        },
         onSuccess: (value) => {
-            queryClient.setQueryData(queryKey, value);
+            continuationCommand.reset();
+            setOperationId(value.item.id);
             setMessage('');
             setFamilyReserveAccepted(false);
-            void queryClient.invalidateQueries({ queryKey: ['ai-balance', session.data?.id] });
-            void queryClient.invalidateQueries({ queryKey: ['ai-history', session.data?.id] });
+            void queryClient.invalidateQueries({ queryKey: aiBalanceKeys.forAccount(session.data?.id) });
         },
     });
+    const operation = useQuery({
+        queryKey: aiKeys.operation(session.data?.id, operationId ?? 'pending'),
+        enabled: !!api && !!session.data && !!operationId,
+        queryFn: ({ signal }) => loadAiOperation(api!, operationId!, signal),
+        refetchInterval: (state) => {
+            const value = state.state.data?.item.state;
+            return value && ['succeeded', 'failed', 'cancelled', 'unknown'].includes(value) ? false : 2_000;
+        },
+        retry: 2,
+    });
+    useEffect(() => {
+        if (operation.data?.item.state !== 'succeeded') return;
+        void queryClient.invalidateQueries({ queryKey: aiKeys.conversation(session.data?.id, id) });
+        void queryClient.invalidateQueries({ queryKey: aiBalanceKeys.forAccount(session.data?.id) });
+        void queryClient.invalidateQueries({ queryKey: aiKeys.historyRoot(session.data?.id) });
+    }, [id, operation.data?.item.state, queryClient, session.data?.id]);
     if (query.isPending) return <p role="status">Открываем беседу…</p>;
     if (query.isError)
         return isConsentRequiredError(query.error) ? (
@@ -86,6 +105,35 @@ function ConversationContent({ id }: { id: string }) {
                 ))}
             </section>
             <section className={styles.card}>
+                {operationId && (!operation.data || ['queued', 'running'].includes(operation.data.item.state)) && (
+                    <p role="status">
+                        {operation.data?.item.state === 'running'
+                            ? 'AI обрабатывает уточнение…'
+                            : 'Уточнение принято и ожидает обработки…'}
+                    </p>
+                )}
+                {operation.data?.item.state === 'unknown' && (
+                    <p role="alert">
+                        Провайдер не подтвердил исход. Не отправляйте уточнение повторно: операция удерживается до
+                        безопасной сверки.
+                    </p>
+                )}
+                {operation.data && ['failed', 'cancelled'].includes(operation.data.item.state) && (
+                    <div role="alert">
+                        <p>Уточнение не обработано, подтверждённое списание отсутствует.</p>
+                        <button type="button" className="button secondary" onClick={() => setOperationId(null)}>
+                            Закрыть статус
+                        </button>
+                    </div>
+                )}
+                {operation.data?.item.state === 'succeeded' && (
+                    <div role="status">
+                        <p>AI-ответ добавлен в беседу.</p>
+                        <button type="button" className="button secondary" onClick={() => setOperationId(null)}>
+                            Продолжить беседу
+                        </button>
+                    </div>
+                )}
                 {continuation.state === 'wait' ? (
                     <p role="status">
                         Два уточнения использованы. Следующее сообщение можно отправить после{' '}
@@ -130,7 +178,7 @@ function ConversationContent({ id }: { id: string }) {
                     )}
                     <button
                         className="button primary"
-                        disabled={send.isPending || continuation.state !== 'ready' || !message.trim()}
+                        disabled={send.isPending || !!operationId || continuation.state !== 'ready' || !message.trim()}
                     >
                         {send.isPending ? 'Отправляем…' : 'Отправить'}
                     </button>

@@ -5,21 +5,18 @@ import { useInfiniteQuery, useMutation, useQuery } from '@tanstack/react-query';
 import { useRuntime } from '../../shared/runtime/index.js';
 import type { Success } from '../../shared/api/contracts.generated.js';
 import { useSession } from '../../entities/session/client.js';
+import { loadNewsDetail, loadNewsPage, markNewsRead } from './api.js';
+import { newsKeys } from './query-keys.js';
 import styles from './news.module.css';
 
 export function NewsPage() {
     const { api } = useRuntime();
     const session = useSession('user');
     const query = useInfiniteQuery({
-        queryKey: ['news', session.data?.id ?? 'guest'],
+        queryKey: newsKeys.list(session.data?.id),
         enabled: !!api && !session.isPending,
         initialPageParam: null as string | null,
-        queryFn: async ({ signal, pageParam }) =>
-            (
-                await api!.request('GET /api/v1/news', undefined, signal, undefined, {
-                    query: { limit: '12', ...(pageParam ? { cursor: pageParam } : {}) },
-                })
-            ).data,
+        queryFn: ({ signal, pageParam }) => loadNewsPage(api!, pageParam, signal),
         getNextPageParam: (page) => page.nextCursor ?? undefined,
     });
     const items = query.data?.pages.flatMap((page) => page.items) ?? [];
@@ -104,14 +101,8 @@ function Reader({ item }: { item: News }) {
     const [page, setPage] = useState(0);
     const dialog = useRef<HTMLDialogElement>(null);
     const mark = useMutation({
-        mutationFn: async () =>
-            (
-                await api!.request('POST /api/v1/news/{id}/read', { idempotencyKey: crypto.randomUUID() }, undefined, {
-                    id: item.id,
-                })
-            ).data,
-        onSuccess: () =>
-            void queryClient.invalidateQueries({ queryKey: ['news-detail', session.data?.id ?? 'guest', item.id] }),
+        mutationFn: () => markNewsRead(api!, item.id),
+        onSuccess: () => void queryClient.invalidateQueries({ queryKey: newsKeys.detail(session.data?.id, item.id) }),
     });
     useEffect(() => {
         if (item.type === 'important') dialog.current?.showModal();
@@ -174,9 +165,9 @@ export function NewsDetailPage({ id }: { id: string }) {
     const { api } = useRuntime();
     const session = useSession('user');
     const query = useQuery({
-        queryKey: ['news-detail', session.data?.id ?? 'guest', id],
+        queryKey: newsKeys.detail(session.data?.id, id),
         enabled: !!api && !session.isPending,
-        queryFn: async ({ signal }) => (await api!.request('GET /api/v1/news/{id}', undefined, signal, { id })).data,
+        queryFn: ({ signal }) => loadNewsDetail(api!, id, signal),
     });
     return (
         <>

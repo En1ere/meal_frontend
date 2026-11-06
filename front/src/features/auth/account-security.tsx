@@ -17,6 +17,18 @@ import {
 } from './form-parts.js';
 import { MockMailLink } from './lifecycle-pages.js';
 import { useSession } from '../../entities/session/client.js';
+import { loadOwnProfile, profileKeys } from '../../entities/profile/client.js';
+import {
+    accountSecurityKeys,
+    changeAccountPassword,
+    confirmAuthenticatorSetup,
+    loadAccountSecurity,
+    regenerateAuthenticatorRecoveryCodes,
+    requestAccountEmailChange,
+    revokeAccountPin,
+    setupAccountPin,
+    startAuthenticatorSetup,
+} from '../../entities/account-security/model.js';
 import styles from './account.module.css';
 
 function PasswordChange() {
@@ -42,11 +54,7 @@ function PasswordChange() {
                         void action.run(
                             async (signal) => {
                                 validatePassword(password, repeat);
-                                await runtime.api!.request(
-                                    'POST /api/v1/auth/password/change',
-                                    { currentPassword, password },
-                                    signal,
-                                );
+                                await changeAccountPassword(runtime.api!, { currentPassword, password }, signal);
                                 signal.throwIfAborted();
                                 leaveRevokedSessions(runtime);
                             },
@@ -94,10 +102,9 @@ function EmailChange({ security, refresh }: { security: Security; refresh: () =>
     const runtime = useRuntime();
     const session = useSession('user');
     const profile = useQuery({
-        queryKey: ['profile', 'own', session.data?.id],
+        queryKey: profileKeys.own(session.data?.id),
         enabled: !!runtime.api && !!session.data,
-        queryFn: async ({ signal }) =>
-            (await runtime.api!.request('GET /api/v1/profile', undefined, signal)).data.profile,
+        queryFn: ({ signal }) => loadOwnProfile(runtime.api!, signal),
     });
     const action = useAccountAction();
     const [email, setEmail] = useState('');
@@ -141,11 +148,7 @@ function EmailChange({ security, refresh }: { security: Security; refresh: () =>
                         event.preventDefault();
                         void action.run(
                             async (signal) => {
-                                await runtime.api!.request(
-                                    'POST /api/v1/auth/email/change',
-                                    { password, email },
-                                    signal,
-                                );
+                                await requestAccountEmailChange(runtime.api!, { password, email }, signal);
                                 signal.throwIfAborted();
                                 await refresh();
                                 signal.throwIfAborted();
@@ -208,7 +211,7 @@ function PinSettings({ enabled, refresh }: { enabled: boolean; refresh: () => Pr
                         void action.run(
                             async (signal) => {
                                 if (pin !== repeat) formError('PIN-коды не совпадают.');
-                                await runtime.api!.request('POST /api/v1/auth/pin/setup', { password, pin }, signal);
+                                await setupAccountPin(runtime.api!, { password, pin }, signal);
                                 signal.throwIfAborted();
                                 await refresh();
                                 signal.throwIfAborted();
@@ -266,7 +269,7 @@ function PinSettings({ enabled, refresh }: { enabled: boolean; refresh: () => Pr
                     disabled={action.pending || !runtime.api}
                     onClick={() =>
                         void action.run(async (signal) => {
-                            await runtime.api!.request('POST /api/v1/auth/pin/revoke', {}, signal);
+                            await revokeAccountPin(runtime.api!, signal);
                             signal.throwIfAborted();
                             await refresh();
                             signal.throwIfAborted();
@@ -395,14 +398,14 @@ function AuthenticatorSettings({ enabled, refresh }: { enabled: boolean; refresh
                             event.preventDefault();
                             void action.run(
                                 async (signal) => {
-                                    const response = await runtime.api!.request(
-                                        'POST /api/v1/auth/authenticator/confirm',
+                                    const result = await confirmAuthenticatorSetup(
+                                        runtime.api!,
                                         { challenge: enrollment.challenge, code },
                                         signal,
                                     );
                                     signal.throwIfAborted();
                                     setEnrollment(null);
-                                    setRecovery(response.data.recoveryCodes);
+                                    setRecovery(result.recoveryCodes);
                                     await refresh();
                                     signal.throwIfAborted();
                                     runtime.broadcast();
@@ -452,14 +455,14 @@ function AuthenticatorSettings({ enabled, refresh }: { enabled: boolean; refresh
                                 event.preventDefault();
                                 void action.run(
                                     async (signal) => {
-                                        const response = await runtime.api!.request(
-                                            'POST /api/v1/auth/authenticator/setup',
+                                        const result = await startAuthenticatorSetup(
+                                            runtime.api!,
                                             { password, ...(enabled ? { proof: { method, code: proof } } : {}) },
                                             signal,
                                         );
                                         signal.throwIfAborted();
                                         setExpired(false);
-                                        setEnrollment(response.data);
+                                        setEnrollment(result);
                                     },
                                     () => {
                                         setPassword('');
@@ -499,13 +502,13 @@ function AuthenticatorSettings({ enabled, refresh }: { enabled: boolean; refresh
                                     onClick={() =>
                                         void action.run(
                                             async (signal) => {
-                                                const response = await runtime.api!.request(
-                                                    'POST /api/v1/auth/authenticator/recovery-codes',
+                                                const result = await regenerateAuthenticatorRecoveryCodes(
+                                                    runtime.api!,
                                                     { password, proof: { method, code: proof } },
                                                     signal,
                                                 );
                                                 signal.throwIfAborted();
-                                                setRecovery(response.data.recoveryCodes);
+                                                setRecovery(result.recoveryCodes);
                                                 runtime.broadcast();
                                             },
                                             () => {
@@ -534,13 +537,12 @@ function AuthenticatorSettings({ enabled, refresh }: { enabled: boolean; refresh
 export function AccountSecurity() {
     const runtime = useRuntime();
     const security = useQuery({
-        queryKey: ['account', 'security'],
+        queryKey: accountSecurityKeys.settings,
         enabled: !!runtime.api,
-        queryFn: async ({ signal }) =>
-            (await runtime.api!.request('GET /api/v1/auth/security', undefined, signal)).data,
+        queryFn: ({ signal }) => loadAccountSecurity(runtime.api!, signal),
     });
     async function refresh() {
-        await runtime.queryClient.invalidateQueries({ queryKey: ['account', 'security'] });
+        await runtime.queryClient.invalidateQueries({ queryKey: accountSecurityKeys.settings });
     }
     if (security.isPending) return <ArcSkeleton variant="lines" lines={6} label="Загружаем настройки безопасности…" />;
     if (security.isError)

@@ -2,8 +2,9 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useSession } from '../session/client.js';
+import { consentKeys } from './query-keys.js';
 import { ApiError } from '../../shared/api/client.js';
-import { getLegalSettings, legalSettingsKey, type ConsentKind } from '../../shared/legal/mock-legal.js';
+import { getLegalSettings, type ConsentKind } from '../../shared/legal/mock-legal.js';
 import { useRuntime } from '../../shared/runtime/index.js';
 
 const consentRequiredCodes = new Set([
@@ -21,7 +22,7 @@ export function useConsent(kind: ConsentKind) {
     const { api } = useRuntime();
     const session = useSession('user');
     const query = useQuery({
-        queryKey: legalSettingsKey(session.data?.id),
+        queryKey: consentKeys.settings(session.data?.id),
         enabled: !!api && !!session.data,
         retry: false,
         queryFn: ({ signal }) => getLegalSettings(api!, signal),

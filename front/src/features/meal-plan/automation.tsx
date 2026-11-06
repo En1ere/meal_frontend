@@ -6,7 +6,9 @@ import { useRuntime } from '../../shared/runtime/index.js';
 import type { Success } from '../../shared/api/contracts.generated.js';
 import { ApiError } from '../../shared/api/client.js';
 import { useSession } from '../../entities/session/client.js';
+import { mealPlanKeys } from '../../entities/meal-plan/model.js';
 import { InlineLoader as ArcInlineLoader } from '@meal-planner/design-system';
+import { commitMealPlanAutomation, loadMealPlanRecipes, previewMealPlanAutomation } from './api.js';
 import styles from './plan.module.css';
 
 type Selection = {
@@ -72,14 +74,9 @@ export function PlanAutomation({
     const [pending, setPending] = useState(false);
     const [error, setError] = useState('');
     const recipes = useQuery({
-        queryKey: ['meal-plan', 'automation-recipes', user.data?.id],
+        queryKey: mealPlanKeys.automationRecipes(user.data?.id),
         enabled: !!api && !!user.data,
-        queryFn: async ({ signal }) =>
-            (
-                await api!.request('GET /api/v1/recipes', undefined, signal, undefined, {
-                    query: { q: '', tab: 'new', page: '1', limit: '100' },
-                })
-            ).data.items,
+        queryFn: ({ signal }) => loadMealPlanRecipes(api!, signal),
     });
     async function submit(event: FormEvent) {
         event.preventDefault();
@@ -122,13 +119,13 @@ export function PlanAutomation({
         setPending(true);
         setError('');
         try {
-            const result = await api.request('POST /api/v1/meal-plan/automation-preview', {
+            const result = await previewMealPlanAutomation(api, {
                 version,
                 selection,
                 rule,
             });
             setFrozenRule(rule);
-            setPreview(result.data);
+            setPreview(result);
         } catch (reason) {
             setError(reason instanceof ApiError ? reason.message : 'Не удалось рассчитать повторение.');
         } finally {
@@ -140,7 +137,7 @@ export function PlanAutomation({
         setPending(true);
         setError('');
         try {
-            await api.request('POST /api/v1/meal-plan/automation-commit', {
+            await commitMealPlanAutomation(api, {
                 version,
                 selection,
                 rule: frozenRule,

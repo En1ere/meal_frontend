@@ -5,6 +5,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useRuntime } from '../../shared/runtime/index.js';
 import type { Success } from '../../shared/api/contracts.generated.js';
 import { useSession } from '../../entities/session/client.js';
+import { inventoryKeys } from '../../entities/inventory/query-keys.js';
+import { loadInventoryAttention, loadInventoryList, loadInventoryLocations } from './api.js';
 import {
     InventoryShell,
     Loading,
@@ -14,7 +16,6 @@ import {
     expiryText,
     units,
     inventoryBase,
-    inventoryScopeQuery,
     type InventoryScope,
 } from './shared.js';
 import styles from './inventory.module.css';
@@ -110,41 +111,19 @@ function Content({ scope }: { scope: InventoryScope }) {
         ...(search.get('locationId') ? { locationId: search.get('locationId')! } : {}),
     };
     const query = useQuery({
-        queryKey: ['inventory', scope, user.data?.id, filters],
+        queryKey: inventoryKeys.list(scope, user.data?.id, filters),
         enabled: !!api && !!user.data,
-        queryFn: async ({ signal }) =>
-            (
-                await api!.request('GET /api/v1/inventory', undefined, signal, undefined, {
-                    query: { ...filters, ...inventoryScopeQuery(scope) },
-                })
-            ).data,
+        queryFn: ({ signal }) => loadInventoryList(api!, scope, filters, signal),
     });
     const locations = useQuery({
-        queryKey: ['inventory-locations', scope, user.data?.id],
+        queryKey: inventoryKeys.locations(scope, user.data?.id),
         enabled: !!api && !!user.data,
-        queryFn: async ({ signal }) =>
-            (
-                await api!.request('GET /api/v1/inventory-locations', undefined, signal, undefined, {
-                    query: inventoryScopeQuery(scope),
-                })
-            ).data.items,
+        queryFn: ({ signal }) => loadInventoryLocations(api!, scope, signal),
     });
     const attention = useQuery({
-        queryKey: ['inventory-attention', scope, user.data?.id, filters.days, filters.localDate],
+        queryKey: inventoryKeys.attention(scope, user.data?.id, filters.days, filters.localDate),
         enabled: !!api && !!user.data,
-        queryFn: async ({ signal }) =>
-            (
-                await api!.request('GET /api/v1/inventory', undefined, signal, undefined, {
-                    query: {
-                        attention: 'expiring',
-                        days: filters.days,
-                        localDate: filters.localDate,
-                        status: 'active',
-                        limit: '1',
-                        ...inventoryScopeQuery(scope),
-                    },
-                })
-            ).data.total,
+        queryFn: ({ signal }) => loadInventoryAttention(api!, scope, filters.days, filters.localDate, signal),
     });
     function filter(name: string, value: string) {
         const next = new URLSearchParams(search);

@@ -14,6 +14,8 @@ export interface SessionWriteRuntime {
 }
 
 export const sessionQueryKey = (context: AuthContext) => ['session', context === 'user' ? 'user' : 'staff'] as const;
+export const sessionListQueryKey = (context: AuthContext) =>
+    ['sessions', context === 'user' ? 'user' : 'staff'] as const;
 
 export function setUserSession(runtime: SessionWriteRuntime, updater: UserSessionUpdater) {
     const session = runtime.queryClient.setQueryData<UserSession>(sessionQueryKey('user'), updater);

@@ -5,11 +5,17 @@ import { resolveTheme, ThemeSwitcher, type ThemeName } from '@meal-planner/desig
 import { useRuntime, useUi } from '../../shared/runtime/index.js';
 import { ApiError } from '../../shared/api/client.js';
 import { setUserSession, useSession } from '../../entities/session/client.js';
+import {
+    loadOwnProfile,
+    loadPublicProfile,
+    profileKeys,
+    updateOwnProfile,
+    type OwnProfile,
+} from '../../entities/profile/client.js';
 import { Skeleton as ArcSkeleton } from '@meal-planner/design-system';
 import { profileFallbacks as fallback, profileText, recipeCountText } from './fallbacks.js';
 import styles from './profile-pages.module.css';
 import { useState, type ReactNode } from 'react';
-import type { Success } from '../../shared/api/contracts.generated.js';
 
 function ProfileContent({ children }: { children: ReactNode }) {
     return <div className={styles.content}>{children}</div>;
@@ -58,7 +64,6 @@ function ProfileAvatar({ src }: { src: string | null }) {
         <img className={styles.avatar} src="/assets/food-122-illustration.webp" alt={fallback.avatarUrl} />
     );
 }
-type OwnProfile = Success<'GET /api/v1/profile'>['data']['profile'];
 function OwnProfileForm({
     profile,
     onSaved,
@@ -75,17 +80,14 @@ function OwnProfileForm({
     const activeTheme = useUi((state) => state.theme);
     const [theme, setThemeValue] = useState<ThemeName>(resolveTheme(profile.theme, activeTheme));
     const mutation = useMutation({
-        mutationFn: async () =>
-            (
-                await api!.request('PUT /api/v1/profile', {
-                    displayName,
-                    timezone,
-                    locale: 'ru',
-                    theme,
-                    expectedVersion: profile.version,
-                    idempotencyKey: crypto.randomUUID(),
-                })
-            ).data.profile,
+        mutationFn: () =>
+            updateOwnProfile(api!, {
+                displayName,
+                timezone,
+                locale: 'ru',
+                theme,
+                expectedVersion: profile.version,
+            }),
         onSuccess: (value) => {
             onSaved(value);
             setTheme(theme);
@@ -140,11 +142,11 @@ function OwnContent({ following }: { following: ReactNode }) {
     const { api, queryClient } = runtime;
     const session = useSession('user');
     const query = useQuery({
-        queryKey: ['profile', 'own', session.data?.id],
+        queryKey: profileKeys.own(session.data?.id),
         enabled: !!api && !!session.data,
         queryFn: async ({ signal }) => {
             if (!api) throw new Error('API not ready');
-            return (await api.request('GET /api/v1/profile', undefined, signal)).data.profile;
+            return loadOwnProfile(api, signal);
         },
     });
     if (query.isPending) return <ProfileLoading />;
@@ -189,7 +191,7 @@ function OwnContent({ following }: { following: ReactNode }) {
                     <OwnProfileForm
                         profile={profile}
                         onSaved={(value) => {
-                            queryClient.setQueryData(['profile', 'own', session.data?.id], value);
+                            queryClient.setQueryData(profileKeys.own(session.data?.id), value);
                             setUserSession(runtime, (old: typeof session.data) =>
                                 old ? { ...old, displayName: value.displayName ?? value.username } : old,
                             );
@@ -230,11 +232,11 @@ export function PublicProfilePage({
 }) {
     const { api, error } = useRuntime();
     const query = useQuery({
-        queryKey: ['profile', 'public', username],
+        queryKey: profileKeys.public(username),
         enabled: !!api,
         queryFn: async ({ signal }) => {
             if (!api) throw new Error('API not ready');
-            return (await api.request('GET /api/v1/authors/{username}', undefined, signal, { username })).data.profile;
+            return loadPublicProfile(api, username, signal);
         },
     });
     return (

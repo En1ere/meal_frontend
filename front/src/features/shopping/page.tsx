@@ -23,6 +23,8 @@ import styles from './shopping.module.css';
 import { readOfflineOwner } from '../../entities/offline/store.js';
 import { readOfflineSnapshotData, saveOfflineSnapshot } from '../../entities/offline/snapshots.js';
 import { CostEstimateBadge } from '../../entities/finance-cost/client.js';
+import { shoppingKeys } from './query-keys.js';
+import { loadShoppingHistory, loadShoppingList, loadShoppingLists, loadShoppingRecipePreview } from './api.js';
 type List = Success<'GET /api/v1/shopping-lists/{id}'>['data'];
 function Content({ id }: { id?: string }) {
     const scope = useShoppingScope();
@@ -43,7 +45,7 @@ function Content({ id }: { id?: string }) {
         scope,
     };
     const lists = useQuery({
-        queryKey: ['shopping', owner, 'lists', query],
+        queryKey: shoppingKeys.lists(owner, query),
         enabled: !!api && !!owner && !id,
         queryFn: async ({ signal }) => {
             const key = `shopping:lists:${JSON.stringify(query)}`;
@@ -55,14 +57,13 @@ function Content({ id }: { id?: string }) {
                 if (!cached) throw new Error('Этот список не сохранён для offline-доступа.');
                 return cached;
             }
-            const data = (await api!.request('GET /api/v1/shopping-lists', undefined, signal, undefined, { query }))
-                .data;
+            const data = await loadShoppingLists(api!, query, signal);
             if (scope === 'private') await saveOfflineSnapshot(owner!, key, data);
             return data;
         },
     });
     const detail = useQuery({
-        queryKey: ['shopping', owner, scope, id],
+        queryKey: shoppingKeys.detail(owner, scope, id),
         enabled: !!api && !!owner && !!id,
         queryFn: async ({ signal }) => {
             const key = `shopping:${id}`;
@@ -71,44 +72,22 @@ function Content({ id }: { id?: string }) {
                 if (!cached) throw new Error('Этот список не сохранён для offline-доступа.');
                 return cached;
             }
-            const data = (
-                await api!.request(
-                    'GET /api/v1/shopping-lists/{id}',
-                    undefined,
-                    signal,
-                    { id: id! },
-                    { query: { scope } },
-                )
-            ).data;
+            const data = await loadShoppingList(api!, id!, scope, signal);
             if (scope === 'private') await saveOfflineSnapshot(owner!, key, data);
             return data;
         },
     });
     const history = useQuery({
-        queryKey: ['shopping', owner, scope, id, 'history'],
+        queryKey: shoppingKeys.history(owner, scope, id),
         enabled: !!api && !!owner && !!id && typeof navigator !== 'undefined' && navigator.onLine,
-        queryFn: async ({ signal }) =>
-            (
-                await api!.request(
-                    'GET /api/v1/shopping-lists/{id}/history',
-                    undefined,
-                    signal,
-                    { id: id! },
-                    { query: { scope } },
-                )
-            ).data,
+        queryFn: ({ signal }) => loadShoppingHistory(api!, id!, scope, signal),
     });
     const recipeId = search.get('recipeId');
     const servings = String(Math.max(1, Math.min(1000, Number(search.get('servings')) || 1)));
     const recipe = useQuery({
-        queryKey: ['shopping', user.data?.id, 'recipe-preview', recipeId, servings],
+        queryKey: shoppingKeys.recipePreview(user.data?.id, recipeId, servings),
         enabled: !!api && !!recipeId,
-        queryFn: async ({ signal }) =>
-            (
-                await api!.request('GET /api/v1/shopping-lists/recipe-preview', undefined, signal, undefined, {
-                    query: { recipeId: recipeId!, servings, scope },
-                })
-            ).data,
+        queryFn: ({ signal }) => loadShoppingRecipePreview(api!, recipeId!, servings, scope, signal),
     });
     const href = (patch: Record<string, string>) => {
         const p = new URLSearchParams(search);

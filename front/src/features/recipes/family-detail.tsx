@@ -6,33 +6,23 @@ import { useRuntime } from '../../shared/runtime/index.js';
 import { useSession } from '../../entities/session/client.js';
 import { RecipeError, RecipeLoading, RecipeShell } from './shared.js';
 import { recipeUnits } from '../../entities/recipe/model.js';
+import { productKeys } from '../../entities/product/model.js';
 import styles from './workspace.module.css';
+import { recipeKeys } from './query-keys.js';
+import { loadFamilyRecipe, loadFamilyRecipeProducts } from './read-api.js';
 
 function Content({ id }: { id: string }) {
     const { api } = useRuntime();
     const session = useSession('user');
     const recipe = useQuery({
-        queryKey: ['recipe-workspace', session.data?.id, 'family', id],
+        queryKey: recipeKeys.familyDetail(session.data?.id, id),
         enabled: !!api && !!session.data,
-        queryFn: async ({ signal }) =>
-            (
-                await api!.request(
-                    'GET /api/v1/recipe-workspace/{id}',
-                    undefined,
-                    signal,
-                    { id },
-                    {
-                        query: { scope: 'family' },
-                    },
-                )
-            ).data.recipe,
+        queryFn: ({ signal }) => loadFamilyRecipe(api!, id, signal),
     });
     const products = useQuery({
-        queryKey: ['products', 'family-recipe', session.data?.id],
+        queryKey: productKeys.familyRecipeCatalog(session.data?.id),
         enabled: !!api && !!session.data,
-        queryFn: async ({ signal }) =>
-            (await api!.request('GET /api/v1/products', undefined, signal, undefined, { query: { limit: '100' } })).data
-                .items,
+        queryFn: ({ signal }) => loadFamilyRecipeProducts(api!, signal),
     });
     if (recipe.isPending) return <RecipeLoading />;
     if (recipe.isError) return <RecipeError error={recipe.error} retry={() => void recipe.refetch()} />;

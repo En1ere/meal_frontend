@@ -7,9 +7,11 @@ import { ApiError } from '../../shared/api/client.js';
 import { commandError } from '../../shared/api/command-error.js';
 import { useSession } from '../../entities/session/client.js';
 import { units } from '../../entities/measurement/model.js';
-import { inventoryScopeQuery, type InventoryScope } from '../../entities/inventory/model.js';
+import type { InventoryScope } from '../../entities/inventory/model.js';
 import { inventoryKeys } from '../../entities/inventory/query-keys.js';
 import { inventoryBase } from '../../entities/inventory/routes.js';
+import { productKeys } from '../../entities/product/model.js';
+import { commitInventoryImport, loadIngestLocations, loadIngestProducts, type InventoryImportCommand } from './api.js';
 import { rowError, type ReviewRow } from './contracts.js';
 import styles from './ingest.module.css';
 
@@ -29,28 +31,14 @@ function Row({
     const [query, setQuery] = useState(row.name);
     const [search, setSearch] = useState(row.name);
     const products = useQuery({
-        queryKey: ['products', 'ingest', session.data?.id, search],
+        queryKey: productKeys.ingestSearch(session.data?.id, search),
         enabled: !!api && !!session.data && !!search.trim() && !row.skip,
-        queryFn: async ({ signal }) =>
-            (
-                await api!.request('GET /api/v1/products', undefined, signal, undefined, {
-                    query: {
-                        ...(row.barcode && search === row.barcode ? { barcode: row.barcode } : { q: search }),
-                        limit: '20',
-                        offset: '0',
-                    },
-                })
-            ).data,
+        queryFn: ({ signal }) => loadIngestProducts(api!, search, row.barcode, signal),
     });
     const locations = useQuery({
         queryKey: inventoryKeys.locations(scope, session.data?.id),
         enabled: !!api && !!session.data,
-        queryFn: async ({ signal }) =>
-            (
-                await api!.request('GET /api/v1/inventory-locations', undefined, signal, undefined, {
-                    query: inventoryScopeQuery(scope),
-                })
-            ).data.items,
+        queryFn: ({ signal }) => loadIngestLocations(api!, scope, signal),
     });
     const change = (values: Partial<ReviewRow>) => update({ ...row, ...values, reviewed: values.reviewed ?? false });
     return (
@@ -225,7 +213,7 @@ export function IngestReview({
     const [rows, setRows] = useState(initialRows);
     const [page, setPage] = useState(0);
     const [confirmed, setConfirmed] = useState(false);
-    const pendingCommand = useRef<{ rows: unknown[]; idempotencyKey: string } | null>(null);
+    const pendingCommand = useRef<InventoryImportCommand | null>(null);
     const selected = rows.filter((row) => !row.skip);
     const invalid = selected.filter((row) => rowError(row));
     const seen = new Set<string>();
@@ -243,7 +231,7 @@ export function IngestReview({
                     name: row.name.trim(),
                     ingredientId: row.ingredientId,
                     quantity: row.quantity || null,
-                    unit: row.unit,
+                    unit: row.unit as InventoryImportCommand['rows'][number]['unit'],
                     locationId: row.locationId,
                     openedAt: null,
                     purchasedOn: null,
@@ -260,7 +248,7 @@ export function IngestReview({
                 })),
                 idempotencyKey: crypto.randomUUID(),
             };
-            return (await api.request('POST /api/v1/inventory/import/commit', pendingCommand.current)).data;
+            return commitInventoryImport(api, pendingCommand.current);
         },
         onSuccess: () => {
             void queryClient.invalidateQueries({ queryKey: inventoryKeys.root });

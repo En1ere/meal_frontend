@@ -21,7 +21,8 @@ import { enqueueOfflineOperation } from '../../entities/offline/queue.js';
 import { isConsentRequiredError, useConsent } from '../../entities/consent/client.js';
 import { readOfflineSnapshotData, saveOfflineSnapshot } from '../../entities/offline/snapshots.js';
 import { normalizeCachedWorkspaceList } from '../../entities/recipe/index.js';
-type Command = 'archive' | 'restore' | 'submit' | 'rollback';
+import { recipeKeys } from './query-keys.js';
+import { loadMineRecipes, runMineRecipeCommand, type RecipeMineCommand } from './mine-api.js';
 type WorkspaceScope = 'private' | 'family';
 function MineContent({ scope }: { scope: WorkspaceScope }) {
     const { api, queryClient } = useRuntime();
@@ -43,10 +44,10 @@ function MineContent({ scope }: { scope: WorkspaceScope }) {
         [error, setError] = useState(''),
         [notice, setNotice] = useState('');
     const [unknown, setUnknown] = useState(false);
-    const attempt = useRef<{ id: string; command: Command; version: number; key: string } | null>(null);
+    const attempt = useRef<{ id: string; command: RecipeMineCommand; version: number; key: string } | null>(null);
     const pendingRef = useRef(false);
     const query = useQuery({
-        queryKey: ['recipe-workspace', owner, scope, q, status, page],
+        queryKey: recipeKeys.workspaceList(owner, scope, q, status, page),
         enabled: !!api && !!owner,
         queryFn: async ({ signal }) => {
             const snapshotKey = `recipe-workspace:list:${status}:${page}:${q}`;
@@ -58,11 +59,7 @@ function MineContent({ scope }: { scope: WorkspaceScope }) {
                 if (!cached) throw new Error('Этот список рецептов ещё не сохранён для работы без сети.');
                 return normalizeCachedWorkspaceList(cached);
             }
-            const data = (
-                await api!.request('GET /api/v1/recipe-workspace', undefined, signal, undefined, {
-                    query: { q, scope, status, page: String(page), limit: '20' },
-                })
-            ).data;
+            const data = await loadMineRecipes(api!, { q, scope, status, page }, signal);
             if (scope === 'private') await saveOfflineSnapshot(owner!, snapshotKey, data);
             return data;
         },
@@ -72,7 +69,7 @@ function MineContent({ scope }: { scope: WorkspaceScope }) {
         for (const [k, v] of Object.entries(values)) p.set(k, v);
         return `${basePath}?${p}`;
     };
-    async function command(recipe: WorkspaceRecipe, kind: Command) {
+    async function command(recipe: WorkspaceRecipe, kind: RecipeMineCommand) {
         if (!api || pendingRef.current) return;
         pendingRef.current = true;
         attempt.current ??= { id: recipe.id, command: kind, version: recipe.version, key: crypto.randomUUID() };
@@ -122,23 +119,22 @@ function MineContent({ scope }: { scope: WorkspaceScope }) {
             return;
         }
         try {
-            await api.request(
-                `POST /api/v1/recipe-workspace/{id}/${value.command}`,
-                { idempotencyKey: value.key, expectedVersion: value.version },
-                undefined,
-                { id: value.id },
-            );
+            await runMineRecipeCommand(api, {
+                action: value.command,
+                id: value.id,
+                body: { idempotencyKey: value.key, expectedVersion: value.version },
+            });
             attempt.current = null;
             setNotice(
                 kind === 'submit'
                     ? 'Редакция отправлена на ручную модерацию. Она ещё не опубликована.'
                     : 'Изменения сохранены.',
             );
-            await queryClient.invalidateQueries({ queryKey: ['recipe-workspace'] });
+            await queryClient.invalidateQueries({ queryKey: recipeKeys.workspaceRoot });
         } catch (e) {
             const submitConflict = value.command === 'submit' && e instanceof ApiError && [409, 412].includes(e.status);
             if (submitConflict) {
-                await queryClient.invalidateQueries({ queryKey: ['recipe-workspace'], refetchType: 'none' });
+                await queryClient.invalidateQueries({ queryKey: recipeKeys.workspaceRoot, refetchType: 'none' });
                 const refreshed = await query.refetch();
                 attempt.current = null;
                 setError(

@@ -6,6 +6,8 @@ import { useState, type FormEvent } from 'react';
 import { useRuntime } from '../../shared/runtime/index.js';
 import { useSession } from '../../entities/session/client.js';
 import styles from './ai-appeals.module.css';
+import { createAiAppeal, loadAiAppeal, loadAiAppeals, replyAiAppeal } from './api.js';
+import { aiAppealKeys } from './query-keys.js';
 
 const appealStatuses = {
     pending: 'На рассмотрении',
@@ -37,21 +39,18 @@ function AppealsContent() {
         router = useRouter(),
         [body, setBody] = useState('');
     const query = useQuery({
-        queryKey: ['ai-appeals', session.data?.id],
+        queryKey: aiAppealKeys.list(session.data?.id),
         enabled: !!api && !!session.data,
-        queryFn: async ({ signal }) => (await api!.request('GET /api/v1/ai/appeals', undefined, signal)).data,
+        queryFn: ({ signal }) => loadAiAppeals(api!, signal),
     });
     const create = useMutation({
-        mutationFn: async () =>
-            (
-                await api!.request('POST /api/v1/ai/appeals', {
-                    sanctionId: query.data!.restriction!.id,
-                    body,
-                    idempotencyKey: crypto.randomUUID(),
-                })
-            ).data,
+        mutationFn: () =>
+            createAiAppeal(api!, {
+                sanctionId: query.data!.restriction!.id,
+                body,
+            }),
         onSuccess: (value) => {
-            void queryClient.invalidateQueries({ queryKey: ['ai-appeals', session.data?.id] });
+            void queryClient.invalidateQueries({ queryKey: aiAppealKeys.list(session.data?.id) });
             router.push(`/ai/appeals/${value.appeal.id}`);
         },
     });
@@ -163,28 +162,19 @@ function AppealDetailContent({ id }: { id: string }) {
     const { api, queryClient } = useRuntime(),
         session = useSession('user'),
         [reply, setReply] = useState('');
-    const key = ['ai-appeal', session.data?.id, id] as const;
+    const key = aiAppealKeys.detail(session.data?.id, id);
     const query = useQuery({
         queryKey: key,
         enabled: !!api && !!session.data,
-        queryFn: async ({ signal }) =>
-            (await api!.request('GET /api/v1/ai/appeals/{id}', undefined, signal, { id })).data,
+        queryFn: ({ signal }) => loadAiAppeal(api!, id, signal),
     });
     const send = useMutation({
-        mutationFn: async () =>
-            (
-                await api!.request(
-                    'POST /api/v1/support/{id}/reply',
-                    {
-                        body: reply,
-                        attachments: [],
-                        expectedVersion: query.data!.appeal.ticket.version,
-                        idempotencyKey: crypto.randomUUID(),
-                    },
-                    undefined,
-                    { id: query.data!.appeal.ticket.id },
-                )
-            ).data,
+        mutationFn: () =>
+            replyAiAppeal(api!, query.data!.appeal.ticket.id, {
+                body: reply,
+                attachments: [],
+                expectedVersion: query.data!.appeal.ticket.version,
+            }),
         onSuccess: () => {
             setReply('');
             void queryClient.invalidateQueries({ queryKey: key });

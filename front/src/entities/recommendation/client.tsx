@@ -3,8 +3,13 @@ import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useSession } from '../session/client.js';
+import { loadOwnProfile, profileKeys } from '../profile/client.js';
 import { useRuntime } from '../../shared/runtime/index.js';
 import type { Success } from '../../shared/api/contracts.generated.js';
+import { recommendationKeys } from './query-keys.js';
+import { loadAuthorFollowState, recordRecommendationEvent, setAuthorFollowing } from './api.js';
+
+export { loadAuthorRecommendations, loadRecipeRecommendations } from './api.js';
 
 export type Recommendation = Success<'GET /api/v1/recommendations'>['data']['items'][number];
 export type RecommendationSurface = 'home' | 'recipes' | 'authors';
@@ -34,13 +39,7 @@ export function useRecommendationActions(item: Recommendation, surface: Recommen
     );
     const send = (event: 'impression' | 'open' | 'not_interested' | 'not_suitable') => {
         if (!api) return Promise.resolve();
-        return api
-            .request('POST /api/v1/recommendations/events', {
-                ...base,
-                event,
-                idempotencyKey: crypto.randomUUID(),
-            })
-            .then(() => undefined);
+        return recordRecommendationEvent(api, { ...base, event });
     };
     useEffect(() => {
         const key = `${session.data?.id ?? 'anonymous'}:${surface}:${item.recommendationId}:${position}`;
@@ -97,36 +96,25 @@ export function FollowAuthorButton({ username }: { username: string }) {
     const { api, queryClient } = useRuntime();
     const session = useSession('user');
     const own = useQuery({
-        queryKey: ['profile', 'own', session.data?.id],
+        queryKey: profileKeys.own(session.data?.id),
         enabled: !!api && !!session.data,
-        queryFn: async ({ signal }) => (await api!.request('GET /api/v1/profile', undefined, signal)).data.profile,
+        queryFn: ({ signal }) => loadOwnProfile(api!, signal),
     });
-    const key = ['author-follow', session.data?.id, username];
+    const key = recommendationKeys.authorFollow(session.data?.id, username);
     const query = useQuery({
         queryKey: key,
         enabled: !!api && !!session.data && !!own.data && own.data.username !== username,
-        queryFn: async ({ signal }) =>
-            (await api!.request('GET /api/v1/authors/{username}/follow', undefined, signal, { username })).data,
+        queryFn: ({ signal }) => loadAuthorFollowState(api!, username, signal),
     });
     const following = query.data?.following ?? false;
     const mutation = useMutation({
-        mutationFn: async (next: boolean) => {
+        mutationFn: (next: boolean) => {
             if (!api) throw new Error('API not ready');
-            return (
-                await api.request(
-                    'PUT /api/v1/authors/{username}/follow',
-                    {
-                        following: next,
-                        idempotencyKey: crypto.randomUUID(),
-                    },
-                    undefined,
-                    { username },
-                )
-            ).data;
+            return setAuthorFollowing(api, username, next);
         },
         onSuccess: (result) => {
             queryClient.setQueryData(key, result);
-            void queryClient.invalidateQueries({ queryKey: ['profile-following'] });
+            void queryClient.invalidateQueries({ queryKey: recommendationKeys.followingRoot });
         },
     });
     if (own.data?.username === username) return null;

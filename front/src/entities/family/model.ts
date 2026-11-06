@@ -6,4 +6,6 @@ export type Family = NonNullable<FamilyContext['family']>;
 export const familyKeys = {
     all: ['family'] as const,
     context: (userId: string | undefined) => ['family', userId] as const,
+    // Meal-plan historically keeps the same response in a separate cache lifecycle.
+    planContext: (userId: string | undefined) => ['family-context', userId] as const,
 };

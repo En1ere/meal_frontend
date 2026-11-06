@@ -7,6 +7,8 @@ import { useRuntime } from '../../shared/runtime/index.js';
 import { useSession } from '../../entities/session/client.js';
 import styles from './finance.module.css';
 import type { Category } from './shared.js';
+import { financeKeys } from './query-keys.js';
+import { loadFinanceAnalytics } from './api.js';
 import {
     categories,
     categoryName,
@@ -38,14 +40,9 @@ function FinanceAnalyticsContent() {
     const [to, setTo] = useState(today);
     const [category, setCategory] = useState<Category | ''>('');
     const analytics = useQuery({
-        queryKey: ['finance-analytics', session.data?.id, from, to, category],
+        queryKey: financeKeys.analytics(session.data?.id, from, to, category),
         enabled: !!api && !!session.data && from <= to,
-        queryFn: ({ signal }) =>
-            api!
-                .request('GET /api/v1/finance/analytics', undefined, signal, undefined, {
-                    query: { from, to, ...(category ? { category } : {}) },
-                })
-                .then((response) => response.data),
+        queryFn: ({ signal }) => loadFinanceAnalytics(api!, from, to, category, signal),
     });
     if (analytics.isPending) return <Loading />;
     if (analytics.isError) return <ErrorPanel error={analytics.error} retry={() => void analytics.refetch()} />;

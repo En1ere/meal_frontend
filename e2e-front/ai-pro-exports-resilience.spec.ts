@@ -405,6 +405,14 @@ test('AI appeal keeps its explanation after 503 and succeeds only after an expli
     await page.getByRole('button', { name: 'Отправить на рассмотрение' }).click();
     await page.waitForURL(/\/ai\/appeals\/[0-9a-f-]{36}$/u);
     await expect(page.getByRole('heading', { name: 'Апелляция по ограничению AI' })).toBeVisible();
+    const reply = page.getByLabel('Дополнить обращение');
+    await reply.fill('Дополняю обращение после проверки деталей.');
+    await page.getByRole('button', { name: 'Отправить', exact: true }).click();
+    await expect(page.getByText('Дополняю обращение после проверки деталей.')).toBeVisible();
+    await expect(reply).toHaveValue('');
+    await gotoExact(page, '/ai/appeals');
+    await expect(page.getByRole('heading', { name: 'История апелляций' })).toBeVisible();
+    await expect(page.locator('a[href^="/ai/appeals/"]')).toHaveCount(1);
 });
 
 test('special-category consent gates diary and analytics and diary date navigation survives DST', async ({ page }) => {

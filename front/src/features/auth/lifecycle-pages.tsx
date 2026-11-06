@@ -24,6 +24,17 @@ import {
     hasPublishedRegistrationDocuments,
     hasReviewableRegistrationDocuments,
 } from '../../shared/legal/mock-legal.js';
+import { authLifecycleKeys } from './lifecycle/query-keys.js';
+import {
+    cancelEmailChange,
+    checkPasswordResetLink,
+    confirmEmailChange,
+    registerAccount,
+    requestPasswordRecovery,
+    resendVerificationEmail,
+    resetPassword,
+    verifyEmail,
+} from './lifecycle/api.js';
 
 const acceptedMessage =
     'Запрос принят. Если действие доступно для указанного адреса, будет подготовлено письмо. Принятие запроса не подтверждает доставку.';
@@ -55,7 +66,7 @@ export function SignUpPage() {
     const [accepted, setAccepted] = useState(false);
     const [legalRetrying, setLegalRetrying] = useState(false);
     const legal = useQuery({
-        queryKey: ['public-legal-manifest'],
+        queryKey: authLifecycleKeys.publicLegalManifest,
         retry: false,
         enabled: !!runtime.api,
         queryFn: ({ signal }) => getPublicLegalManifest(runtime.api!, signal),
@@ -99,7 +110,7 @@ export function SignUpPage() {
                         disabled={action.pending || !runtime.api}
                         onClick={() =>
                             void action.run(async (signal) => {
-                                await runtime.api!.request('POST /api/v1/auth/email/resend', { email }, signal);
+                                await resendVerificationEmail(runtime.api!, { email }, signal);
                                 signal.throwIfAborted();
                                 action.setNotice(acceptedMessage);
                             })
@@ -125,8 +136,8 @@ export function SignUpPage() {
                                 if (!/^[a-z0-9_]{3,30}$/i.test(username))
                                     formError('Логин: от 3 до 30 латинских букв, цифр или _.');
                                 try {
-                                    await runtime.api!.request(
-                                        'POST /api/v1/auth/register/v2',
+                                    await registerAccount(
+                                        runtime.api!,
                                         {
                                             username,
                                             displayName,
@@ -337,7 +348,7 @@ export function RecoveryPage() {
                 onSubmit={(event) => {
                     event.preventDefault();
                     void action.run(async (signal) => {
-                        await runtime.api!.request('POST /api/v1/auth/password/recovery', { email }, signal);
+                        await requestPasswordRecovery(runtime.api!, { email }, signal);
                         signal.throwIfAborted();
                         action.setNotice(acceptedMessage);
                     });
@@ -397,25 +408,17 @@ export function EmailLinkPage({ mode }: { mode: 'verify' | 'confirm' | 'cancel' 
                             event.preventDefault();
                             void action.run(async (signal) => {
                                 if (mode === 'verify') {
-                                    await runtime.api!.request('POST /api/v1/auth/email/verify', { token }, signal);
+                                    await verifyEmail(runtime.api!, { token }, signal);
                                     signal.throwIfAborted();
                                     action.setNotice('Почта подтверждена. Теперь можно войти в аккаунт.');
                                 } else if (mode === 'confirm') {
-                                    const result = await runtime.api!.request(
-                                        'POST /api/v1/auth/email/change/confirm',
-                                        { token },
-                                        signal,
-                                    );
+                                    const result = await confirmEmailChange(runtime.api!, { token }, signal);
                                     signal.throwIfAborted();
                                     action.setNotice(
-                                        `Новый адрес подтверждён. Изменение вступит в силу ${new Date(result.data.effectiveAt).toLocaleString('ru-RU')}. Все сессии будут завершены.`,
+                                        `Новый адрес подтверждён. Изменение вступит в силу ${new Date(result.effectiveAt).toLocaleString('ru-RU')}. Все сессии будут завершены.`,
                                     );
                                 } else {
-                                    await runtime.api!.request(
-                                        'POST /api/v1/auth/email/change/cancel',
-                                        { token },
-                                        signal,
-                                    );
+                                    await cancelEmailChange(runtime.api!, { token }, signal);
                                     signal.throwIfAborted();
                                     action.setNotice('Смена почты отменена.');
                                 }
@@ -446,12 +449,11 @@ export function ResetPasswordPage() {
     const [password, setPassword] = useState('');
     const [repeat, setRepeat] = useState('');
     const check = useQuery({
-        queryKey: ['reset-link', token],
+        queryKey: authLifecycleKeys.resetLink(token),
         enabled: !!runtime.api && !!token,
         gcTime: 0,
         retry: false,
-        queryFn: async ({ signal }) =>
-            (await runtime.api!.request('POST /api/v1/auth/password/reset/check', { token }, signal)).data,
+        queryFn: ({ signal }) => checkPasswordResetLink(runtime.api!, { token }, signal),
     });
     return (
         <AuthShell>
@@ -491,11 +493,7 @@ export function ResetPasswordPage() {
                         void action.run(
                             async (signal) => {
                                 validatePassword(password, repeat);
-                                await runtime.api!.request(
-                                    'POST /api/v1/auth/password/reset',
-                                    { token, password },
-                                    signal,
-                                );
+                                await resetPassword(runtime.api!, { token, password }, signal);
                                 signal.throwIfAborted();
                                 leaveRevokedSessions(runtime);
                             },

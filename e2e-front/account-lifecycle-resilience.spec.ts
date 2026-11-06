@@ -290,6 +290,7 @@ test('sessions revoke others and announce a transient action failure as an alert
     await login(page);
     await mutateState(page, 'add-session');
     await gotoExact(page, '/settings/account');
+    await expect(page.getByText('Текущая сессия', { exact: true })).toBeVisible();
     await expect(page.getByText('Другая сессия', { exact: true })).toBeVisible();
     await failNext(page, '/api/v1/auth/sessions/revoke-others');
     await page.getByRole('button', { name: 'Завершить другие сессии', exact: true }).click();
@@ -297,6 +298,7 @@ test('sessions revoke others and announce a transient action failure as an alert
     await expect(page.getByText('Другая сессия', { exact: true })).toBeVisible();
     await page.getByRole('button', { name: 'Завершить другие сессии', exact: true }).click();
     await expect(page.getByRole('status')).toContainText('Завершено других сессий: 1');
+    await expect(page.getByText('Текущая сессия', { exact: true })).toBeVisible();
     await expect(page.getByText('Другая сессия', { exact: true })).toHaveCount(0);
 });
 

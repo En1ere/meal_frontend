@@ -7,7 +7,9 @@ import { useRuntime } from '../../shared/runtime/index.js';
 import type { Preserve } from './types.js';
 import { usePreserveCommand } from './use-command.js';
 import { dayText } from './shared.js';
+import { preserveKeys } from '../../entities/preserve/model.js';
 import styles from './preserves.module.css';
+import { loadPreserveQrLabel } from './api.js';
 
 const escapeHtml = (value: string) =>
     value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
@@ -17,18 +19,9 @@ export function PreserveQrLabel({ preserve, scope = 'private' }: { preserve: Pre
     const command = usePreserveCommand();
     const qr = useRef<HTMLDivElement>(null);
     const result = useQuery({
-        queryKey: ['preserves', preserve.id, 'qr-label'],
+        queryKey: preserveKeys.qrLabel(preserve.id),
         enabled: !!api,
-        queryFn: async ({ signal: querySignal }) =>
-            (
-                await api!.request(
-                    'GET /api/v1/preserves/{id}/qr-label',
-                    undefined,
-                    querySignal,
-                    { id: preserve.id },
-                    { query: { scope } },
-                )
-            ).data,
+        queryFn: ({ signal: querySignal }) => loadPreserveQrLabel(api!, preserve.id, scope, querySignal),
     });
     const label = result.data?.label ?? null;
     useEffect(() => {

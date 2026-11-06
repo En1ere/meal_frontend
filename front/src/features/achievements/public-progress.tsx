@@ -3,15 +3,22 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
-import type { Success } from '../../shared/api/contracts.generated.js';
 import { useRuntime } from '../../shared/runtime/index.js';
 import { ApiError } from '../../shared/api/client.js';
 import { useSession } from '../../entities/session/client.js';
+import {
+    loadOwnProfile,
+    loadPublicAchievements,
+    loadPublicReputation,
+    profileKeys,
+    type PublicAchievements,
+    type PublicReputation,
+} from '../../entities/profile/client.js';
 import { Skeleton as ArcSkeleton } from '@meal-planner/design-system';
 import styles from './public-progress.module.css';
 
-type AchievementsPayload = Success<'GET /api/v1/authors/{username}/achievements'>['data'];
-type ReputationPayload = Success<'GET /api/v1/authors/{username}/reputation'>['data'];
+type AchievementsPayload = PublicAchievements;
+type ReputationPayload = PublicReputation;
 type IconMetadata = AchievementsPayload['achievements'][number]['icon'];
 
 const fallbackIcons: Record<string, string> = {
@@ -246,10 +253,9 @@ function ReputationView({ data }: { data: ReputationPayload }) {
 function PublicAchievementsContent({ username }: { username: string }) {
     const { api, error } = useRuntime();
     const query = useQuery({
-        queryKey: ['profile', 'public', username, 'achievements'],
+        queryKey: profileKeys.publicAchievements(username),
         enabled: !!api,
-        queryFn: async ({ signal }) =>
-            (await api!.request('GET /api/v1/authors/{username}/achievements', undefined, signal, { username })).data,
+        queryFn: ({ signal }) => loadPublicAchievements(api!, username, signal),
     });
     if (error) return <ProgressError error={error} retry={() => window.location.reload()} />;
     if (query.isPending) return <LoadingProgress />;
@@ -260,10 +266,9 @@ function PublicAchievementsContent({ username }: { username: string }) {
 function PublicReputationContent({ username }: { username: string }) {
     const { api, error } = useRuntime();
     const query = useQuery({
-        queryKey: ['profile', 'public', username, 'reputation'],
+        queryKey: profileKeys.publicReputation(username),
         enabled: !!api,
-        queryFn: async ({ signal }) =>
-            (await api!.request('GET /api/v1/authors/{username}/reputation', undefined, signal, { username })).data,
+        queryFn: ({ signal }) => loadPublicReputation(api!, username, signal),
     });
     if (error) return <ProgressError error={error} retry={() => window.location.reload()} />;
     if (query.isPending) return <LoadingProgress />;
@@ -275,9 +280,9 @@ function OwnProgress({ view }: { view: 'achievements' | 'reputation' }) {
     const { api } = useRuntime();
     const session = useSession('user');
     const profile = useQuery({
-        queryKey: ['profile', 'own', session.data?.id],
+        queryKey: profileKeys.own(session.data?.id),
         enabled: !!api && !!session.data,
-        queryFn: async ({ signal }) => (await api!.request('GET /api/v1/profile', undefined, signal)).data.profile,
+        queryFn: ({ signal }) => loadOwnProfile(api!, signal),
     });
     if (profile.isPending) return <LoadingProgress />;
     if (profile.isError) return <ProgressError error={profile.error} retry={() => void profile.refetch()} />;
@@ -323,10 +328,9 @@ export function OwnReputationPage() {
 export function PublicProgressSummary({ username }: { username: string }) {
     const { api } = useRuntime();
     const query = useQuery({
-        queryKey: ['profile', 'public', username, 'reputation'],
+        queryKey: profileKeys.publicReputation(username),
         enabled: !!api,
-        queryFn: async ({ signal }) =>
-            (await api!.request('GET /api/v1/authors/{username}/reputation', undefined, signal, { username })).data,
+        queryFn: ({ signal }) => loadPublicReputation(api!, username, signal),
     });
     return (
         <div className={styles.summary}>

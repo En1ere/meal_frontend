@@ -5,14 +5,15 @@ import { useQuery } from '@tanstack/react-query';
 import { useRuntime } from '../../shared/runtime/index.js';
 import { useSession } from '../../entities/session/client.js';
 import { units } from '../../entities/measurement/model.js';
-import { inventoryScopeQuery } from '../../entities/inventory/model.js';
 import { inventoryKeys } from '../../entities/inventory/query-keys.js';
+import { productKeys } from '../../entities/product/model.js';
 import { expiryText } from '../../entities/inventory/presentation.js';
 import { dateText, localDate } from '../../shared/lib/date.js';
 import type { Success } from '../../shared/api/contracts.generated.js';
 import styles from './products.module.css';
 import { productView, updateViewUrl } from './url-state.js';
 import { ProductFailure, ProductLoading } from './async-state.js';
+import { loadPrivateProductLocations, loadProduct, loadProductInventory } from './api.js';
 type Product = Success<'GET /api/v1/products/{id}'>['data']['product'];
 const tabs = [
     ['about', 'О продукте'],
@@ -185,30 +186,19 @@ function Content({ id }: { id: string }) {
     const { api } = useRuntime();
     const user = useSession('user');
     const query = useQuery({
-        queryKey: ['product', user.data?.id, id],
+        queryKey: productKeys.detail(user.data?.id, id),
         enabled: !!api && !!user.data,
-        queryFn: async ({ signal }) =>
-            (await api!.request('GET /api/v1/products/{id}', undefined, signal, { id })).data.product,
+        queryFn: ({ signal }) => loadProduct(api!, id, signal),
     });
     const batches = useQuery({
         queryKey: inventoryKeys.forProduct(user.data?.id, id),
         enabled: !!api && !!user.data,
-        queryFn: async ({ signal }) =>
-            (
-                await api!.request('GET /api/v1/inventory', undefined, signal, undefined, {
-                    query: { ingredientId: id, localDate: localDate(), limit: '100' },
-                })
-            ).data,
+        queryFn: ({ signal }) => loadProductInventory(api!, id, localDate(), signal),
     });
     const locations = useQuery({
         queryKey: inventoryKeys.locations('private', user.data?.id),
         enabled: !!api && !!user.data,
-        queryFn: async ({ signal }) =>
-            (
-                await api!.request('GET /api/v1/inventory-locations', undefined, signal, undefined, {
-                    query: inventoryScopeQuery('private'),
-                })
-            ).data.items,
+        queryFn: ({ signal }) => loadPrivateProductLocations(api!, signal),
     });
     if (query.isPending) return <ProductLoading />;
     if (query.isError) return <ProductFailure error={query.error} retry={() => void query.refetch()} />;

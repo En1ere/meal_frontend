@@ -7,6 +7,8 @@ import { RecipeImage, Rating } from '../../entities/recipe/client.js';
 import { categoryLabels } from '../../entities/recipe/model.js';
 import { RecipeLoading, RecipeError } from './shared.js';
 import styles from './recipes.module.css';
+import { recipeKeys } from './query-keys.js';
+import { loadPublicCommunity, loadPublicRecipeComments } from './read-api.js';
 
 const categories = Object.entries(categoryLabels);
 
@@ -25,22 +27,11 @@ export function PublicRecipeFeed({
 }) {
     const { api } = useRuntime();
     const query = useInfiniteQuery({
-        queryKey: ['community', author, q, category, sort],
+        queryKey: recipeKeys.publicCommunity(author, q, category, sort),
         enabled: !!api,
         initialPageParam: null as string | null,
-        queryFn: async ({ signal, pageParam }) =>
-            (
-                await api!.request('GET /api/v1/community', undefined, signal, undefined, {
-                    query: {
-                        q,
-                        ...(category ? { category } : {}),
-                        sort,
-                        limit: '12',
-                        ...(author ? { author } : {}),
-                        ...(pageParam ? { cursor: pageParam } : {}),
-                    },
-                })
-            ).data,
+        queryFn: ({ signal, pageParam }) =>
+            loadPublicCommunity(api!, { q, category, sort, author, cursor: pageParam }, signal),
         getNextPageParam: (page) => page.nextCursor ?? undefined,
     });
     const items = query.data?.pages.flatMap((page) => page.items) ?? [];
@@ -188,19 +179,10 @@ export function CommunityPage() {
 export function PublicComments({ recipeId }: { recipeId: string }) {
     const { api } = useRuntime();
     const query = useInfiniteQuery({
-        queryKey: ['public-comments', recipeId],
+        queryKey: recipeKeys.publicComments(recipeId),
         enabled: !!api,
         initialPageParam: null as string | null,
-        queryFn: async ({ signal, pageParam }) =>
-            (
-                await api!.request(
-                    'GET /api/v1/community/recipes/{id}/comments',
-                    undefined,
-                    signal,
-                    { id: recipeId },
-                    { query: { limit: '20', ...(pageParam ? { cursor: pageParam } : {}) } },
-                )
-            ).data,
+        queryFn: ({ signal, pageParam }) => loadPublicRecipeComments(api!, recipeId, pageParam, signal),
         getNextPageParam: (page) => page.nextCursor ?? undefined,
     });
     if (query.isPending) return <p role="status">Загружаем комментарии…</p>;

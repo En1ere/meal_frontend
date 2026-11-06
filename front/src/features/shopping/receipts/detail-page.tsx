@@ -14,8 +14,10 @@ import {
 } from '../shared.js';
 import { PurchaseReview, PurchaseLines, type PurchaseLine } from '../purchase-review.js';
 import { useShoppingCommand } from '../use-command.js';
+import { shoppingKeys } from '../query-keys.js';
 import styles from '../shopping.module.css';
 import { PurchaseResolution } from '../purchase-resolution.js';
+import { loadShoppingReceipt, loadShoppingReceiptDuplicates } from '../api.js';
 function Corrections({
     id,
     version,
@@ -64,24 +66,14 @@ function Content({ id }: { id: string }) {
     const [editing, setEditing] = useState(false),
         [review, setReview] = useState(false);
     const detail = useQuery({
-        queryKey: ['receipts', user.data?.id, scope, id],
+        queryKey: shoppingKeys.receipt(user.data?.id, scope, id),
         enabled: !!api && !!user.data,
-        queryFn: async ({ signal }) =>
-            (await api!.request('GET /api/v1/receipts/{id}', undefined, signal, { id }, { query: { scope } })).data,
+        queryFn: ({ signal }) => loadShoppingReceipt(api!, id, scope, signal),
     });
     const duplicates = useQuery({
-        queryKey: ['receipts', user.data?.id, scope, id, 'duplicates'],
+        queryKey: shoppingKeys.receiptDuplicates(user.data?.id, scope, id),
         enabled: !!api && detail.data?.receipt.status === 'draft',
-        queryFn: async ({ signal }) =>
-            (
-                await api!.request(
-                    'GET /api/v1/receipts/{id}/duplicates',
-                    undefined,
-                    signal,
-                    { id },
-                    { query: { scope } },
-                )
-            ).data,
+        queryFn: ({ signal }) => loadShoppingReceiptDuplicates(api!, id, scope, signal),
     });
     if (detail.isPending) return <ShoppingLoading />;
     if (detail.isError)

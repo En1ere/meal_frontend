@@ -6,6 +6,14 @@ import { useRuntime } from '../../shared/runtime/index.js';
 import { familyKeys } from '../../entities/family/model.js';
 import type { Success } from '../../shared/api/contracts.generated.js';
 import { useSession } from '../../entities/session/client.js';
+import { familyProjectionKeys } from './query-keys.js';
+import {
+    createFamilyOwnershipRequest,
+    decideFamilyOwnershipRequest,
+    loadFamilyOwnership,
+    loadFamilyOwnershipRequest,
+    previewFamilyOwnership,
+} from './api.js';
 import styles from './family.module.css';
 type Preview = Success<'POST /api/v1/family/ownership/preview'>['data'];
 
@@ -16,30 +24,26 @@ function OwnershipContent() {
     const [preview, setPreview] = useState<Preview | null>(null);
     const [token, setToken] = useState<string | null>(null);
     const query = useQuery({
-        queryKey: ['family-ownership', session.data?.id],
+        queryKey: familyProjectionKeys.ownership(session.data?.id),
         enabled: !!api && !!session.data,
-        queryFn: async ({ signal }) => (await api!.request('GET /api/v1/family/ownership', undefined, signal)).data,
+        queryFn: ({ signal }) => loadFamilyOwnership(api!, signal),
     });
     const review = useMutation({
-        mutationFn: async () =>
-            (
-                await api!.request('POST /api/v1/family/ownership/preview', {
-                    targetMembershipId: target,
-                    expectedFamilyVersion: query.data!.familyVersion,
-                })
-            ).data,
+        mutationFn: () =>
+            previewFamilyOwnership(api!, {
+                targetMembershipId: target,
+                expectedFamilyVersion: query.data!.familyVersion,
+            }),
         onSuccess: setPreview,
     });
     const submit = useMutation({
-        mutationFn: async () =>
-            (
-                await api!.request('POST /api/v1/family/ownership/requests', {
-                    targetMembershipId: preview!.to.id,
-                    expectedFamilyVersion: preview!.familyVersion,
-                    previewKey: preview!.previewKey,
-                    idempotencyKey: crypto.randomUUID(),
-                })
-            ).data,
+        mutationFn: () =>
+            createFamilyOwnershipRequest(api!, {
+                targetMembershipId: preview!.to.id,
+                expectedFamilyVersion: preview!.familyVersion,
+                previewKey: preview!.previewKey,
+                idempotencyKey: crypto.randomUUID(),
+            }),
         onSuccess: (value) => {
             setToken(value.token);
             setPreview(null);
@@ -152,32 +156,20 @@ function OwnershipContent() {
 function RequestContent({ token }: { token: string }) {
     const { api, queryClient } = useRuntime();
     const session = useSession('user');
-    const queryKey = ['family-ownership-request', session.data?.id, token] as const;
+    const queryKey = familyProjectionKeys.ownershipRequest(session.data?.id, token);
     const query = useQuery({
         queryKey,
         enabled: !!api && !!session.data,
-        queryFn: async ({ signal }) =>
-            (await api!.request('GET /api/v1/family/ownership/requests/{token}', undefined, signal, { token })).data,
+        queryFn: ({ signal }) => loadFamilyOwnershipRequest(api!, token, signal),
     });
     const mutation = useMutation({
         mutationFn: async (action: 'accept' | 'decline' | 'cancel') => {
             const value = query.data!.request;
-            return (
-                await api!.request(
-                    action === 'accept'
-                        ? 'POST /api/v1/family/ownership/requests/{token}/accept'
-                        : action === 'decline'
-                          ? 'POST /api/v1/family/ownership/requests/{token}/decline'
-                          : 'POST /api/v1/family/ownership/requests/{token}/cancel',
-                    {
-                        expectedVersion: value.version,
-                        expectedFamilyVersion: value.familyVersion,
-                        idempotencyKey: crypto.randomUUID(),
-                    },
-                    undefined,
-                    { token },
-                )
-            ).data;
+            return decideFamilyOwnershipRequest(api!, action, token, {
+                expectedVersion: value.version,
+                expectedFamilyVersion: value.familyVersion,
+                idempotencyKey: crypto.randomUUID(),
+            });
         },
         onSuccess: (result) => {
             queryClient.setQueryData(queryKey, (current) =>
@@ -185,7 +177,7 @@ function RequestContent({ token }: { token: string }) {
             );
             void query.refetch();
             void queryClient.invalidateQueries({ queryKey: familyKeys.all });
-            void queryClient.invalidateQueries({ queryKey: ['family-ownership'] });
+            void queryClient.invalidateQueries({ queryKey: familyProjectionKeys.ownershipRoot });
         },
         onError: () => void query.refetch(),
     });

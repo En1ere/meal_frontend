@@ -96,6 +96,67 @@ void test('AI mock preserves the two-free-clarification rule and charges the nex
     assert.equal(state.ai.conversations.find((item) => item.taskId === taskId)!.messages.length, messageCount);
 });
 
+void test('canonical AI enqueue is idempotent and exposes owner-scoped operation readback', async () => {
+    const { state, userId, send } = setup();
+    const preview = await send('POST', '/api/v1/ai/preview', {
+        taskType: 'culinary_question',
+        prompt: 'Как хранить зелень?',
+        usePersonalData: false,
+        agreementAccepted: true,
+    });
+    const key = crypto.randomUUID();
+    const command = {
+        previewId: (preview.data as { previewId: string }).previewId,
+        idempotencyKey: key,
+        familyReserveAccepted: false,
+    };
+    const before = state.ai.buckets.find((item) => item.userId === userId)!.available;
+    const accepted = await send('POST', '/api/v1/ai/operations', command);
+    assert.equal(accepted.status, 200);
+    const item = (accepted.data as { item: { id: string; taskId: string; state: string; financialState: string } })
+        .item;
+    assert.equal(item.state, 'succeeded');
+    assert.equal(item.financialState, 'captured');
+    assert.equal((await send('POST', '/api/v1/ai/operations', command)).status, 200);
+    assert.equal(state.ai.buckets.find((entry) => entry.userId === userId)!.available, before - 1);
+    const readback = await send('GET', `/api/v1/ai/operations/${item.id}`);
+    assert.equal(readback.status, 200);
+    assert.equal((readback.data as { item: { taskId: string } }).item.taskId, item.taskId);
+    const foreign = state.users.find((candidate) => candidate.id !== userId)!.id;
+    assert.equal((await send('GET', `/api/v1/ai/operations/${item.id}`, undefined, foreign)).status, 404);
+});
+
+void test('canonical AI continuation returns one operation and exposes it through owner readback', async () => {
+    const { send } = setup();
+    const preview = await send('POST', '/api/v1/ai/preview', {
+        taskType: 'culinary_question',
+        prompt: 'Как сварить рис?',
+        usePersonalData: false,
+        agreementAccepted: true,
+    });
+    const previewId = (preview.data as { previewId: string }).previewId;
+    const initial = await send('POST', '/api/v1/ai/operations', {
+        previewId,
+        idempotencyKey: crypto.randomUUID(),
+        familyReserveAccepted: false,
+    });
+    assert.equal(initial.status, 200);
+    const taskId = (initial.data as { item: { taskId: string } }).item.taskId;
+    const command = {
+        message: 'А сколько воды?',
+        idempotencyKey: crypto.randomUUID(),
+        familyReserveAccepted: false,
+    };
+    const accepted = await send('POST', `/api/v1/ai/tasks/${taskId}/operations`, command);
+    assert.equal(accepted.status, 200);
+    const item = (accepted.data as { item: { id: string; taskId: string; state: string } }).item;
+    assert.equal(item.taskId, taskId);
+    assert.equal(item.state, 'succeeded');
+    const replay = await send('POST', `/api/v1/ai/tasks/${taskId}/operations`, command);
+    assert.equal((replay.data as { item: { id: string } }).item.id, item.id);
+    assert.equal((await send('GET', `/api/v1/ai/operations/${item.id}`)).status, 200);
+});
+
 void test('AI conversations are private and a new interval fails without balance', async () => {
     const { state, userId, send, advance } = setup();
     const seeded = await send('GET', '/api/v1/ai/history');

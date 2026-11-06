@@ -8,8 +8,11 @@ import type { Success } from '../../shared/api/contracts.generated.js';
 import { ApiError } from '../../shared/api/client.js';
 import { Skeleton as ArcSkeleton } from '@meal-planner/design-system';
 import { useSession } from '../../entities/session/client.js';
+import { proOverviewKeys } from '../../entities/pro-overview/client.js';
 import styles from './nutrition-analytics.module.css';
 import { useConsent } from '../../entities/consent/client.js';
+import { loadNutritionAnalytics, loadNutritionSettings, saveNutritionProfile, saveNutritionTarget } from './api.js';
+import { nutritionKeys } from './query-keys.js';
 
 type Settings = Success<'GET /api/v1/nutrition/settings'>['data'];
 type Analytics = Success<'GET /api/v1/nutrition/analytics'>['data'];
@@ -84,63 +87,45 @@ function Content() {
     });
     const healthConsent = useConsent('special_category');
     const settings = useQuery({
-        queryKey: ['nutrition-settings', session.data?.id],
+        queryKey: nutritionKeys.settings(session.data?.id),
         enabled: !!api && !!session.data && healthConsent.enabled,
-        queryFn: ({ signal }) =>
-            api!.request('GET /api/v1/nutrition/settings', undefined, signal).then((response) => response.data),
+        queryFn: ({ signal }) => loadNutritionSettings(api!, signal),
     });
     const analytics = useQuery({
-        queryKey: ['nutrition-analytics', session.data?.id, from, to],
+        queryKey: nutritionKeys.analytics(session.data?.id, from, to),
         enabled: !!api && !!session.data && healthConsent.enabled && from <= to,
-        queryFn: ({ signal }) =>
-            api!
-                .request('GET /api/v1/nutrition/analytics', undefined, signal, undefined, { query: { from, to } })
-                .then((response) => response.data),
+        queryFn: ({ signal }) => loadNutritionAnalytics(api!, from, to, signal),
     });
     const refresh = async () => {
         await Promise.all([
-            cache.invalidateQueries({ queryKey: ['nutrition-settings'] }),
-            cache.invalidateQueries({ queryKey: ['nutrition-analytics'] }),
-            cache.invalidateQueries({ queryKey: ['pro-overview'] }),
+            cache.invalidateQueries({ queryKey: nutritionKeys.settingsRoot }),
+            cache.invalidateQueries({ queryKey: nutritionKeys.analyticsRoot }),
+            cache.invalidateQueries({ queryKey: proOverviewKeys.root }),
         ]);
     };
     const saveProfile = useMutation({
         mutationFn: () =>
-            api!.request(
-                'PUT /api/v1/nutrition/profile',
-                {
-                    goal: goal ?? settings.data?.profile?.goal ?? 'maintain',
-                    expectedVersion: settings.data?.profile?.version ?? null,
-                    idempotencyKey: crypto.randomUUID(),
-                },
-                undefined,
-                undefined,
-                settings.data?.profile ? { ifMatch: settings.data.profile.version } : undefined,
-            ),
+            saveNutritionProfile(api!, {
+                goal: goal ?? settings.data?.profile?.goal ?? 'maintain',
+                expectedVersion: settings.data?.profile?.version ?? null,
+            }),
         onSuccess: refresh,
     });
     const saveTarget = useMutation({
         mutationFn: () => {
             const profile = settings.data?.profile;
             if (!profile) throw new Error('Сначала сохраните профиль питания');
-            return api!.request(
-                'POST /api/v1/nutrition/targets',
-                {
-                    effectiveFrom:
-                        effectiveFrom ||
-                        (settings.data?.currentTarget ? dayAfter(settings.data.currentTarget.effectiveFrom) : today()),
-                    energyKcal: targets.energyKcal || null,
-                    proteinG: targets.proteinG || null,
-                    fatG: targets.fatG || null,
-                    carbohydrateG: targets.carbohydrateG || null,
-                    fiberG: targets.fiberG || null,
-                    expectedProfileVersion: profile.version,
-                    idempotencyKey: crypto.randomUUID(),
-                },
-                undefined,
-                undefined,
-                { ifMatch: profile.version },
-            );
+            return saveNutritionTarget(api!, {
+                effectiveFrom:
+                    effectiveFrom ||
+                    (settings.data?.currentTarget ? dayAfter(settings.data.currentTarget.effectiveFrom) : today()),
+                energyKcal: targets.energyKcal || null,
+                proteinG: targets.proteinG || null,
+                fatG: targets.fatG || null,
+                carbohydrateG: targets.carbohydrateG || null,
+                fiberG: targets.fiberG || null,
+                expectedProfileVersion: profile.version,
+            });
         },
         onSuccess: refresh,
     });

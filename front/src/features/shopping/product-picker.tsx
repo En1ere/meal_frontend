@@ -5,6 +5,8 @@ import { useRuntime } from '../../shared/runtime/index.js';
 import { useSession } from '../../entities/session/client.js';
 import { useShoppingScope } from './shared.js';
 import styles from './shopping.module.css';
+import { shoppingKeys } from './query-keys.js';
+import { loadShoppingProduct, loadShoppingProducts } from './api.js';
 export function ProductPicker({
     ingredientId,
     productId,
@@ -21,17 +23,14 @@ export function ProductPicker({
     const scope = useShoppingScope();
     const [q, setQ] = useState('');
     const products = useQuery({
-        queryKey: ['shopping-catalog', user.data?.id, scope, 'search', q],
+        queryKey: shoppingKeys.catalogSearch(user.data?.id, scope, q),
         enabled: !!api && !!user.data,
-        queryFn: async ({ signal }) =>
-            (await api!.request('GET /api/v1/products', undefined, signal, undefined, { query: { q, limit: '20' } }))
-                .data,
+        queryFn: ({ signal }) => loadShoppingProducts(api!, q, signal),
     });
     const detail = useQuery({
-        queryKey: ['shopping-catalog', user.data?.id, scope, 'detail', ingredientId],
+        queryKey: shoppingKeys.catalogDetail(user.data?.id, scope, ingredientId),
         enabled: !!api && !!ingredientId,
-        queryFn: async ({ signal }) =>
-            (await api!.request('GET /api/v1/products/{id}', undefined, signal, { id: ingredientId! })).data,
+        queryFn: ({ signal }) => loadShoppingProduct(api!, ingredientId!, signal),
     });
     const visibleProducts = products.data?.items.filter(
         (product) => scope === 'private' || product.status === 'approved',

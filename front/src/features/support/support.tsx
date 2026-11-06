@@ -7,6 +7,17 @@ import { useRuntime } from '../../shared/runtime/index.js';
 import type { Success } from '../../shared/api/contracts.generated.js';
 import { useSession } from '../../entities/session/client.js';
 import styles from './support.module.css';
+import { supportKeys } from './query-keys.js';
+import {
+    changeSupportTicketState,
+    createSupportTicket,
+    editSupportMessage,
+    loadSupportList,
+    loadSupportMeta,
+    loadSupportTicket,
+    replyToSupportTicket,
+    type SupportCreateCommand,
+} from './api.js';
 type Attachment = {
     name: string;
     mime:
@@ -39,11 +50,9 @@ function ListContent() {
         category = params.get('category') ?? 'all',
         status = params.get('status') ?? 'all';
     const query = useQuery({
-        queryKey: ['support', session.data?.id, category, status],
+        queryKey: supportKeys.list(session.data?.id, category, status),
         enabled: !!api && !!session.data,
-        queryFn: async ({ signal }) =>
-            (await api!.request('GET /api/v1/support', undefined, signal, undefined, { query: { category, status } }))
-                .data,
+        queryFn: ({ signal }) => loadSupportList(api!, { category, status }, signal),
     });
     return (
         <>
@@ -112,14 +121,14 @@ function NewContent() {
         router = useRouter(),
         [subject, setSubject] = useState(''),
         [body, setBody] = useState(''),
-        [category, setCategory] = useState('general'),
+        [category, setCategory] = useState<SupportCreateCommand['category']>('general'),
         [attached, setAttached] = useState<Attachment[]>([]),
         submitting = useRef(false),
         idempotency = useRef<{ signature: string; key: string } | null>(null);
     const meta = useQuery({
-        queryKey: ['support-meta'],
+        queryKey: supportKeys.meta,
         enabled: !!api,
-        queryFn: async ({ signal }) => (await api!.request('GET /api/v1/support/meta', undefined, signal)).data,
+        queryFn: ({ signal }) => loadSupportMeta(api!, signal),
     });
     const mutation = useMutation({
         mutationFn: async () => {
@@ -127,12 +136,7 @@ function NewContent() {
             const signature = JSON.stringify(input);
             if (idempotency.current?.signature !== signature)
                 idempotency.current = { signature, key: crypto.randomUUID() };
-            return (
-                await api!.request('POST /api/v1/support', {
-                    ...input,
-                    idempotencyKey: idempotency.current.key,
-                })
-            ).data;
+            return createSupportTicket(api!, { ...input, idempotencyKey: idempotency.current.key });
         },
         onSuccess: (value) => router.replace(`/support/${value.ticket.id}`),
         onSettled: () => {
@@ -157,7 +161,10 @@ function NewContent() {
             <form className={styles.form} onSubmit={submit}>
                 <label>
                     Категория
-                    <select value={category} onChange={(e) => setCategory(e.target.value)}>
+                    <select
+                        value={category}
+                        onChange={(e) => setCategory(e.target.value as SupportCreateCommand['category'])}
+                    >
                         {meta.data?.categories.map((x) => (
                             <option key={x.code} value={x.code}>
                                 {x.label}
@@ -231,36 +238,29 @@ function DetailContent({ id }: { id: string }) {
         [attached, setAttached] = useState<Attachment[]>([]),
         [editing, setEditing] = useState<string | null>(null),
         [editBody, setEditBody] = useState('');
-    const key = ['support-detail', session.data?.id, id] as const;
+    const key = supportKeys.detail(session.data?.id, id);
     const query = useQuery({
         queryKey: key,
         enabled: !!api && !!session.data,
-        queryFn: async ({ signal }) => (await api!.request('GET /api/v1/support/{id}', undefined, signal, { id })).data,
+        queryFn: ({ signal }) => loadSupportTicket(api!, id, signal),
     });
     const meta = useQuery({
-        queryKey: ['support-meta'],
+        queryKey: supportKeys.meta,
         enabled: !!api,
-        queryFn: async () => (await api!.request('GET /api/v1/support/meta')).data,
+        queryFn: () => loadSupportMeta(api!),
     });
     const update = (value: Success<'GET /api/v1/support/{id}'>['data']) => {
         queryClient.setQueryData(key, value);
-        void queryClient.invalidateQueries({ queryKey: ['support', session.data?.id] });
+        void queryClient.invalidateQueries({ queryKey: supportKeys.forAccount(session.data?.id) });
     };
     const replyMutation = useMutation({
-        mutationFn: async () =>
-            (
-                await api!.request(
-                    'POST /api/v1/support/{id}/reply',
-                    {
-                        body: reply,
-                        attachments: attached,
-                        expectedVersion: query.data!.ticket.version,
-                        idempotencyKey: crypto.randomUUID(),
-                    },
-                    undefined,
-                    { id },
-                )
-            ).data,
+        mutationFn: () =>
+            replyToSupportTicket(api!, id, {
+                body: reply,
+                attachments: attached,
+                expectedVersion: query.data!.ticket.version,
+                idempotencyKey: crypto.randomUUID(),
+            }),
         onSuccess: (value) => {
             update(value);
             setReply('');
@@ -268,41 +268,21 @@ function DetailContent({ id }: { id: string }) {
         },
     });
     const state = useMutation({
-        mutationFn: async (kind: 'close' | 'reopen') =>
-            kind === 'close'
-                ? (
-                      await api!.request(
-                          'POST /api/v1/support/{id}/close',
-                          { expectedVersion: query.data!.ticket.version, idempotencyKey: crypto.randomUUID() },
-                          undefined,
-                          { id },
-                      )
-                  ).data
-                : (
-                      await api!.request(
-                          'POST /api/v1/support/{id}/reopen',
-                          { expectedVersion: query.data!.ticket.version, idempotencyKey: crypto.randomUUID() },
-                          undefined,
-                          { id },
-                      )
-                  ).data,
+        mutationFn: (kind: 'close' | 'reopen') =>
+            changeSupportTicketState(api!, kind, id, {
+                expectedVersion: query.data!.ticket.version,
+                idempotencyKey: crypto.randomUUID(),
+            }),
         onSuccess: update,
     });
     const edit = useMutation({
-        mutationFn: async (message: { id: string; version: number }) =>
-            (
-                await api!.request(
-                    'PATCH /api/v1/support/{id}/messages/{messageId}',
-                    {
-                        body: editBody,
-                        messageVersion: message.version,
-                        expectedVersion: query.data!.ticket.version,
-                        idempotencyKey: crypto.randomUUID(),
-                    },
-                    undefined,
-                    { id, messageId: message.id },
-                )
-            ).data,
+        mutationFn: (message: { id: string; version: number }) =>
+            editSupportMessage(api!, id, message.id, {
+                body: editBody,
+                messageVersion: message.version,
+                expectedVersion: query.data!.ticket.version,
+                idempotencyKey: crypto.randomUUID(),
+            }),
         onSuccess: (value) => {
             update(value);
             setEditing(null);

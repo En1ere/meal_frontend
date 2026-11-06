@@ -77,6 +77,21 @@ async function clearFailure(page: Page) {
     await page.context().clearCookies({ name: 'moderator_test_control' });
 }
 
+async function expireStaffSession(page: Page) {
+    const status = await page.evaluate(async () => {
+        const csrfResponse = await fetch('/api/v1/auth/csrf', { credentials: 'include', cache: 'no-store' });
+        const csrf = (await csrfResponse.json()) as { data: { token: string } };
+        return (
+            await fetch('/api/v1/staff/auth/logout', {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'x-csrf-token': csrf.data.token },
+            })
+        ).status;
+    });
+    expect(status).toBe(200);
+}
+
 async function decide(page: Page, action: string, reason: string) {
     await page.getByLabel('Действие *').selectOption(action);
     await page.getByLabel('Категория причины *').selectOption('quality');
@@ -111,6 +126,26 @@ test('moderator guard keeps safe deep links and rejects wrong staff scope', asyn
 
     await gotoStable(page, '/moderation/queues/not-a-queue');
     await expect(page.getByRole('heading', { name: 'Очередь модерации не найдена' })).toBeVisible();
+});
+
+test('expired staff session recovers through the canonical key after a queue command 401', async ({ page }) => {
+    await loginModerator(page, '/moderation/queues/recipes');
+    await expireStaffSession(page);
+    await page
+        .locator('article')
+        .filter({ hasText: 'Тыквенный суп с имбирём' })
+        .getByRole('button', { name: 'Взять в работу' })
+        .click();
+    await page.waitForURL(/\/moderation\/sign-in/u);
+    expect(new URL(page.url()).searchParams.get('returnTo')).toBe('/moderation/queues/recipes');
+});
+
+test('expired staff session recovers through the canonical key after an item decision 401', async ({ page }) => {
+    await loginModerator(page, `/moderation/items/${ids.variant}`);
+    await expireStaffSession(page);
+    await decide(page, 'approve', 'Проверка истёкшей служебной сессии');
+    await page.waitForURL(/\/moderation\/sign-in/u);
+    expect(new URL(page.url()).searchParams.get('returnTo')).toBe(`/moderation/items/${ids.variant}`);
 });
 
 test('queue preserves URL filters, empty state, cursor pages and skip outcome', async ({ page }) => {

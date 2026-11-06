@@ -6,20 +6,17 @@ import { useRuntime } from '../../shared/runtime/index.js';
 import { useSession } from '../../entities/session/client.js';
 import { RecipeShell, RecipeLoading, RecipeError } from './shared.js';
 import styles from './workspace.module.css';
+import { recipeKeys } from './query-keys.js';
+import { loadRecipeReport, loadRecipeReports } from './reports-api.js';
 function Content() {
     const { api } = useRuntime();
     const user = useSession('user');
     const search = useSearchParams();
     const page = Math.max(1, Number(search.get('page')) || 1);
     const query = useQuery({
-        queryKey: ['recipe-community', user.data?.id, 'reports', page],
+        queryKey: recipeKeys.reports(user.data?.id, page),
         enabled: !!api && !!user.data,
-        queryFn: async ({ signal }) =>
-            (
-                await api!.request('GET /api/v1/recipe-workspace/reports', undefined, signal, undefined, {
-                    query: { page: String(page), limit: '20' },
-                })
-            ).data,
+        queryFn: ({ signal }) => loadRecipeReports(api!, page, signal),
     });
     return (
         <>
@@ -63,10 +60,9 @@ function DetailContent({ id }: { id: string }) {
     const { api } = useRuntime();
     const user = useSession('user');
     const query = useQuery({
-        queryKey: ['recipe-report', user.data?.id, id],
+        queryKey: recipeKeys.report(user.data?.id, id),
         enabled: !!api && !!user.data,
-        queryFn: async ({ signal }) =>
-            (await api!.request('GET /api/v1/recipe-workspace/reports/{id}', undefined, signal, { id })).data,
+        queryFn: ({ signal }) => loadRecipeReport(api!, id, signal),
     });
     return (
         <>

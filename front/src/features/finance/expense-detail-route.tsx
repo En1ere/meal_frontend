@@ -6,6 +6,8 @@ import { type FormEvent } from 'react';
 import { useRuntime } from '../../shared/runtime/index.js';
 import { useSession } from '../../entities/session/client.js';
 import styles from './finance.module.css';
+import { financeKeys } from './query-keys.js';
+import { loadFinanceExpense, updateFinanceExpense } from './api.js';
 import type { Category } from './shared.js';
 import {
     categories,
@@ -33,12 +35,9 @@ function FinanceExpenseDetailContent({ id }: { id: string }) {
     const session = useSession('user');
     const cache = useQueryClient();
     const query = useQuery({
-        queryKey: ['finance-expense', session.data?.id, id],
+        queryKey: financeKeys.expense(session.data?.id, id),
         enabled: !!api && !!session.data,
-        queryFn: ({ signal }) =>
-            api!
-                .request('GET /api/v1/finance/expenses/{id}', undefined, signal, { id })
-                .then((response) => response.data),
+        queryFn: ({ signal }) => loadFinanceExpense(api!, id, signal),
     });
     const update = useMutation({
         mutationFn: (form: FormData) => {
@@ -47,8 +46,9 @@ function FinanceExpenseDetailContent({ id }: { id: string }) {
             const occurredOn = text(form.get('occurredOn'));
             const category = text(form.get('category')) as Category;
             if (!amountMinor || !occurredOn) throw new Error('Проверьте сумму и дату');
-            return api!.request(
-                'PUT /api/v1/finance/expenses/{id}',
+            return updateFinanceExpense(
+                api!,
+                id,
                 {
                     amountMinor,
                     occurredAt: localIso(occurredOn),
@@ -56,16 +56,14 @@ function FinanceExpenseDetailContent({ id }: { id: string }) {
                     expectedVersion: query.data.expense.version,
                     idempotencyKey: crypto.randomUUID(),
                 },
-                undefined,
-                { id },
-                { ifMatch: query.data.expense.version },
+                query.data.expense.version,
             );
         },
         onSuccess: async () => {
             await Promise.all([
-                cache.invalidateQueries({ queryKey: ['finance-expense'] }),
-                cache.invalidateQueries({ queryKey: ['finance-expenses'] }),
-                cache.invalidateQueries({ queryKey: ['finance-overview'] }),
+                cache.invalidateQueries({ queryKey: financeKeys.expenseRoot }),
+                cache.invalidateQueries({ queryKey: financeKeys.expensesRoot }),
+                cache.invalidateQueries({ queryKey: financeKeys.overviewRoot }),
             ]);
         },
     });

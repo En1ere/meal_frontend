@@ -28,5 +28,5 @@ void test('Web Push permission is requested only inside explicit connect flow', 
 void test('user logout removes the browser Web Push binding', async () => {
     const source = await readFile('src/features/auth/sessions-panel.tsx', 'utf8');
     assert.match(source, /forgetBrowserWebPush\(principal\.data\.id\)/);
-    assert.ok(source.lastIndexOf('forgetBrowserWebPush(') > source.indexOf("'POST /api/v1/auth/logout'"));
+    assert.ok(source.lastIndexOf('forgetBrowserWebPush(') > source.indexOf('logoutSession('));
 });

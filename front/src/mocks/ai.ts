@@ -6,6 +6,7 @@ const historyItem = contracts['GET /api/v1/ai/history'].success.shape.data.shape
 const preview = contracts['POST /api/v1/ai/preview'].success.shape.data;
 const conversation = contracts['GET /api/v1/ai/tasks/{id}'].success.shape.data;
 const transfer = contracts['GET /api/v1/ai/family-sharing'].success.shape.data.shape.transfers.element;
+const operation = contracts['GET /api/v1/ai/operations/{id}'].success.shape.data.shape.item;
 const mockConversationSchema = z.object({
     userId: z.uuid(),
     taskId: z.uuid(),
@@ -38,6 +39,7 @@ export const aiStateSchema = z.object({
         preview.extend({ userId: z.uuid(), prompt: z.string(), usePersonalData: z.boolean().default(false) }),
     ),
     conversations: z.array(mockConversationSchema),
+    operations: z.array(operation.extend({ userId: z.uuid() })),
     transfers: z.array(transfer.extend({ familyId: z.uuid() })),
     seeded: z.array(z.uuid()),
     replay: z.record(z.string(), z.object({ input: z.string(), result: z.unknown() })),
@@ -48,6 +50,7 @@ export const createAiState = (): AiState => ({
     history: [],
     previews: [],
     conversations: [],
+    operations: [],
     transfers: [],
     seeded: [],
     replay: {},
@@ -557,6 +560,16 @@ export function aiHandle(c: {
         const value = detail(state, userId, taskMatch[1]!, now);
         return value ? success(value) : fail(404);
     }
+    const operationMatch = path.match(/^\/api\/v1\/ai\/operations\/([0-9a-f-]+)$/i);
+    if (operationMatch && method === 'GET') {
+        const item = state.ai.operations.find(
+            (candidate) => candidate.userId === userId && candidate.id === operationMatch[1],
+        );
+        if (!item) return fail(404);
+        const { userId: _userId, ...wire } = item;
+        void _userId;
+        return success({ item: operation.parse(wire) });
+    }
     if (path === '/api/v1/ai/preview' && method === 'POST') {
         const body = contracts['POST /api/v1/ai/preview'].request.parse(input),
             currentBalance = balance(state, userId),
@@ -629,14 +642,17 @@ export function aiHandle(c: {
         state.ai.previews.push({ ...value, userId, prompt: body.prompt, usePersonalData: body.usePersonalData });
         return success(value);
     }
-    if (path === '/api/v1/ai/run' && method === 'POST') {
-        const body = contracts['POST /api/v1/ai/run'].request.parse(input),
+    if ((path === '/api/v1/ai/run' || path === '/api/v1/ai/operations') && method === 'POST') {
+        const canonical = path === '/api/v1/ai/operations',
+            body = canonical
+                ? contracts['POST /api/v1/ai/operations'].request.parse(input)
+                : contracts['POST /api/v1/ai/run'].request.parse(input),
             item = state.ai.previews.find((x) => x.userId === userId && x.previewId === body.previewId);
         if (!item || Date.parse(item.expiresAt) <= now) return fail(409);
         if (item.usePersonalData && !state.legal[userId]?.consents.ai_data_access?.enabled)
             return fail(403, 'AI_PROCESSING_CONSENT_REQUIRED');
         if (item.familyReserveRequired > 0 && !body.familyReserveAccepted) return fail(409);
-        const result = replay(state, `${userId}:run:${body.idempotencyKey}`, body, () => {
+        const result = replay(state, `${userId}:${canonical ? 'enqueue' : 'run'}:${body.idempotencyKey}`, body, () => {
             const family = state.family.families.find(
                 (candidate) =>
                     !candidate.archived &&
@@ -680,16 +696,42 @@ export function aiHandle(c: {
                     },
                 ],
             });
-            return { item: wireHistoryItem(created) };
+            if (!canonical) return { item: wireHistoryItem(created) };
+            const operationValue = {
+                userId,
+                id: crypto.randomUUID(),
+                taskId: created.id,
+                conversationId: crypto.randomUUID(),
+                taskType: created.taskType,
+                taskPolicyVersion: 'ai-task-policy-v3',
+                contextManifestVersion: 'ai-context-v1',
+                state: 'succeeded' as const,
+                financialState: 'captured' as const,
+                failure: null,
+                result: created.result,
+                createdAt: created.createdAt,
+                updatedAt: new Date(now + 1000).toISOString(),
+                expiresAt: new Date(now + 30 * 86_400_000).toISOString(),
+                version: 1,
+                readUrl: '',
+            };
+            operationValue.readUrl = `/api/v1/ai/operations/${operationValue.id}`;
+            state.ai.operations.push(operationValue);
+            const { userId: _userId, ...wire } = operationValue;
+            void _userId;
+            return { item: operation.parse(wire) };
         });
         if (result === Symbol.for('conflict')) return fail(409);
         if (result === Symbol.for('balance')) return fail(409);
         return success(result);
     }
-    const messageMatch = path.match(/^\/api\/v1\/ai\/tasks\/([0-9a-f-]+)\/messages$/i);
+    const messageMatch = path.match(/^\/api\/v1\/ai\/tasks\/([0-9a-f-]+)\/(messages|operations)$/i);
     if (messageMatch && method === 'POST') {
         const taskId = messageMatch[1]!,
-            body = contracts['POST /api/v1/ai/tasks/{id}/messages'].request.parse(input),
+            canonical = messageMatch[2] === 'operations',
+            body = canonical
+                ? contracts['POST /api/v1/ai/tasks/{id}/operations'].request.parse(input)
+                : contracts['POST /api/v1/ai/tasks/{id}/messages'].request.parse(input),
             item = state.ai.history.find((entry) => entry.userId === userId && entry.id === taskId),
             chat = state.ai.conversations.find((entry) => entry.userId === userId && entry.taskId === taskId);
         if (!item || !chat) return fail(404);
@@ -739,7 +781,30 @@ export function aiHandle(c: {
             );
             item.status = 'completed';
             item.result = answer;
-            return detail(state, userId, taskId, now);
+            if (!canonical) return detail(state, userId, taskId, now);
+            const operationValue = {
+                userId,
+                id: crypto.randomUUID(),
+                taskId,
+                conversationId: taskId,
+                taskType: item.taskType,
+                taskPolicyVersion: 'ai-task-policy-v3',
+                contextManifestVersion: 'ai-context-v1',
+                state: 'succeeded' as const,
+                financialState: within ? ('none' as const) : ('captured' as const),
+                failure: null,
+                result: answer,
+                createdAt: new Date(now).toISOString(),
+                updatedAt: new Date(now + 1000).toISOString(),
+                expiresAt: new Date(now + 30 * 86_400_000).toISOString(),
+                version: 1,
+                readUrl: '',
+            };
+            operationValue.readUrl = `/api/v1/ai/operations/${operationValue.id}`;
+            state.ai.operations.push(operationValue);
+            const { userId: _userId, ...wire } = operationValue;
+            void _userId;
+            return { item: operation.parse(wire) };
         });
         if (result === Symbol.for('conflict') || result === Symbol.for('wait') || result === Symbol.for('balance'))
             return fail(409);

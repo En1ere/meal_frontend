@@ -5,9 +5,11 @@ import { useQuery } from '@tanstack/react-query';
 import { useRuntime } from '../../shared/runtime/index.js';
 import { ApiError } from '../../shared/api/client.js';
 import { useSession } from '../../entities/session/client.js';
+import { inventoryKeys } from '../../entities/inventory/query-keys.js';
 import { useRequestSignal } from '../../shared/api/use-request-signal.js';
 import { InlineLoader as ArcInlineLoader } from '@meal-planner/design-system';
 import { BatchFields, type Fields, type Batch } from './batch-form.js';
+import { loadInventoryBatch, loadInventoryLocations, runInventoryBatchCommand } from './api.js';
 import {
     InventoryShell,
     Loading,
@@ -17,7 +19,6 @@ import {
     expiryText,
     units,
     inventoryBase,
-    inventoryScopeQuery,
     type InventoryScope,
 } from './shared.js';
 import { HistoryList } from './history-page.js';
@@ -79,17 +80,17 @@ function Editor({
         setPending(true);
         setError('');
         try {
-            await api.request(
-                'POST /api/v1/inventory/{id}/command',
+            await runInventoryBatchCommand(
+                api,
+                batch.id,
                 { ...body, idempotencyKey: attempt.current.key },
                 abort,
-                { id: batch.id },
-                { ifMatch: batch.version },
+                batch.version,
             );
             if (abort.aborted) return;
-            await queryClient.invalidateQueries({ queryKey: ['inventory'] });
-            await queryClient.invalidateQueries({ queryKey: ['inventory-history'] });
-            await queryClient.invalidateQueries({ queryKey: ['inventory-attention'] });
+            await queryClient.invalidateQueries({ queryKey: inventoryKeys.root });
+            await queryClient.invalidateQueries({ queryKey: inventoryKeys.historyRoot });
+            await queryClient.invalidateQueries({ queryKey: inventoryKeys.attentionRoot });
             onDone();
         } catch (err) {
             if (!abort.aborted) {
@@ -175,7 +176,7 @@ function Editor({
                     type="button"
                     onClick={() => {
                         void (async () => {
-                            await queryClient.invalidateQueries({ queryKey: ['inventory'] });
+                            await queryClient.invalidateQueries({ queryKey: inventoryKeys.root });
                             setConflict(false);
                             setError(
                                 'Актуальные сведения показаны выше. Сравните их со своим вводом перед сохранением.',
@@ -202,30 +203,14 @@ function Content({ id, scope }: { id: string; scope: InventoryScope }) {
     const user = useSession('user');
     const [editing, setEditing] = useState<string | null>(null);
     const batch = useQuery({
-        queryKey: ['inventory', scope, 'batch', user.data?.id, id],
+        queryKey: inventoryKeys.batch(scope, user.data?.id, id),
         enabled: !!api && !!user.data,
-        queryFn: async ({ signal }) =>
-            (
-                await api!.request(
-                    'GET /api/v1/inventory/{id}',
-                    undefined,
-                    signal,
-                    { id },
-                    {
-                        query: inventoryScopeQuery(scope),
-                    },
-                )
-            ).data.batch,
+        queryFn: ({ signal }) => loadInventoryBatch(api!, scope, id, signal),
     });
     const locations = useQuery({
-        queryKey: ['inventory-locations', scope, user.data?.id],
+        queryKey: inventoryKeys.locations(scope, user.data?.id),
         enabled: !!api && !!user.data,
-        queryFn: async ({ signal }) =>
-            (
-                await api!.request('GET /api/v1/inventory-locations', undefined, signal, undefined, {
-                    query: inventoryScopeQuery(scope),
-                })
-            ).data.items,
+        queryFn: ({ signal }) => loadInventoryLocations(api!, scope, signal),
     });
     if (batch.isPending) return <Loading />;
     if (batch.isError) return <Failure error={batch.error} retry={() => void batch.refetch()} />;

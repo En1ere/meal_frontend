@@ -10,6 +10,8 @@ import { InlineLoader as ArcInlineLoader } from '@meal-planner/design-system';
 import { Skeleton as ArcSkeleton } from '@meal-planner/design-system';
 import { useSession } from '../../entities/session/client.js';
 import styles from './family-notes.module.css';
+import { familyNotesKeys } from './query-keys.js';
+import { createFamilyNote, loadFamilyNote, updateFamilyNote } from './api.js';
 
 type Item = { id?: string; text: string };
 type Note = Success<'GET /api/v1/family/notes/{id}'>['data'];
@@ -41,13 +43,8 @@ function Form({ id, source }: { id?: string | undefined; source?: Note | undefin
         };
         try {
             const result = id
-                ? await api.request(
-                      'PUT /api/v1/family/notes/{id}',
-                      { ...payload, expectedVersion: source!.version },
-                      undefined,
-                      { id },
-                  )
-                : await api.request('POST /api/v1/family/notes', payload);
+                ? await updateFamilyNote(api, id, { ...payload, expectedVersion: source!.version })
+                : await createFamilyNote(api, payload);
             router.push(`/family/notes/${result.data.id}`);
         } catch (reason) {
             setError(reason instanceof ApiError ? reason.message : 'Не удалось сохранить заметку.');
@@ -134,10 +131,9 @@ function LoadedForm({ id }: { id: string }) {
     const { api } = useRuntime();
     const user = useSession('user');
     const note = useQuery({
-        queryKey: ['family-note', id, user.data?.id],
+        queryKey: familyNotesKeys.note(id, user.data?.id),
         enabled: !!api && !!user.data,
-        queryFn: async ({ signal }) =>
-            (await api!.request('GET /api/v1/family/notes/{id}', undefined, signal, { id })).data,
+        queryFn: ({ signal }) => loadFamilyNote(api!, id, signal),
     });
     if (note.isPending) return <ArcSkeleton variant="lines" lines={6} label="Загружаем заметку" />;
     if (note.isError || !note.data)

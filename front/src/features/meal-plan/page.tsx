@@ -10,7 +10,24 @@ import type { Success } from '../../shared/api/contracts.generated.js';
 import { Skeleton as ArcSkeleton } from '@meal-planner/design-system';
 import { InlineLoader as ArcInlineLoader } from '@meal-planner/design-system';
 import { useSession } from '../../entities/session/client.js';
+import { entitlementKeys } from '../../entities/entitlement/model.js';
+import { mealPlanKeys } from '../../entities/meal-plan/model.js';
+import { familyKeys } from '../../entities/family/model.js';
 import { PlanAutomation } from './automation.js';
+import {
+    assignMealPlanPortion,
+    commitMealPlanChange,
+    commitMealPlanShopping,
+    decideMealPlanPortion,
+    loadMealPlan,
+    loadMealPlanEntitlements,
+    loadMealPlanFamily,
+    loadMealPlanPortions,
+    loadMealPlanRecipes,
+    previewMealPlanChange,
+    previewMealPlanShopping,
+    type MealPlanSelection,
+} from './api.js';
 import styles from './plan.module.css';
 import { CostEstimateBadge } from '../../entities/finance-cost/client.js';
 
@@ -106,14 +123,9 @@ function Editor({
     const { api } = useRuntime();
     const user = useSession('user');
     const recipes = useQuery({
-        queryKey: ['meal-plan', 'recipes', user.data?.id],
+        queryKey: mealPlanKeys.pageRecipes(user.data?.id),
         enabled: !!api && !!user.data,
-        queryFn: async ({ signal }) =>
-            (
-                await api!.request('GET /api/v1/recipes', undefined, signal, undefined, {
-                    query: { q: '', tab: 'new', page: '1', limit: '100' },
-                })
-            ).data.items,
+        queryFn: ({ signal }) => loadMealPlanRecipes(api!, signal),
     });
     const [slotState, setSlotState] = useState<Entry['slotState']>(entry?.slotState ?? 'recipe');
     const [recipeId, setRecipeId] = useState(entry?.recipe?.id ?? '');
@@ -256,14 +268,14 @@ function Content({ scope }: { scope: 'private' | 'family' }) {
     const search = useSearchParams();
     const queryClient = useQueryClient();
     const entitlement = useQuery({
-        queryKey: ['entitlements', user.data?.id],
+        queryKey: entitlementKeys.forAccount(user.data?.id),
         enabled: !!api && !!user.data,
-        queryFn: async ({ signal }) => (await api!.request('GET /api/v1/entitlements', undefined, signal)).data,
+        queryFn: ({ signal }) => loadMealPlanEntitlements(api!, signal),
     });
     const plus = scope === 'family' || entitlement.data?.capabilities.planningRange === true;
     const smart = scope === 'family' || entitlement.data?.capabilities.smartShopping === true;
     const pro = entitlement.data?.capabilities.calendar === true;
-    const view =
+    const view: MealPlanSelection['view'] =
         search.get('view') === 'day'
             ? 'day'
             : search.get('view') === 'range' && plus
@@ -295,25 +307,19 @@ function Content({ scope }: { scope: 'private' | 'family' }) {
         [scope, view, selectedDate, endDate, timezone],
     );
     const family = useQuery({
-        queryKey: ['family-context', user.data?.id],
+        queryKey: familyKeys.planContext(user.data?.id),
         enabled: scope === 'family' && !!api && !!user.data,
-        queryFn: async ({ signal }) => (await api!.request('GET /api/v1/family', undefined, signal)).data,
+        queryFn: ({ signal }) => loadMealPlanFamily(api!, signal),
     });
     const plan = useQuery({
-        queryKey: ['meal-plan', user.data?.id, selection],
+        queryKey: mealPlanKeys.plan(user.data?.id, selection),
         enabled: !!api && !!user.data,
-        queryFn: async ({ signal }) =>
-            (
-                await api!.request('GET /api/v1/meal-plan', undefined, signal, undefined, {
-                    query: selection,
-                })
-            ).data,
+        queryFn: ({ signal }) => loadMealPlan(api!, selection, signal),
     });
     const portions = useQuery<Portions>({
-        queryKey: ['portions', scope, user.data?.id],
+        queryKey: mealPlanKeys.portions(scope, user.data?.id),
         enabled: scope === 'family' && !!api && !!user.data,
-        queryFn: async ({ signal }) =>
-            (await api!.request('GET /api/v1/portions', undefined, signal, undefined, { query: { scope } })).data,
+        queryFn: ({ signal }) => loadMealPlanPortions(api!, scope, signal),
     });
     const dates = useMemo(() => {
         if (!plan.data) return [];
@@ -340,13 +346,13 @@ function Content({ scope }: { scope: 'private' | 'family' }) {
         setBusy(true);
         setError(null);
         try {
-            const result = await api.request('POST /api/v1/meal-plan/change-preview', {
+            const result = await previewMealPlanChange(api, {
                 version: plan.data.version,
                 selection,
                 mutation: next,
             });
             setMutation(next);
-            setPreview(result.data);
+            setPreview(result);
             setEditing(null);
         } catch (reason) {
             setError(errorText(reason));
@@ -359,7 +365,7 @@ function Content({ scope }: { scope: 'private' | 'family' }) {
         setBusy(true);
         setError(null);
         try {
-            await api.request('POST /api/v1/meal-plan/change-commit', {
+            await commitMealPlanChange(api, {
                 version: plan.data.version,
                 selection,
                 mutation,
@@ -368,7 +374,7 @@ function Content({ scope }: { scope: 'private' | 'family' }) {
             });
             setPreview(null);
             setMutation(null);
-            await queryClient.invalidateQueries({ queryKey: ['meal-plan', user.data?.id] });
+            await queryClient.invalidateQueries({ queryKey: mealPlanKeys.forAccount(user.data?.id) });
         } catch (reason) {
             setError(errorText(reason));
         } finally {
@@ -380,11 +386,11 @@ function Content({ scope }: { scope: 'private' | 'family' }) {
         setBusy(true);
         setError(null);
         try {
-            const result = await api.request('POST /api/v1/meal-plan/shopping-preview', {
+            const result = await previewMealPlanShopping(api, {
                 version: plan.data.version,
                 selection,
             });
-            setShopping(result.data);
+            setShopping(result);
         } catch (reason) {
             setError(errorText(reason));
         } finally {
@@ -396,14 +402,14 @@ function Content({ scope }: { scope: 'private' | 'family' }) {
         setBusy(true);
         setError(null);
         try {
-            const result = await api.request('POST /api/v1/meal-plan/shopping-commit', {
+            const result = await commitMealPlanShopping(api, {
                 version: plan.data.version,
                 selection,
                 previewToken: shopping.previewToken,
                 title: shoppingTitle,
                 idempotencyKey: crypto.randomUUID(),
             });
-            router.push(`${scope === 'family' ? '/family' : ''}/shopping/${result.data.listId}`);
+            router.push(`${scope === 'family' ? '/family' : ''}/shopping/${result.listId}`);
         } catch (reason) {
             setError(errorText(reason));
         } finally {
@@ -418,7 +424,7 @@ function Content({ scope }: { scope: 'private' | 'family' }) {
         setBusy(true);
         setError(null);
         try {
-            await api.request('POST /api/v1/portions/assign', {
+            await assignMealPlanPortion(api, {
                 scope: 'family',
                 batchId: source.batchId,
                 recipientUserId: portionRecipientId,
@@ -438,17 +444,12 @@ function Content({ scope }: { scope: 'private' | 'family' }) {
         setBusy(true);
         setError(null);
         try {
-            await api.request(
-                'POST /api/v1/portions/{id}/decision',
-                {
-                    scope: 'family',
-                    decision,
-                    expectedVersion: version,
-                    idempotencyKey: crypto.randomUUID(),
-                },
-                undefined,
-                { id },
-            );
+            await decideMealPlanPortion(api, id, {
+                scope: 'family',
+                decision,
+                expectedVersion: version,
+                idempotencyKey: crypto.randomUUID(),
+            });
             await portions.refetch();
         } catch (reason) {
             setError(errorText(reason));
@@ -607,7 +608,9 @@ function Content({ scope }: { scope: 'private' | 'family' }) {
                             members={scope === 'family' ? (family.data?.family?.members ?? []) : []}
                             pro={pro}
                             onCommitted={async () => {
-                                await queryClient.invalidateQueries({ queryKey: ['meal-plan', user.data?.id] });
+                                await queryClient.invalidateQueries({
+                                    queryKey: mealPlanKeys.forAccount(user.data?.id),
+                                });
                             }}
                         />
                     )}

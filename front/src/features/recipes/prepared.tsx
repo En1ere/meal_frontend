@@ -7,16 +7,17 @@ import { useSession } from '../../entities/session/client.js';
 import { RecipeShell, RecipeLoading, RecipeError } from './shared.js';
 import { recipeUnits } from '../../entities/recipe/model.js';
 import styles from './workspace.module.css';
+import { recipeKeys } from './query-keys.js';
+import { loadPreparedStockOptions } from './read-api.js';
 function Content() {
     const { api } = useRuntime();
     const user = useSession('user');
     const search = useSearchParams();
     const batch = search.get('batch');
     const query = useQuery({
-        queryKey: ['cooking', user.data?.id, 'stock-options'],
+        queryKey: recipeKeys.preparedStockOptions(user.data?.id),
         enabled: !!api && !!user.data,
-        queryFn: async ({ signal }) =>
-            (await api!.request('GET /api/v1/cooking-attempts/stock-options', undefined, signal)).data,
+        queryFn: ({ signal }) => loadPreparedStockOptions(api!, signal),
     });
     return (
         <>

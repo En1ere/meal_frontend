@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useRuntime } from '../../../shared/runtime/index.js';
 import { useSession } from '../../../entities/session/client.js';
+import { entitlementKeys } from '../../../entities/entitlement/model.js';
 import { useQuery } from '@tanstack/react-query';
 import { useRequestSignal } from '../../../shared/api/use-request-signal.js';
 import { ApiError } from '../../../shared/api/client.js';
@@ -18,7 +19,9 @@ import {
 } from '../shared.js';
 import { PurchaseLines, emptyPurchaseLine, type PurchaseLine } from '../purchase-review.js';
 import { useShoppingCommand } from '../use-command.js';
+import { shoppingKeys } from '../query-keys.js';
 import styles from '../shopping.module.css';
+import { loadShoppingEntitlements, loadShoppingReceiptCapabilities } from '../api.js';
 function Photo({ file }: { file: File }) {
     const image = useRef<HTMLImageElement>(null);
     useEffect(() => {
@@ -35,15 +38,14 @@ function ReceiptNewContent() {
     const cmd = useShoppingCommand();
     const user = useSession('user');
     const entitlement = useQuery({
-        queryKey: ['entitlements', user.data?.id],
+        queryKey: entitlementKeys.forAccount(user.data?.id),
         enabled: !!api && !!user.data,
-        queryFn: async ({ signal }) => (await api!.request('GET /api/v1/entitlements', undefined, signal)).data,
+        queryFn: ({ signal }) => loadShoppingEntitlements(api!, signal),
     });
     const capabilities = useQuery({
-        queryKey: ['receipt-capabilities'],
+        queryKey: shoppingKeys.receiptCapabilities,
         enabled: !!api,
-        queryFn: async ({ signal }) =>
-            (await api!.request('GET /api/v1/receipts/capabilities', undefined, signal)).data,
+        queryFn: ({ signal }) => loadShoppingReceiptCapabilities(api!, signal),
     });
     const pro = entitlement.data?.plan === 'pro';
     const [files, setFiles] = useState<File[]>([]),

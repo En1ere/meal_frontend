@@ -4,32 +4,32 @@ import { useEffect, useRef } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useRuntime } from '../../shared/runtime/index.js';
 import { InlineLoader as ArcInlineLoader } from '@meal-planner/design-system';
+import { notificationKeys } from '../../entities/notification/model.js';
+import { familyProjectionKeys } from './query-keys.js';
 import styles from './family.module.css';
+import { dismissFamilyOwnershipNotice, loadFamilyOwnershipNotice } from './api.js';
 
 export function OwnershipNotice() {
     const { api, queryClient } = useRuntime();
     const key = useRef(crypto.randomUUID());
     const dialog = useRef<HTMLDialogElement>(null);
     const query = useQuery({
-        queryKey: ['family-ownership-notice'],
+        queryKey: familyProjectionKeys.ownershipNotice,
         enabled: !!api,
-        queryFn: async ({ signal }) =>
-            (await api!.request('GET /api/v1/family/ownership-notice', undefined, signal)).data,
+        queryFn: ({ signal }) => loadFamilyOwnershipNotice(api!, signal),
     });
     const dismiss = useMutation({
         mutationFn: async () => {
             if (!query.data?.notice) throw new Error('Notice missing');
-            return (
-                await api!.request('POST /api/v1/family/ownership-notice/dismiss', {
-                    notificationId: query.data.notice.notificationId,
-                    expectedVersion: query.data.notice.version,
-                    idempotencyKey: key.current,
-                })
-            ).data;
+            return dismissFamilyOwnershipNotice(api!, {
+                notificationId: query.data.notice.notificationId,
+                expectedVersion: query.data.notice.version,
+                idempotencyKey: key.current,
+            });
         },
         onSuccess: () => {
-            queryClient.setQueryData(['family-ownership-notice'], { notice: null });
-            void queryClient.invalidateQueries({ queryKey: ['notifications'] });
+            queryClient.setQueryData(familyProjectionKeys.ownershipNotice, { notice: null });
+            void queryClient.invalidateQueries({ queryKey: notificationKeys.root });
         },
     });
     const notice = query.data?.notice;

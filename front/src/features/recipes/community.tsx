@@ -7,7 +7,9 @@ import { useSession } from '../../entities/session/client.js';
 import { RecipeLoading, RecipeError } from './shared.js';
 import { useRecipeCommand } from './use-command.js';
 import { useConsent } from '../../entities/consent/client.js';
+import { recipeKeys } from './query-keys.js';
 import styles from './workspace.module.css';
+import { loadRecipeCommunity } from './read-api.js';
 const reasons: Record<string, string> = {
     copyright: 'Нарушение авторских прав',
     dangerous: 'Опасный рецепт',
@@ -33,15 +35,14 @@ export function RecipeCommunity({ id }: { id: string }) {
     const ratingDialog = useRef<HTMLDialogElement>(null),
         reportDialog = useRef<HTMLDialogElement>(null);
     const query = useQuery({
-        queryKey: ['recipe-community', user.data?.id, id],
+        queryKey: recipeKeys.community(user.data?.id, id),
         enabled: !!api && !!user.data,
-        queryFn: async ({ signal }) =>
-            (await api!.request('GET /api/v1/recipe-workspace/{id}/community', undefined, signal, { id })).data,
+        queryFn: ({ signal }) => loadRecipeCommunity(api!, id, signal),
     });
     const refresh = () =>
         Promise.all([
-            queryClient.invalidateQueries({ queryKey: ['recipe-community'] }),
-            queryClient.invalidateQueries({ queryKey: ['recipes', 'public', id] }),
+            queryClient.invalidateQueries({ queryKey: recipeKeys.communityRoot }),
+            queryClient.invalidateQueries({ queryKey: recipeKeys.publicDetail(id) }),
         ]);
     async function comment() {
         const data = query.data;

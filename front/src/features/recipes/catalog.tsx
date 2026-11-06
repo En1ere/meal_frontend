@@ -11,11 +11,16 @@ import { RecipeImage, Rating } from '../../entities/recipe/client.js';
 import {
     FollowAuthorButton,
     RecommendationFeedback,
+    loadAuthorRecommendations,
+    loadRecipeRecommendations,
     useRecommendationActions,
     type Recommendation,
 } from '../../entities/recommendation/client.js';
+import { recommendationKeys } from '../../entities/recommendation/query-keys.js';
 import { catalogState, catalogHref } from './url-state.js';
 import styles from './recipes.module.css';
+import { recipeKeys } from './query-keys.js';
+import { loadRecipeCatalog } from './read-api.js';
 type Summary = Success<'GET /api/v1/recipes'>['data']['items'][number];
 type RecipeRecommendation = Extract<Recommendation, { type: 'recipe' }>;
 type AuthorRecommendation = Extract<Recommendation, { type: 'author' }>;
@@ -180,40 +185,19 @@ function Content() {
     const filterButton = useRef<HTMLButtonElement>(null);
     const personalized = state.tab === 'for-you' && !state.q && !state.category && state.page === 1;
     const query = useQuery({
-        queryKey: ['recipes', 'catalog', session.data?.id, state],
+        queryKey: recipeKeys.catalog(session.data?.id, state),
         enabled: !!api && !!session.data && !personalized,
-        queryFn: async ({ signal }) =>
-            (
-                await api!.request('GET /api/v1/recipes', undefined, signal, undefined, {
-                    query: {
-                        q: state.q,
-                        ...(state.category ? { category: state.category } : {}),
-                        tab: state.tab,
-                        page: String(state.page),
-                        limit: '12',
-                    },
-                })
-            ).data,
+        queryFn: ({ signal }) => loadRecipeCatalog(api!, state, signal),
     });
     const recommendations = useQuery({
-        queryKey: ['recommendations', 'recipe', session.data?.id, 'private', 12],
+        queryKey: recommendationKeys.recipe(session.data?.id, 'private', 12),
         enabled: !!api && !!session.data && personalized,
-        queryFn: async ({ signal }) =>
-            (
-                await api!.request('GET /api/v1/recommendations', undefined, signal, undefined, {
-                    query: { type: 'recipe', scope: 'private', surface: 'recipes', limit: '12' },
-                })
-            ).data.items.filter((item): item is RecipeRecommendation => item.type === 'recipe'),
+        queryFn: ({ signal }) => loadRecipeRecommendations(api!, signal),
     });
     const authors = useQuery({
-        queryKey: ['recommendations', 'author', session.data?.id, 3],
+        queryKey: recommendationKeys.author(session.data?.id, 3),
         enabled: !!api && !!session.data && state.tab === 'for-you',
-        queryFn: async ({ signal }) =>
-            (
-                await api!.request('GET /api/v1/recommendations', undefined, signal, undefined, {
-                    query: { type: 'author', scope: 'private', surface: 'authors', limit: '3' },
-                })
-            ).data.items.filter((item): item is AuthorRecommendation => item.type === 'author'),
+        queryFn: ({ signal }) => loadAuthorRecommendations(api!, signal),
     });
     return (
         <>

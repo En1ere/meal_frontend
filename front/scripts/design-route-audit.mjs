@@ -1,7 +1,8 @@
 import { qaRoot } from '../../scripts/qa-output.mjs';
+import { collectRoutePatterns, currentProgress, materializeRoute } from './design-route-audit-routes.mjs';
 /* global document, innerWidth, innerHeight, getComputedStyle, HTMLInputElement */
 import assert from 'node:assert/strict';
-import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { generateSync } from 'otplib';
@@ -15,31 +16,6 @@ const evidenceDir = fileURLToPath(new URL('route-audit-evidence/', qaRoot()));
 const recheckPattern = process.env.FRONT_QA_RECHECK ? new RegExp(process.env.FRONT_QA_RECHECK) : null;
 const capturePattern = process.env.FRONT_QA_CAPTURE ? new RegExp(process.env.FRONT_QA_CAPTURE) : null;
 const onlyPattern = process.env.FRONT_QA_ONLY ? new RegExp(process.env.FRONT_QA_ONLY) : null;
-const recipeId = '70000000-0000-4000-8000-000000000001';
-const genericId = '00000000-0000-4000-8000-000000000001';
-
-async function collectPages(directory, segments = []) {
-    const entries = await readdir(directory, { withFileTypes: true });
-    const routes = [];
-    for (const entry of entries) {
-        if (entry.isDirectory())
-            routes.push(...(await collectPages(path.join(directory, entry.name), [...segments, entry.name])));
-        else if (entry.name === 'page.tsx') routes.push('/' + segments.join('/'));
-    }
-    return routes;
-}
-
-function materialize(pattern) {
-    return (
-        pattern
-            .replaceAll('[username]', 'user1')
-            .replaceAll('[token]', 'invalid-preview-token')
-            .replaceAll('[queue]', 'recipes')
-            .replaceAll('[id]', pattern.startsWith('/recipes/') ? recipeId : genericId)
-            .replaceAll('//', '/') || '/'
-    );
-}
-
 function guestRoute(pattern) {
     return /^(\/about|\/auth(?:\/|$)|\/authors(?:\/|$)|\/community$|\/help$|\/legal(?:\/|$)|\/news(?:\/|$)|\/pricing$|\/recipes\/\[id\]$|\/moderation(?:\/|$)|\/dev\/mailbox$)/.test(
         pattern,
@@ -82,7 +58,7 @@ async function loginModerator(page) {
 }
 
 async function auditPage(page, pattern, viewportName) {
-    const requested = materialize(pattern);
+    const requested = materializeRoute(pattern);
     const pageErrors = [];
     const apiErrors = [];
     const responseTasks = [];
@@ -265,8 +241,8 @@ async function saveProgress(patterns, results) {
     );
 }
 
-const patterns = (await collectPages(appRoot)).sort();
-assert.equal(patterns.length, 117);
+const patterns = await collectRoutePatterns(appRoot);
+assert.equal(patterns.length, 119);
 await mkdir(path.dirname(output), { recursive: true });
 await mkdir(failureDir, { recursive: true });
 await mkdir(evidenceDir, { recursive: true });
@@ -274,7 +250,7 @@ const browser = await chromium.launch({
     headless: true,
     executablePath: process.env.PLAYWRIGHT_EXECUTABLE_PATH || undefined,
 });
-const results = (await readProgress()).filter((result) => !recheckPattern?.test(result.pattern));
+const results = currentProgress(await readProgress(), patterns, recheckPattern);
 const completed = new Set(results.map((result) => `${result.viewport}:${result.pattern}`));
 try {
     for (const viewport of [

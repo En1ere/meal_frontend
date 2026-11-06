@@ -4,11 +4,13 @@ import { useQuery } from '@tanstack/react-query';
 import { useRuntime } from '../../shared/runtime/index.js';
 import { useSession } from '../../entities/session/client.js';
 import { units } from '../../entities/measurement/model.js';
+import { inventoryKeys } from '../../entities/inventory/query-keys.js';
 import { localDate } from '../../shared/lib/date.js';
 import type { Preserve } from './types.js';
 import { preserveTypes } from './types.js';
 import { usePreserveCommand } from './use-command.js';
 import styles from './preserves.module.css';
+import { loadPreserveDetail, loadPreserveLocations } from './api.js';
 export function PreserveForm({
     value,
     recipeRevisionId = null,
@@ -43,11 +45,9 @@ export function PreserveForm({
     const [notice, setNotice] = useState('');
     const [dirty, setDirty] = useState(false);
     const locations = useQuery({
-        queryKey: ['inventory-locations', user.data?.id, scope],
+        queryKey: inventoryKeys.preserveLocations(user.data?.id, scope),
         enabled: !!api && !!user.data,
-        queryFn: async ({ signal }) =>
-            (await api!.request('GET /api/v1/inventory-locations', undefined, signal, undefined, { query: { scope } }))
-                .data,
+        queryFn: ({ signal }) => loadPreserveLocations(api!, scope, signal),
     });
     function change(key: keyof typeof fields, v: string) {
         setDirty(true);
@@ -255,16 +255,10 @@ export function PreserveForm({
                     onClick={() => {
                         void (async () => {
                             try {
-                                const fresh = await api!.request(
-                                    'GET /api/v1/preserves/{id}',
-                                    undefined,
-                                    undefined,
-                                    { id: value.id },
-                                    { query: { scope } },
-                                );
-                                setVersion(fresh.data.preserve.version);
+                                const fresh = await loadPreserveDetail(api!, value.id, scope);
+                                setVersion(fresh.preserve.version);
                                 setNotice(
-                                    `Актуальная версия ${fresh.data.preserve.version}: ${fresh.data.preserve.name}. Введённые поля сохранены — сравните их перед сохранением.`,
+                                    `Актуальная версия ${fresh.preserve.version}: ${fresh.preserve.name}. Введённые поля сохранены — сравните их перед сохранением.`,
                                 );
                             } catch {
                                 setNotice('Не удалось перечитать карточку.');

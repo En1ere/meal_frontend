@@ -5,16 +5,9 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { useRuntime } from '../../shared/runtime/index.js';
 import { useSession } from '../../entities/session/client.js';
-import {
-    InventoryShell,
-    Loading,
-    Failure,
-    units,
-    localDate,
-    inventoryBase,
-    inventoryScopeQuery,
-    type InventoryScope,
-} from './shared.js';
+import { inventoryKeys } from '../../entities/inventory/query-keys.js';
+import { loadInventoryHistory } from './api.js';
+import { InventoryShell, Loading, Failure, units, localDate, inventoryBase, type InventoryScope } from './shared.js';
 import styles from './inventory.module.css';
 import { historyView, historyViewUrl } from './url-state.js';
 const actions: Record<string, string> = {
@@ -51,29 +44,9 @@ export function HistoryList({ batchId, scope = 'private' }: { batchId?: string; 
     }, [selected]);
     const query = useQuery({
         placeholderData: keepPreviousData,
-        queryKey: ['inventory-history', scope, user.data?.id, batchId, q, action, from, to, offset],
+        queryKey: inventoryKeys.history(scope, user.data?.id, batchId, q, action, from, to, offset),
         enabled: !!api && !!user.data,
-        queryFn: async ({ signal }) =>
-            (
-                await api!.request('GET /api/v1/inventory-history', undefined, signal, undefined, {
-                    query: {
-                        ...(batchId ? { batchId } : {}),
-                        ...(q ? { q } : {}),
-                        ...(action ? { action } : {}),
-                        ...(from ? { from: new Date(`${from}T00:00:00`).toISOString() } : {}),
-                        ...(to
-                            ? {
-                                  to: new Date(
-                                      new Date(`${to}T00:00:00`).setDate(new Date(`${to}T00:00:00`).getDate() + 1) - 1,
-                                  ).toISOString(),
-                              }
-                            : {}),
-                        limit: '100',
-                        offset: String(offset),
-                        ...inventoryScopeQuery(scope),
-                    },
-                })
-            ).data,
+        queryFn: ({ signal }) => loadInventoryHistory(api!, scope, { batchId, q, action, from, to, offset }, signal),
     });
     const items = query.data?.items ?? [];
     const explicitlyChosen = items.find((item) => item.id === selected);

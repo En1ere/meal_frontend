@@ -6,13 +6,15 @@ import { useRuntime } from '../../shared/runtime/index.js';
 import { PageLoader as ArcPageLoader } from '@meal-planner/design-system';
 import styles from './moderation.module.css';
 import { queueNames, ModeratorShell, PageState } from './shared.js';
+import { moderationKeys } from './query-keys.js';
+import { loadModerationOverview } from './api.js';
 
 export function ModerationOverview() {
     const { api } = useRuntime();
     const query = useQuery({
-        queryKey: ['moderator', 'overview'],
+        queryKey: moderationKeys.overview,
         enabled: !!api,
-        queryFn: async ({ signal }) => (await api!.request('GET /api/v1/moderator/overview', undefined, signal)).data,
+        queryFn: ({ signal }) => loadModerationOverview(api!, signal),
     });
     return (
         <ModeratorShell>

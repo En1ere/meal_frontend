@@ -5,6 +5,10 @@ import type { QueryClient } from '@tanstack/react-query';
 import type { ApiClient } from '../../shared/api/client.js';
 import { readOfflineOwner } from '../../entities/offline/store.js';
 import { syncOfflineQueue } from '../../entities/offline/queue.js';
+import { offlineQueryRoots } from '../../entities/offline/query-keys.js';
+import { inventoryKeys } from '../../entities/inventory/query-keys.js';
+import { recipeQueryRoots } from '../../entities/recipe/query-keys.js';
+import { shoppingQueryRoots } from '../../entities/shopping/query-keys.js';
 
 export function OfflineSyncCoordinator({ api, queryClient }: { api: ApiClient | null; queryClient: QueryClient }) {
     useEffect(() => {
@@ -19,17 +23,15 @@ export function OfflineSyncCoordinator({ api, queryClient }: { api: ApiClient | 
                 return;
             }
             if (!active) return;
-            await Promise.all(
-                [
-                    'shopping',
-                    'receipts',
-                    'purchases',
-                    'inventory',
-                    'recipe-workspace',
-                    'cooking',
-                    'offline-draft-state',
-                ].map((key) => queryClient.invalidateQueries({ queryKey: [key] })),
-            );
+            await Promise.all([
+                queryClient.invalidateQueries({ queryKey: shoppingQueryRoots.root }),
+                queryClient.invalidateQueries({ queryKey: shoppingQueryRoots.receiptsRoot }),
+                queryClient.invalidateQueries({ queryKey: shoppingQueryRoots.purchasesRoot }),
+                queryClient.invalidateQueries({ queryKey: inventoryKeys.root }),
+                queryClient.invalidateQueries({ queryKey: recipeQueryRoots.workspaceRoot }),
+                queryClient.invalidateQueries({ queryKey: recipeQueryRoots.cookingRoot }),
+                queryClient.invalidateQueries({ queryKey: offlineQueryRoots.draftStateRoot }),
+            ]);
         };
         const onVisible = () => {
             if (document.visibilityState === 'visible') void synchronize();

@@ -8,47 +8,41 @@ import { ApiError } from '../../shared/api/client.js';
 import { PageLoader as ArcPageLoader } from '@meal-planner/design-system';
 import styles from './moderation.module.css';
 import { ModeratorShell, PageState } from './shared.js';
+import { moderationKeys } from './query-keys.js';
+import { loadModerationSupport, reopenModerationSupport, replyToModerationSupport } from './api.js';
 
 export function ModerationSupport({ id }: { id: string }) {
     const { api, queryClient } = useRuntime();
     const [draft, setDraft] = useState('');
     const [message, setMessage] = useState('');
     const query = useQuery({
-        queryKey: ['moderator', 'support', id],
+        queryKey: moderationKeys.support(id),
         enabled: !!api,
-        queryFn: async ({ signal }) =>
-            (await api!.request('GET /api/v1/moderator/support/{id}', undefined, signal, { id })).data,
+        queryFn: ({ signal }) => loadModerationSupport(api!, id, signal),
     });
     const reply = useMutation({
-        mutationFn: async () =>
-            (
-                await api!.request(
-                    'POST /api/v1/moderator/support/{id}/reply',
-                    { message: draft, version: query.data!.version, idempotencyKey: crypto.randomUUID() },
-                    undefined,
-                    { id },
-                )
-            ).data,
+        mutationFn: () =>
+            replyToModerationSupport(api!, id, {
+                message: draft,
+                version: query.data!.version,
+                idempotencyKey: crypto.randomUUID(),
+            }),
         onSuccess: async () => {
             setDraft('');
             setMessage('Ответ отправлен автору обращения.');
-            await queryClient.invalidateQueries({ queryKey: ['moderator', 'support', id] });
+            await queryClient.invalidateQueries({ queryKey: moderationKeys.support(id) });
         },
         onError: (error) => setMessage(error instanceof ApiError ? error.message : 'Не удалось отправить ответ.'),
     });
     const reopen = useMutation({
-        mutationFn: async () =>
-            (
-                await api!.request(
-                    'POST /api/v1/moderator/support/{id}/reopen',
-                    { version: query.data!.version, idempotencyKey: crypto.randomUUID() },
-                    undefined,
-                    { id },
-                )
-            ).data,
+        mutationFn: () =>
+            reopenModerationSupport(api!, id, {
+                version: query.data!.version,
+                idempotencyKey: crypto.randomUUID(),
+            }),
         onSuccess: async () => {
             setMessage('Обращение открыто повторно.');
-            await queryClient.invalidateQueries({ queryKey: ['moderator', 'support', id] });
+            await queryClient.invalidateQueries({ queryKey: moderationKeys.support(id) });
         },
         onError: (error) => setMessage(error instanceof ApiError ? error.message : 'Не удалось открыть обращение.'),
     });

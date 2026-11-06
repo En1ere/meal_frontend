@@ -3,12 +3,11 @@
 import { useQuery } from '@tanstack/react-query';
 import { useSession } from '../session/client.js';
 import { useRuntime } from '../../shared/runtime/index.js';
+import { loadFinanceCost } from './api.js';
+import { financeCostKeys, type FinanceCostRoute } from './query-keys.js';
 import styles from './finance-cost.module.css';
 
-export type FinanceCostRoute =
-    | 'GET /api/v1/finance/costs/recipes/{id}'
-    | 'GET /api/v1/finance/costs/shopping-lists/{id}'
-    | 'GET /api/v1/finance/costs/meal-plans/{id}';
+export type { FinanceCostRoute } from './query-keys.js';
 
 const money = new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB' });
 
@@ -16,9 +15,9 @@ export function CostEstimateBadge({ route, id }: { route: FinanceCostRoute; id: 
     const { api } = useRuntime();
     const session = useSession('user');
     const query = useQuery({
-        queryKey: ['finance-cost', route, id, session.data?.id],
+        queryKey: financeCostKeys.estimate(route, id, session.data?.id),
         enabled: !!api && !!session.data,
-        queryFn: ({ signal }) => api!.request(route, undefined, signal, { id }).then((response) => response.data),
+        queryFn: ({ signal }) => loadFinanceCost(api!, route, id, signal),
         retry: false,
     });
     if (!query.data) return null;

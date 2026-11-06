@@ -7,7 +7,8 @@ import { useRuntime } from '../../shared/runtime/index.js';
 import { ApiError } from '../../shared/api/client.js';
 import { safeReturnTo } from '../../shared/auth/routes.js';
 import { useSession } from '../../entities/session/client.js';
-import { getLegalSettings, legalSettingsKey, setConsent, type ConsentKind } from '../../shared/legal/mock-legal.js';
+import { consentKeys } from '../../entities/consent/model.js';
+import { getLegalSettings, setConsent, type ConsentKind } from '../../shared/legal/mock-legal.js';
 import styles from './privacy.module.css';
 
 const consentCopy: Record<ConsentKind, { title: string; description: string }> = {
@@ -40,7 +41,7 @@ function Content() {
     const returnTo = rawReturnTo ? safeReturnTo(rawReturnTo, 'user') : null;
     const requestedRef = useRef<HTMLElement>(null);
     const [mutationIssue, setMutationIssue] = useState<'conflict' | 'error' | 'reload-error' | null>(null);
-    const key = legalSettingsKey(session.data?.id);
+    const key = consentKeys.settings(session.data?.id);
     const query = useQuery({
         queryKey: key,
         enabled: !!api && !!session.data,
