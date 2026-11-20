@@ -1,5 +1,7 @@
 # Meal frontend version-list
 
+0.0.52 - 11.20.2026 | 14:07 - Root 0.0.52/frontend 0.0.269: README указывает единый пошаговый документ запуска backend, базы, основного приложения и админки. Runtime, UI и публичные контракты не изменены.
+
 0.0.51 - 11.10.2026 | 14:45 - Root 0.0.51/frontend 0.0.268 синхронизированы с backend OpenAPI 0.0.73: generated client теперь проверяет 294 public/user/moderator операции, включая strict cost-0 `/api/v1/ai/v2/preview|run|operations/{id}` для списка покупок по плану. Экран и runtime-вызовы пока не переключались; model/provider поля в новый public contract не добавлены.
 
 0.0.50 - 11.07.2026 | 04:15 - Текущие README и manual release gate синхронизированы с root 0.0.50/frontend 0.0.267, пользовательским OpenAPI snapshot 0.0.70/291 разрешённой операцией и развёрнутым backend 0.0.273/schema v38. Зафиксированы canonical AI 202+polling, тарифные task/context gates, unknown без автоматического retry и внешние provider/key/budget условия; runtime, frontend package и wire-контракты не изменены.
